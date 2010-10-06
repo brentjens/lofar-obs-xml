@@ -222,7 +222,7 @@ class JobDescription:
                 self.interval = int(value)
             elif option in ['-h', '--help']:
                 self.print_help = True
-                pass
+                return self
             pass # end of for loop
 
         if len(args) > 1:
