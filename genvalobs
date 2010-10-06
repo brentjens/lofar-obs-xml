@@ -1,0 +1,222 @@
+#!/usr/bin/env python
+
+import os,sys
+from getopt import gnu_getopt as getopt
+from getopt import GetoptError
+
+
+
+#
+# Various messages
+#
+
+
+def print_version():
+    """
+    Print version info to standard output
+    """
+    return sys.stdout.write('genvalobs version 0.1 (c) 2010 Michiel Brentjens <brentjens@astron.nl>\n')
+
+
+def prerror(message):
+    """
+    Print the string in *message* to standard error.
+    """
+    return sys.stderr.write('genvalobs error: '+message+'\n')
+
+
+def print_short_help():
+    """
+    Print a short help message to standard output.
+    """
+    return sys.stdout.write('genvalobs: use "genvalobs --help" for help\n')
+
+
+def print_manual():
+    """
+    Print basic manual to standard output.
+    """
+    return sys.stdout.write("""
+usage: genvalobs [options] \"source name\"
+
+The source name must be enclosed in single or double quotes if it
+contains spaces. The following sources are supported:
+
+- \"Cas A\"  / cas: LST 21:00--03:00
+- \"3C 123\" / 123: LST 01:30--07:30
+- \"3C 196\" / 196: LST 05:00--11:00
+- \"Vir A\"  / vir: LST 09:30--15:30
+- \"Her A\"  / her: LST 14:00--20:00
+- \"Cyg A\"  / cyg: LST 16:00--24:00
+
+Options:
+-o / --output    Specify output directory. Default is the current
+                 directory.
+
+-d / --duration  Duration of individual observations in
+                 seconds. Default is 300.
+
+-i / --interval  Interval between observations in seconds. Default
+                 is 90.
+
+-h / --help      Display manual.
+
+""")
+
+
+
+#
+#  TargetSource
+#
+
+class SourceSpecificationError (StandardError):
+    pass
+
+
+class TargetSource:
+    def __init__(self, name='', ra_hms=(0,0,0), dec_sdms=('+',0,0,0)):
+        """
+        *name*     : string containing the name of the source
+        
+        *ra_hms*   : J2000 right ascension as a sequence of at most
+                     three numbers (hours, minutes, seconds)
+
+        *dec_sdms* : J2000 declination as a sequence of at most four
+                     elements (sign, degrees, minutes, seconds). The
+                     sign one of the single element strings '+' or
+                     '-'.
+        """
+        self.name     = name
+        self.ra_hms   = ra_hms
+        self.dec_sdms = dec_sdms
+        self.validate_and_normalize()
+
+
+    def validate_and_normalize(self):
+        """
+        Validates type and contents of data members. Raises a
+        SourceSpecificationError in case of problems.  If all is well,
+        it returns a reference to self. If necessary, it pads ra_hms
+        and dec_sdms with zeroes until their lengths are 3 and 4, respectively.
+        """
+        if type(self.name) == type(u''):
+            raise SourceSpecificationError('Source name may not be a unicode string.')
+        if type(self.name) != type(''):
+            raise SourceSpecificationError('Source name must be a string. You specified %s' % (str(self.name),))
+        
+        if len(self.ra_hms) > 3:
+            raise SourceSpecificationError('ra_hms must be specified as a sequence of at most three elements (hours, minutes, seconds), instead, you specified '+str(self.ra_hms))
+
+        self.ra_hms = tuple(self.ra_hms) +(0,)*(3-len(self.ra_hms))
+        
+        
+        if len(self.dec_sdms) > 4 or len(self.dec_sdms) == 0:
+            raise SourceSpecificationError('dec_sdms must be specified as a sequence of at least one and at most four elements (sign +/-, degrees, minutes, seconds), instead, you specified '+str(self.dec_sdms))
+        
+        if not self.dec_sdms[0] in ['+', '-']:
+            raise SourceSpecificationError('The first element of dec_sdms must be either a ''+'' or a ''-'', instead it is \''+str(self.dec_sdms[0])+'\'.')
+
+        self.dec_sdms = tuple(self.dec_sdms) +(0,)*(4-len(self.dec_sdms))
+
+
+        return self
+
+
+        
+        
+        
+
+
+def lookup_source(source_name=None):
+    return TargetSource(name='', ra_hms=(), dec_sdms=('+',))
+
+
+
+#
+#  JobDescription
+#
+
+class JobDescription:
+    """
+    The JobDescription class is responsible for commandline
+    parsing. Its data members are the program settings. One can
+    specify default values when the object is constructed. Example
+    usage:
+    
+    >>> job = JobDescription(sys.argv, duration=200)
+    """
+    
+    def __init__(self, argv, output='.', duration=300, interval=90, target_source=None, print_help=False):
+        """
+        Set default values and call parse_commandline(argv)
+        """
+        self.output        = output
+        self.duration      = duration
+        self.interval      = interval
+        self.target_source = target_source
+        self.print_help    = print_help
+        self.parse_commandline(argv)
+        pass
+    
+
+    def parse_commandline(self, argv):
+        """
+        Parse the commandline passed in *argv*. Returns reference to
+        self. May raise a GetoptError in case of commandline parsing
+        problems.
+        """
+        options,args = getopt(argv[1:], 'o:d:i:h',
+                              ['output=',
+                               'duration=',
+                               'interval=',
+                               'help'])
+        for (option, value) in options:
+            if option in ['-o', '--output']:
+                self.output = value
+            elif option in ['-d', '--duration']:
+                self.duration = int(value)
+            elif option in ['-i', '--interval']:
+                self.interval = int(value)
+            elif option in ['-h', '--help']:
+                self.print_help = True
+                pass
+            pass # end of for loop
+
+        if len(args) > 1:
+            raise GetoptError('Although you may specify at most 1 target source, you specified %d, namely %s'%(len(args), str(args)))
+        elif len(args) == 1:
+            self.target_source = lookup_source(args[0])
+        else:
+            self.target_source = lookup_source()
+        return self
+                    
+        
+
+
+def main(argv):
+
+    job = JobDescription(sys.argv)
+
+    if job.print_help:
+        print_manual()
+        return -1
+
+    
+    return 0
+
+
+
+if __name__ == '__main__':
+    try:
+        print_version()
+        exit(main(sys.argv))
+    except (OSError, IOError) as e:
+        prerror(str(e))
+        print_short_help()
+        exit(-1)
+    except (GetoptError, SourceSpecificationError) as e:
+        prerror(str(e))
+        print_short_help()
+        exit(-1)
+
+        
