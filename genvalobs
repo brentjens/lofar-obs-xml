@@ -3,6 +3,8 @@
 import os,sys
 from getopt import gnu_getopt as getopt
 from getopt import GetoptError
+import ephem
+from math import pi
 
 
 
@@ -62,6 +64,24 @@ Options:
 -h / --help      Display manual.
 
 """)
+
+
+
+#
+# LOFAR local sidereal time LST
+#
+
+def lofar_current_sidereal_time():
+    """
+    Returns an ephem.Angle object with the current sidereal time at
+    LOFAR CS002 LBA.
+    """
+    # CS002 LBA in ITRF2005, epoch 2009.5
+    lofar           = ephem.Observer()
+    lofar.long      = +6.869837540*pi/180
+    lofar.lat       = +52.915122495*pi/180
+    lofar.elevation = +49.344
+    return lofar.sidereal_time()
 
 
 
@@ -196,7 +216,6 @@ class JobDescription:
 def main(argv):
 
     job = JobDescription(sys.argv)
-
     if job.print_help:
         print_manual()
         return -1
@@ -209,6 +228,7 @@ def main(argv):
 if __name__ == '__main__':
     try:
         print_version()
+        print 'LST: '+str(lofar_current_sidereal_time())
         exit(main(sys.argv))
     except (OSError, IOError) as e:
         prerror(str(e))
