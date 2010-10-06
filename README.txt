@@ -13,7 +13,7 @@ observation and interval between observations.
 Prerequisites
 -------------
 
-Python 2.6 or newer
+Python 2.6 or newer and pyephem (http://rhodesmill.org/pyephem/).
 
 
 Installation
@@ -65,3 +65,5 @@ Options:
 
 -i / --interval  Interval between observations in seconds. Default
                  is 90.
+
+-h / --help      Display manual.
