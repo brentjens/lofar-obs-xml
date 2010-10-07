@@ -58,8 +58,17 @@ Options:
 -d / --duration  Duration of individual observations in
                  seconds. Default is 300.
 
--i / --interval  Interval between observations in seconds. Default
+-g / --gap       Gap between observations in seconds. Default
                  is 90.
+
+-s / --stations  Station set. One of: superterp, core, remote, nl,
+                 europe, all. Default is nl.
+
+-i / --include   Comma separated list of station names to add to
+                 station set.
+
+-e / --exclude   Comma separated list of stations to exlude from
+                 station set.                 
 
 -h / --help      Display manual.
 
@@ -235,7 +244,7 @@ def mom_duration(hours=None, minutes=None, seconds=None):
 
 
 
-def Observation:
+class Observation:
     def __init__(self, target, antennaset, frequency_range, start_date, duration_seconds, station_list, clock_mhz, subband_spec):
         """
         """
@@ -383,6 +392,9 @@ def as_xml_mom_project(observations):
 
 
 
+
+
+
 #
 #  JobDescription
 #
@@ -397,15 +409,19 @@ class JobDescription:
     >>> job = JobDescription(sys.argv, duration=200)
     """
     
-    def __init__(self, argv, output='.', duration=300, interval=90, target_source=None, print_help=False):
+    def __init__(self, argv, output='.', duration_seconds=300, gap_seconds=90, target_source=None, print_help=False, station_set='nl',
+                 include_list=[], exclude_list=[]):
         """
         Set default values and call parse_commandline(argv)
         """
-        self.output        = output
-        self.duration      = duration
-        self.interval      = interval
-        self.target_source = target_source
-        self.print_help    = print_help
+        self.output                = output
+        self.duration_seconds      = duration_seconds
+        self.gap_seconds           = gap_seconds
+        self.target_source         = target_source
+        self.print_help            = print_help
+        self.station_set           = station_set
+        self.exclude_list          = exclude_list
+        self.include_list          = include_list
         self.parse_commandline(argv)
         pass
     
@@ -416,18 +432,33 @@ class JobDescription:
         self. May raise a GetoptError in case of commandline parsing
         problems.
         """
-        options,args = getopt(argv[1:], 'o:d:i:h',
+        options,args = getopt(argv[1:], 'o:d:i:e:s:g:h',
                               ['output=',
                                'duration=',
-                               'interval=',
+                               'include=',
+                               'exclude=',
+                               'stations=',
+                               'gap=',
                                'help'])
         for (option, value) in options:
             if option in ['-o', '--output']:
                 self.output = value
+                
             elif option in ['-d', '--duration']:
-                self.duration = int(value)
-            elif option in ['-i', '--interval']:
-                self.interval = int(value)
+                self.duration_seconds = int(value)
+                
+            elif option in ['-g', '--gap']:
+                self.gap_seconds = int(value)
+                
+            elif  option in ['-s', '--stations']:
+                self.station_set = value
+                
+            elif  option in ['-i', '--include']:
+                self.include_list = value.upper().split(',')
+                
+            elif  option in ['-e', '--exclude']:
+                self.exclude_list = value.upper().split(',')
+                
             elif option in ['-h', '--help']:
                 self.print_help = True
                 return self
@@ -438,10 +469,50 @@ class JobDescription:
         elif len(args) == 1:
             self.target_source = lookup_source(args[0])
         else:
-            self.target_source = lookup_source()
+            self.target_source = None
         return self
-                    
-        
+
+
+
+def get_station_list(job_description):
+    superterp= ['CS002', 'CS003', 'CS004', 'CS005', 'CS006', 'CS007']
+    core     = ['CS001']+superterp+['CS017', 'CS021', 'CS024', 'CS030', 'CS032'
+                                    'CS101', 'CS103', 'CS201', 'CS301', 'CS302',
+                                    'CS401', 'CS501']
+    remote   = ['RS106', 'RS205', 'RS208', 'RS306', 'RS307', 'RS503']
+    nl       = core + remote
+    europe   = ['DE601', 'DE602', 'DE603', 'UK608', 'FR606']
+    all_stations = nl + europe
+
+    lookup_table = {'superterp': superterp,
+                    'core'     : core,
+                    'remote'   : remote,
+                    'nl'       : nl,
+                    'europe'   : europe,
+                    'all'      : all_stations}
+    superset= unique(lookup_table[job_description.station_set] + job_description.include_list)
+    return sorted([s for s in superset if s not in job_description.exclude_list])
+
+
+
+def plan_observing_sequence(job_description):
+    schedule = [['LBA_INNER'  , 'LBA_LOW' , '52..299'],
+                ['LBA_OUTER'  , 'LBA_LOW' , '52..299'],
+                ['LBA_INNER'  , 'LBA_HIGH', '154..401'],
+                ['LBA_OUTER'  , 'LBA_HIGH', '154..401']
+                ['HBA_ZERO'   , 'HBA_LOW' , '77..324'],
+                ['HBA_ONE'    , 'HBA_LOW' , '77..324'],
+                ['HBA_DUAL'   , 'HBA_LOW' , '77..324'],
+                ['HBA_JOINED' , 'HBA_LOW' , '77..324'],
+                ['HBA_ZERO'   , 'HBA_MID' , '64..311'],
+                ['HBA_ONE'    , 'HBA_MID' , '64..311'],
+                ['HBA_DUAL'   , 'HBA_MID' , '64..311'],
+                ['HBA_JOINED' , 'HBA_MID' , '64..311']
+                ]
+    now = ephem.Observer().date
+    begin_first_observation = ephem.Date(now + ephem.minute*10)
+
+
 
 
 def main(argv):
@@ -450,7 +521,6 @@ def main(argv):
     if job.print_help:
         print_manual()
         return -1
-
     
     return 0
 
