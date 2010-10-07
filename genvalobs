@@ -5,7 +5,7 @@ from getopt import gnu_getopt as getopt
 from getopt import GetoptError
 import ephem
 from math import pi
-
+from momxml import *
 
 
 #
@@ -76,318 +76,18 @@ Options:
 
 
 
-#
-# LOFAR local sidereal time LST
-#
-
-def lofar_current_sidereal_time():
-    """
-    Returns an ephem.Angle object with the current sidereal time at
-    LOFAR CS002 LBA.
-    """
-    # CS002 LBA in ITRF2005, epoch 2009.5
-    lofar           = ephem.Observer()
-    lofar.long      = +6.869837540*pi/180
-    lofar.lat       = +52.915122495*pi/180
-    lofar.elevation = +49.344
-    return lofar.sidereal_time()
-
-
-
-#
-#  TargetSource
-#
-
-class SourceSpecificationError (StandardError):
-    pass
-
-
-class TargetSource:
-    def __init__(self, name='', ra_hms=(0,0,0), dec_sdms=('+',0,0,0)):
-        """
-        *name*     : string containing the name of the source
-        
-        *ra_hms*   : J2000 right ascension as a sequence of at most
-                     three numbers (hours, minutes, seconds)
-
-        *dec_sdms* : J2000 declination as a sequence of at most four
-                     elements (sign, degrees, minutes, seconds). The
-                     sign one of the single element strings '+' or
-                     '-'.
-        """
-        self.name     = name
-        self.ra_hms   = ra_hms
-        self.dec_sdms = dec_sdms
-        self.validate_and_normalize()
-        pass
-
-
-    def validate_and_normalize(self):
-        """
-        Validates type and contents of data members. Raises a
-        SourceSpecificationError in case of problems.  If all is well,
-        it returns a reference to self. If necessary, it pads ra_hms
-        and dec_sdms with zeroes until their lengths are 3 and 4, respectively.
-        """
-        if type(self.name) == type(u''):
-            raise SourceSpecificationError('Source name may not be a unicode string.')
-        if type(self.name) != type(''):
-            raise SourceSpecificationError('Source name must be a string. You specified %s' % (str(self.name),))
-        
-        if len(self.ra_hms) > 3:
-            raise SourceSpecificationError('ra_hms must be specified as a sequence of at most three elements (hours, minutes, seconds), instead, you specified '+str(self.ra_hms))
-
-        self.ra_hms = tuple(self.ra_hms) +(0,)*(3-len(self.ra_hms))
-        
-        
-        if len(self.dec_sdms) > 4 or len(self.dec_sdms) == 0:
-            raise SourceSpecificationError('dec_sdms must be specified as a sequence of at least one and at most four elements (sign +/-, degrees, minutes, seconds), instead, you specified '+str(self.dec_sdms))
-        
-        if not self.dec_sdms[0] in ['+', '-']:
-            raise SourceSpecificationError('The first element of dec_sdms must be either a ''+'' or a ''-'', instead it is \''+str(self.dec_sdms[0])+'\'.')
-
-        self.dec_sdms = tuple(self.dec_sdms) +(0,)*(4-len(self.dec_sdms))
-        return self
-
-
-    def ra_deg(self):
-        """
-        Return right ascension in degrees
-        """
-        return (self.ra_hms[0]+self.ra_hms[1]/60.0 +self.ra_hms[2]/3600.0)*180/12.0
-
-
-    def dec_deg(self):
-        """
-        Return declination in degrees
-        """
-        abs_deg = (self.dec_sdms[1]+self.dec_sdms[2]/60.0 +self.dec_sdms[3]/3600.0)
-        if self.dec_sdms[0] == '-':
-            return -abs_deg
-        else:
-            return abs_deg
-
-
-        
-        
-        
-
-
-def lookup_source(source_name=None, observing_sequence_duration_seconds=0.0):
+def lookup_source(source_name=None):
     """
     Look up *source_name* in a table of standard calibrator
     sources. Raise a SourceSpecificationError if the source is not
     found. Otherwise, return a TargetSource object.
     """
-    source_table= [
-        [['3C 123', '123'], ( 4, 37,  4.0), ('+', 29, 40, 14.0)],
-        [['3C 196', '196'], ( 8, 13, 36.0), ('+', 48, 13,  3.0)],
-        [['Vir A', 'vir'] , (12, 30, 49.4), ('+', 12, 23, 28.0)],
-        [['Her A', 'her'] , (16, 51, 08.1), ('+',  4, 59, 33.0)],
-        [['Cyg A', 'cyg'] , (19, 59, 28.3), ('+', 40, 44,  2.0)],
-        [['Cas A', 'cas'] , (23, 23, 24.0), ('+', 58, 48, 54.0)]
-        ]
-
-    def find_source(name):
-        return filter(lambda row: name in row[0], source_table)
-
-    sources = find_source(source_name)
-    if len(sources) != 1:
-        raise SourceSpecificationError('"'+str(source_name)+'" is not one of the standard sources; choose one of:\n- '+ '\n- '.join([', '.join(map(lambda s: '"'+s+'"',r[0])) for r in source_table]))
-    
-    return TargetSource(name=sources[0][0][0], ra_hms=sources[0][1], dec_sdms=sources[0][2])
+    cat = SourceCatalogue()
+    source = cat.find_source(source_name)
+    return TargetSource(name=source[0][0], ra_hms=source[1], dec_sdms=source[2])
 
 
 
-
-def mom_antenna_name_from_mac_name(mac_name):
-    """
-    Converts 'HBA_ONE' to 'HBA One', 'LBA_SPARSE_EVEN' to 'LBA Sparse
-    Even', etc.
-    """
-    name = mac_name.split('_')
-    return ' '.join([name[0]]+[s.capitalize() for s in name[1:]])
-
-
-
-def mom_frequency_range(name):
-    """
-    Obtain a string containing the MoM frequency range for a given
-    frequency band. Allowed frequency bands are: 'LBA_LOW',
-    'LBA_HIGH', 'HBA_LOW', 'HBA_MID', and 'HBA_HIGH'.
-    """
-    translation_table= {'LBA_LOW' : '10-90 MHz',
-                        'LBA_HIGH': '30-90 MHz',
-                        'HBA_LOW' : '110-190 MHz',
-                        'HBA_MID' : '170-230 MHz',
-                        'HBA_HIGH': '210-250 MHz'}
-    return translation_table[name]
-
-
-
-def mom_timestamp(year, month, day, hours, minutes, seconds):
-    """
-    Return the MoM representation of a date
-    """
-    return '%4d-%02d-%02dT%02d:%02d:%02d'%(year, month, day, hours, minutes, seconds)
-
-
-def mom_duration(hours=None, minutes=None, seconds=None):
-    duration='PT'
-    if hours is not None:
-        duration+='%02dH'%(int(hours),)
-    if minutes is not None:
-        duration+='%02dM'%(int(minutes),)
-    if seconds is not None:
-        duration+='%02dS'%(int(seconds),)
-    return duration
-
-
-
-class Observation:
-    def __init__(self, target_source, antennaset, frequency_range, start_date, duration_seconds, station_list, clock_mhz, subband_spec):
-        """
-        """
-        self.target_source    = target_source
-        self.antennaset       = antennaset
-        self.frequency_range  = frequency_range
-        self.duration_seconds = duration_seconds
-        self.station_list     = station_list
-        self.clock_mhz        = clock_mhz
-        self.start_date       = start_date
-        self.subband_spec     = subband_spec
-        pass
-
-    def __str__(self):
-        obs_name=self.target_source.name+' '+self.antennaset
-        now=ephem.Observer().date
-        return """
-        <lofar:observation>
-          <name>"""+obs_name+"""</name>
-          <description>"""+obs_name+"""</description>
-          <statusHistory>
-            <item index=\"0\">
-              <mom2ObjectStatus>
-                <name>Brentjens,  Michiel</name>
-                <roles>Friend</roles>
-                <user id=\"791\"/>
-                <timeStamp>"""+mom_timestamp(*now.tuple())+"""</timeStamp>
-                <mom2:openedStatus/>
-              </mom2ObjectStatus>
-            </item>
-          </statusHistory>
-          <currentStatus>
-            <mom2:openedStatus/>
-          </currentStatus>
-          <lofar:observationAttributes>
-            <name>"""+obs_name+"""</name>
-            <projectName>LOFAROPS</projectName>
-            <instrument>Interferometer</instrument>
-            <userSpecification>
-              <correlatedData>true</correlatedData>
-              <filteredData>false</filteredData>
-              <beamformedData>false</beamformedData>
-              <coherentStokesData>false</coherentStokesData>
-              <incoherentStokesData>false</incoherentStokesData>
-              <antenna>"""+mom_antenna_name_from_mac_name(self.antennaset)+"""</antenna>
-              <clock mode=\""""+str(self.clock_mhz)+""" MHz\"/>
-              <instrumentFilter>"""+mom_frequency_range(self.frequency_range)+"""</instrumentFilter>
-              <integrationInterval>1</integrationInterval>
-              <pencilBeams>
-                <flyseye>false</flyseye>
-                <pencilBeamList/>
-              </pencilBeams>
-              <stokes>
-                <integrateChannels>false</integrateChannels>
-              </stokes>
-              <stationSet>Custom</stationSet>
-              <stations>
-                """+'\n                '.join(['<station name=\"'+n+'\" />' for n in self.station_list])+"""
-              </stations>
-              <startTime>"""+mom_timestamp(*self.start_date)+"""</startTime>
-              <endTime>"""+mom_timestamp(*ephem.Date(ephem.Date(self.start_date)+ephem.second*self.duration_seconds).tuple())+"""</endTime>
-              <duration>"""+str(self.duration_seconds)+"""</duration>
-            </userSpecification>
-            <systemSpecification>
-              <correlatedData>true</correlatedData>
-              <filteredData>false</filteredData>
-              <beamformedData>false</beamformedData>
-              <coherentStokesData>false</coherentStokesData>
-              <incoherentStokesData>false</incoherentStokesData>
-              <pencilBeams>
-                <flyseye>false</flyseye>
-                <pencilBeamList/>
-              </pencilBeams>
-              <stokes>
-                <integrateChannels>false</integrateChannels>
-              </stokes>
-              <stations/>
-            </systemSpecification>
-          </lofar:observationAttributes>
-          <children>
-            <item index=\"0\">
-              <lofar:measurement xsi:type=\"lofar:UVMeasurementType\">
-                <name>"""+self.target_source.name+"""</name>
-                <description>"""+obs_name+"""</description>
-                <statusHistory>
-                  <item index=\"0\">
-                    <mom2ObjectStatus>
-                      <name>Brentjens,  Michiel</name>
-                      <roles>Friend</roles>
-                      <user id=\"791\"/>
-                      <timeStamp>"""+mom_timestamp(*now.tuple())+"""</timeStamp>
-                      <mom2:openedStatus/>
-                    </mom2ObjectStatus>
-                  </item>
-                </statusHistory>
-                <currentStatus>
-                  <mom2:openedStatus/>
-                </currentStatus>
-                <lofar:uvMeasurementAttributes>
-                  <measurementType>Target</measurementType>
-                  <specification>
-                    <targetName>"""+self.target_source.name+"""</targetName>
-                    <ra>"""+repr(self.target_source.ra_deg())+"""</ra>
-                    <dec>"""+repr(self.target_source.dec_deg())+"""</dec>
-                    <equinox>J2000</equinox>
-                    <duration>"""+mom_duration(seconds=self.duration_seconds)+"""</duration>
-                    <subbandsSpecification>
-                      <bandWidth unit=\"MHz\">48.4375</bandWidth>
-                      <centralFrequency unit=\"MHz\">139.21875</centralFrequency>
-                      <contiguous>true</contiguous>
-                      <subbands>"""+self.subband_spec+"""</subbands>
-                    </subbandsSpecification>
-                  </specification>
-                </lofar:uvMeasurementAttributes>
-              </lofar:measurement>
-            </item>
-          </children>
-        </lofar:observation>
-        """
-
-
-
-
-
-
-def as_xml_mom_project(observations):
-    """
-    Format a list of *observations* as an XML string that can be
-    uploaded to MoM.
-    """
-    return """
-<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<mom2:project xmlns:lofar=\"http://www.astron.nl/MoM2-Lofar\"
-    xmlns:mom2=\"http://www.astron.nl/MoM2\"
-    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.astron.nl/MoM2-Lofar http://lofar.astron.nl:8080/mom3/schemas/LofarMoM2.xsd http://www.astron.nl/MoM2 http://lofar.astron.nl:8080/mom3/schemas/MoM2.xsd \">
-    <name>LOFAROPS</name>
-    <description>LOFAROPS</description>
-    <children>
-      <item>"""+'      </item>\n      <item>'.join(map(str, observations))+"""
-      </item>
-    </children>
-</mom2:project>
-"""
 
 
 
@@ -473,31 +173,6 @@ class JobDescription:
         return self
 
 
-def unique(sequence):
-    return list(set(sequence))
-
-
-def get_station_list(job_description):
-    superterp= ['CS002', 'CS003', 'CS004', 'CS005', 'CS006', 'CS007']
-    core     = ['CS001']+superterp+['CS017', 'CS021', 'CS024', 'CS026', 'CS030',
-                                    'CS032', 'CS101', 'CS103', 'CS201', 'CS301',
-                                    'CS302', 'CS401', 'CS501']
-    remote   = ['RS106', 'RS205', 'RS208', 'RS306', 'RS307', 'RS503']
-    nl       = core + remote
-    europe   = ['DE601', 'DE602', 'DE603', 'DE604', 'UK608', 'FR606']
-    all_stations = nl + europe
-
-    lookup_table = {'superterp': superterp,
-                    'core'     : core,
-                    'remote'   : remote,
-                    'nl'       : nl,
-                    'europe'   : europe,
-                    'all'      : all_stations}
-    superset= unique(lookup_table[job_description.station_set] + job_description.include_list)
-    return sorted([s for s in superset if s not in job_description.exclude_list])
-
-
-
 def plan_observing_sequence(job_description):
     schedule = [['LBA_INNER'  , 'LBA_LOW' , '52..299' , 200],
                 ['LBA_OUTER'  , 'LBA_LOW' , '52..299' , 200],
@@ -515,9 +190,15 @@ def plan_observing_sequence(job_description):
     now           = ephem.Observer().date
     start_date    = ephem.Date(now + ephem.minute*10)
     target_source = job_description.target_source
-    stations      = get_station_list(job_description)
+    stations      = get_station_list(job_description.station_set,
+                                     job_description.include_list,
+                                     job_description.exclude_list)
     observations  = []
+    previous_clock=200
     for antennaset, frequency_range, subband_spec, clock_mhz in schedule:
+        if previous_clock != clock_mhz: # If clock switches, allow for one minute extra
+            start_date = ephem.Date(start_date + ephem.minute)
+            pass
         observations.append(Observation(
             target_source    = target_source,
             antennaset       = antennaset,
@@ -528,6 +209,7 @@ def plan_observing_sequence(job_description):
             clock_mhz        = clock_mhz,
             subband_spec     = subband_spec))
         start_date = ephem.Date(start_date + ephem.second*job_description.duration_seconds + ephem.second*job_description.gap_seconds)
+        previous_clock=clock_mhz
         pass
     return observations
                                 
@@ -551,10 +233,12 @@ def main(argv):
 
 
 
+
+
 if __name__ == '__main__':
     try:
         print_version()
-        print 'LST: '+str(lofar_current_sidereal_time())
+        print 'Current LST: '+str(lofar_current_sidereal_time())
         exit(main(sys.argv))
     except (OSError, IOError) as e:
         prerror(str(e))

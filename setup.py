@@ -8,6 +8,6 @@ setup(name='genvalobs',
       author='Michiel Brentjens',
       author_email='brentjens@astron.nl',
       url='',
-      packages=[],
+      packages=['momxml'],
       scripts=['genvalobs'],
      )
