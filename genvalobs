@@ -52,14 +52,14 @@ contains spaces. The following sources are supported:
 - \"Cyg A\"  / cyg: LST 16:00--24:00
 
 Options:
--o / --output    Specify output directory. Default is the current
-                 directory.
+-o / --output    Name of the output file. Default is
+                 lofar-validation-yyyymmdd-hhmmss.xml
 
 -d / --duration  Duration of individual observations in
-                 seconds. Default is 300.
+                 seconds. Default is 180.
 
 -g / --gap       Gap between observations in seconds. Default
-                 is 90.
+                 is 120.
 
 -s / --stations  Station set. One of: superterp, core, remote, nl,
                  europe, all. Default is nl.
@@ -409,7 +409,7 @@ class JobDescription:
     >>> job = JobDescription(sys.argv, duration=200)
     """
     
-    def __init__(self, argv, output='.', duration_seconds=300, gap_seconds=90, target_source=None, print_help=False, station_set='nl',
+    def __init__(self, argv, output='schedule.log', duration_seconds=180, gap_seconds=120, target_source=None, print_help=False, station_set='nl',
                  include_list=[], exclude_list=[]):
         """
         Set default values and call parse_commandline(argv)
@@ -538,13 +538,15 @@ def plan_observing_sequence(job_description):
 
 def main(argv):
 
-    job_description = JobDescription(sys.argv)
+    job_description = JobDescription(sys.argv, output='lofar-validation-%04d%02d%02d-%02d%02d%02d.xml' % ephem.Observer().date.tuple())
     if job_description.print_help:
         print_manual()
         return -1
 
-    print as_xml_mom_project(plan_observing_sequence(job_description))
-
+    out=open(job_description.output, 'w')
+    out.write(as_xml_mom_project(plan_observing_sequence(job_description)))
+    out.close()
+    
     return 0
 
 
