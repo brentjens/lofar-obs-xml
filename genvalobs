@@ -110,6 +110,7 @@ class TargetSource:
         self.ra_hms   = ra_hms
         self.dec_sdms = dec_sdms
         self.validate_and_normalize()
+        pass
 
 
     def validate_and_normalize(self):
@@ -137,9 +138,25 @@ class TargetSource:
             raise SourceSpecificationError('The first element of dec_sdms must be either a ''+'' or a ''-'', instead it is \''+str(self.dec_sdms[0])+'\'.')
 
         self.dec_sdms = tuple(self.dec_sdms) +(0,)*(4-len(self.dec_sdms))
-
-
         return self
+
+
+    def ra_deg(self):
+        """
+        Return right ascension in degrees
+        """
+        return (self.ra_hms[0]+self.ra_hms[1]/60.0 +self.ra_hms[2]/3600.0)*180/12.0
+
+
+    def dec_deg(self):
+        """
+        Return declination in degrees
+        """
+        abs_deg = (self.dec_sdms[1]+self.dec_sdms[2]/60.0 +self.dec_sdms[3]/3600.0)
+        if self.dec_sdms[0] == '-':
+            return -abs_deg
+        else:
+            return abs_deg
 
 
         
