@@ -245,10 +245,10 @@ def mom_duration(hours=None, minutes=None, seconds=None):
 
 
 class Observation:
-    def __init__(self, target, antennaset, frequency_range, start_date, duration_seconds, station_list, clock_mhz, subband_spec):
+    def __init__(self, target_source, antennaset, frequency_range, start_date, duration_seconds, station_list, clock_mhz, subband_spec):
         """
         """
-        self.target           = target
+        self.target_source    = target_source
         self.antennaset       = antennaset
         self.frequency_range  = frequency_range
         self.duration_seconds = duration_seconds
@@ -259,7 +259,7 @@ class Observation:
         pass
 
     def __str__(self):
-        obs_name=self.target.name+' '+self.antennaset
+        obs_name=self.target_source.name+' '+self.antennaset
         now=ephem.Observer().date
         return """
         <lofar:observation>
@@ -302,7 +302,7 @@ class Observation:
               </stokes>
               <stationSet>Custom</stationSet>
               <stations>
-                """+'\n                '.join([lambda n: '<station name="'+n+'" />' for n in self.station_list])+"""
+                """+'\n                '.join(['<station name=\"'+n+'\" />' for n in self.station_list])+"""
               </stations>
               <startTime>"""+mom_timestamp(*self.start_date)+"""</startTime>
               <endTime>"""+mom_timestamp(*ephem.Date(ephem.Date(self.start_date)+ephem.second*self.duration_seconds).tuple())+"""</endTime>
@@ -325,9 +325,9 @@ class Observation:
             </systemSpecification>
           </lofar:observationAttributes>
           <children>
-            <item index="0">
-              <lofar:measurement xsi:type="lofar:UVMeasurementType">
-                <name>"""+self.target.name+"""</name>
+            <item index=\"0\">
+              <lofar:measurement xsi:type=\"lofar:UVMeasurementType\">
+                <name>"""+self.target_source.name+"""</name>
                 <description>"""+obs_name+"""</description>
                 <statusHistory>
                   <item index=\"0\">
@@ -346,9 +346,9 @@ class Observation:
                 <lofar:uvMeasurementAttributes>
                   <measurementType>Target</measurementType>
                   <specification>
-                    <targetName>"""+self.target.name+"""</targetName>
-                    <ra>"""+repr(self.target.ra_deg())+"""</ra>
-                    <dec>"""+repr(self.target.dec_deg())+"""</dec>
+                    <targetName>"""+self.target_source.name+"""</targetName>
+                    <ra>"""+repr(self.target_source.ra_deg())+"""</ra>
+                    <dec>"""+repr(self.target_source.dec_deg())+"""</dec>
                     <equinox>J2000</equinox>
                     <duration>"""+mom_duration(seconds=self.duration_seconds)+"""</duration>
                     <subbandsSpecification>
@@ -383,7 +383,7 @@ def as_xml_mom_project(observations):
     <name>LOFAROPS</name>
     <description>LOFAROPS</description>
     <children>
-      <item>"""+'      </item>\n      <item>'.join(map(str(observations)))+"""
+      <item>"""+'      </item>\n      <item>'.join(map(str, observations))+"""
       </item>
     </children>
 </mom2:project>
@@ -473,15 +473,18 @@ class JobDescription:
         return self
 
 
+def unique(sequence):
+    return list(set(sequence))
+
 
 def get_station_list(job_description):
     superterp= ['CS002', 'CS003', 'CS004', 'CS005', 'CS006', 'CS007']
-    core     = ['CS001']+superterp+['CS017', 'CS021', 'CS024', 'CS030', 'CS032'
-                                    'CS101', 'CS103', 'CS201', 'CS301', 'CS302',
-                                    'CS401', 'CS501']
+    core     = ['CS001']+superterp+['CS017', 'CS021', 'CS024', 'CS026', 'CS030',
+                                    'CS032', 'CS101', 'CS103', 'CS201', 'CS301',
+                                    'CS302', 'CS401', 'CS501']
     remote   = ['RS106', 'RS205', 'RS208', 'RS306', 'RS307', 'RS503']
     nl       = core + remote
-    europe   = ['DE601', 'DE602', 'DE603', 'UK608', 'FR606']
+    europe   = ['DE601', 'DE602', 'DE603', 'DE604', 'UK608', 'FR606']
     all_stations = nl + europe
 
     lookup_table = {'superterp': superterp,
@@ -496,32 +499,52 @@ def get_station_list(job_description):
 
 
 def plan_observing_sequence(job_description):
-    schedule = [['LBA_INNER'  , 'LBA_LOW' , '52..299'],
-                ['LBA_OUTER'  , 'LBA_LOW' , '52..299'],
-                ['LBA_INNER'  , 'LBA_HIGH', '154..401'],
-                ['LBA_OUTER'  , 'LBA_HIGH', '154..401']
-                ['HBA_ZERO'   , 'HBA_LOW' , '77..324'],
-                ['HBA_ONE'    , 'HBA_LOW' , '77..324'],
-                ['HBA_DUAL'   , 'HBA_LOW' , '77..324'],
-                ['HBA_JOINED' , 'HBA_LOW' , '77..324'],
-                ['HBA_ZERO'   , 'HBA_MID' , '64..311'],
-                ['HBA_ONE'    , 'HBA_MID' , '64..311'],
-                ['HBA_DUAL'   , 'HBA_MID' , '64..311'],
-                ['HBA_JOINED' , 'HBA_MID' , '64..311']
+    schedule = [['LBA_INNER'  , 'LBA_LOW' , '52..299' , 200],
+                ['LBA_OUTER'  , 'LBA_LOW' , '52..299' , 200],
+                ['LBA_INNER'  , 'LBA_HIGH', '154..401', 200],
+                ['LBA_OUTER'  , 'LBA_HIGH', '154..401', 200],
+                ['HBA_ZERO'   , 'HBA_LOW' , '77..324' , 200],
+                ['HBA_ONE'    , 'HBA_LOW' , '77..324' , 200],
+                ['HBA_DUAL'   , 'HBA_LOW' , '77..324' , 200],
+                ['HBA_JOINED' , 'HBA_LOW' , '77..324' , 200],
+                ['HBA_ZERO'   , 'HBA_MID' , '64..311' , 160],
+                ['HBA_ONE'    , 'HBA_MID' , '64..311' , 160],
+                ['HBA_DUAL'   , 'HBA_MID' , '64..311' , 160],
+                ['HBA_JOINED' , 'HBA_MID' , '64..311' , 160]
                 ]
-    now = ephem.Observer().date
-    begin_first_observation = ephem.Date(now + ephem.minute*10)
+    now           = ephem.Observer().date
+    start_date    = ephem.Date(now + ephem.minute*10)
+    target_source = job_description.target_source
+    stations      = get_station_list(job_description)
+    observations  = []
+    for antennaset, frequency_range, subband_spec, clock_mhz in schedule:
+        observations.append(Observation(
+            target_source    = target_source,
+            antennaset       = antennaset,
+            frequency_range  = frequency_range,
+            start_date       = start_date.tuple(),
+            duration_seconds = job_description.duration_seconds,
+            station_list     = stations,
+            clock_mhz        = clock_mhz,
+            subband_spec     = subband_spec))
+        start_date = ephem.Date(start_date + ephem.second*job_description.duration_seconds + ephem.second*job_description.gap_seconds)
+        pass
+    return observations
+                                
+                            
 
 
 
 
 def main(argv):
 
-    job = JobDescription(sys.argv)
-    if job.print_help:
+    job_description = JobDescription(sys.argv)
+    if job_description.print_help:
         print_manual()
         return -1
-    
+
+    print as_xml_mom_project(plan_observing_sequence(job_description))
+
     return 0
 
 
