@@ -38,3 +38,12 @@ def get_station_list(station_set, include_list=[], exclude_list=[]):
     superset= unique(lookup_table[station_set] + include_list)
     return sorted([s for s in superset if s not in exclude_list])
 
+
+
+def validate_enumeration(name, value, allowed):
+    """
+    If *value* of kind *name* is not in the list of *allowed* values, raise a ValueError.
+    """
+    if value not in allowed:
+        raise ValueError('%s is not a valid %s; choose one of %s'%(value, name,', '.join(allowed)))
+    pass

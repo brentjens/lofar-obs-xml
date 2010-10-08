@@ -195,13 +195,13 @@ def plan_observing_sequence(job_description):
                                      job_description.exclude_list)
     observations  = []
     previous_clock=200
-    for antennaset, frequency_range, subband_spec, clock_mhz in schedule:
+    for antenna_set, frequency_range, subband_spec, clock_mhz in schedule:
         if previous_clock != clock_mhz: # If clock switches, allow for one minute extra
             start_date = ephem.Date(start_date + ephem.minute)
             pass
         observations.append(Observation(
             target_source    = target_source,
-            antennaset       = antennaset,
+            antenna_set      = antenna_set,
             frequency_range  = frequency_range,
             start_date       = start_date.tuple(),
             duration_seconds = job_description.duration_seconds,
