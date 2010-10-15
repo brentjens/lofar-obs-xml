@@ -53,7 +53,7 @@ class Observation:
         validate_enumeration('Observation frequency range', self.frequency_range, valid_frequency_ranges)
         validate_enumeration('Observation clock frequency', self.clock_mhz, valid_clocks)
 
-        if type(self.start_date) != type((,)) or len(self.start_date) != 6:
+        if type(self.start_date) != type(tuple([])) or len(self.start_date) != 6:
             raise ValueError('Observation start_date must be a tuple of length 6; you provided %s'%(self.start_date,))
         pass
 

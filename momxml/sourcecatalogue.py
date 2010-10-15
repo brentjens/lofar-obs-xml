@@ -1,4 +1,5 @@
 from targetsource import SourceSpecificationError
+from numpy import exp,pi
 
 
 class SourceCatalogue:
@@ -21,12 +22,12 @@ class SourceCatalogue:
 
     
     def closest_to_meridian(self, lst_rad):
-        lst_complex = exp(1j*lst_rad)
+        lst_complex = exp(1j*(lst_rad+0.0))
         min_dist=2.1
         best_source = None
         for source in self.source_table:
             ra = source[1]
-            ra_rad = (ra[0]+ra[1]/60.0 + ra[2]/3600.0)*pi/180.0
+            ra_rad = (ra[0]+ra[1]/60.0 + ra[2]/3600.0)*pi/12.0
             ra_complex = exp(1j*ra_rad)
             dist = abs(lst_complex - ra_complex)
             if dist < min_dist:
