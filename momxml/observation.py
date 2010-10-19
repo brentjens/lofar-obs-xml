@@ -170,17 +170,17 @@ class Observation:
 
 
 
-def as_xml_mom_project(observations):
+def as_xml_mom_project(observations, project='LOFAROPS'):
     """
     Format a list of *observations* as an XML string that can be
-    uploaded to MoM.
+    uploaded to a MoM project with name *project*.
     """
     return """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <mom2:project xmlns:lofar=\"http://www.astron.nl/MoM2-Lofar\"
     xmlns:mom2=\"http://www.astron.nl/MoM2\"
     xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.astron.nl/MoM2-Lofar http://lofar.astron.nl:8080/mom3/schemas/LofarMoM2.xsd http://www.astron.nl/MoM2 http://lofar.astron.nl:8080/mom3/schemas/MoM2.xsd \">
-    <name>LOFAROPS</name>
-    <description>LOFAROPS</description>
+    <name>"""+project+"""</name>
+    <description>"""+project+"""</description>
     <children>
       <item>"""+'      </item>\n      <item>'.join(map(str, observations))+"""
       </item>
