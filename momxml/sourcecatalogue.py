@@ -1,4 +1,4 @@
-from targetsource import SourceSpecificationError
+from targetsource import *
 from numpy import exp,pi
 
 
@@ -14,11 +14,15 @@ class SourceCatalogue:
             ]
         pass
 
+    def target_source_from_row(self, row):
+        return TargetSource(name=row[0][0],ra_hms=row[1], dec_sdms=row[2])
+
+
     def find_source(self, source_name):
         selection = filter(lambda row: source_name in row[0], self.source_table)
         if len(selection) != 1:
             raise SourceSpecificationError('"'+str(source_name)+'" is not one of the standard sources; choose one of:\n- '+ '\n- '.join([', '.join(map(lambda s: '"'+s+'"',r[0])) for r in self.source_table]))
-        return selection[0]
+        return self.target_source_from_row(selection[0])
 
     
     def closest_to_meridian(self, lst_rad):
@@ -35,6 +39,6 @@ class SourceCatalogue:
                 min_dist    = dist
                 pass
             pass
-        return best_source
+        return self.target_source_from_row(best_source)
 
 

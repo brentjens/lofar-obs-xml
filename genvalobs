@@ -82,9 +82,7 @@ def lookup_source(source_name=None):
     sources. Raise a SourceSpecificationError if the source is not
     found. Otherwise, return a TargetSource object.
     """
-    cat = SourceCatalogue()
-    source = cat.find_source(source_name)
-    return TargetSource(name=source[0][0], ra_hms=source[1], dec_sdms=source[2])
+    return SourceCatalogue().find_source(source_name)
 
 
 
@@ -191,8 +189,7 @@ def plan_observing_sequence(job_description):
     start_date    = ephem.Date(now + ephem.minute*10)
     target_source = job_description.target_source
     if target_source is None:
-        closest = SourceCatalogue().closest_to_meridian(lofar_current_sidereal_time() + ephem.second*len(schedule)*(job_description.duration_seconds +job_description.gap_seconds)*0.5)
-        target_source = TargetSource(name=closest[0][0], ra_hms=closest[1], dec_sdms=closest[2])
+        target_source = SourceCatalogue().closest_to_meridian(lofar_current_sidereal_time() + ephem.second*len(schedule)*(job_description.duration_seconds +job_description.gap_seconds)*0.5)
         pass
     stations      = get_station_list(job_description.station_set,
                                      job_description.include_list,
