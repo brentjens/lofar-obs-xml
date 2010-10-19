@@ -68,3 +68,8 @@ class TargetSource:
         else:
             return abs_deg
 
+    def __repr__(self):
+        return 'TargetSource(name='+repr(self.name)+', ra_hms='+repr(self.ra_hms)+', dec_sdms='+repr(self.dec_sdms)+')'
+
+    def __str__(self):
+        return repr(self)
