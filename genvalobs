@@ -183,7 +183,11 @@ def plan_observing_sequence(job_description):
                 ['HBA_ZERO'   , 'HBA_MID' , '64..311' , 160],
                 ['HBA_ONE'    , 'HBA_MID' , '64..311' , 160],
                 ['HBA_DUAL'   , 'HBA_MID' , '64..311' , 160],
-                ['HBA_JOINED' , 'HBA_MID' , '64..311' , 160]
+                ['HBA_JOINED' , 'HBA_MID' , '64..311' , 160],
+                ['HBA_ZERO'   , 'HBA_HIGH' , '52..255' , 200],
+                ['HBA_ONE'    , 'HBA_HIGH' , '52..255' , 200],
+                ['HBA_DUAL'   , 'HBA_HIGH' , '52..255' , 200],
+                ['HBA_JOINED' , 'HBA_HIGH' , '52..255' , 200]
                 ]
     now           = ephem.Observer().date
     start_date    = ephem.Date(now + ephem.minute*10)
