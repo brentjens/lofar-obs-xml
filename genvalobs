@@ -245,13 +245,7 @@ if __name__ == '__main__':
         print_version()
         print 'Current LST: '+str(lofar_current_sidereal_time())
         exit(main(sys.argv))
-    except (OSError, IOError) as e:
-        prerror(str(e))
+    except (OSError, IOError, GetoptError, SourceSpecificationError):
+        prerror(sys.exc_info()[1].args[0])
         print_short_help()
         exit(-1)
-    except (GetoptError, SourceSpecificationError) as e:
-        prerror(str(e))
-        print_short_help()
-        exit(-1)
-
-        
