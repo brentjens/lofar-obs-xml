@@ -51,6 +51,9 @@ contains spaces. The following sources are supported:
 - \"Her A\"  / her: LST 14:00--20:00
 - \"Cyg A\"  / cyg: LST 16:00--24:00
 
+If no source is specified, the program chooses the source that is
+closest to the meridian at transit.
+
 Options:
 -o / --output    Name of the output file. Default is
                  lofar-validation-yyyymmdd-hhmmss.xml
@@ -68,7 +71,10 @@ Options:
                  station set.
 
 -e / --exclude   Comma separated list of stations to exlude from
-                 station set.                 
+                 station set.
+                 
+-w / --wait      Number of seconds to wait before the first observation
+                 must begin. Default is 600 seconds.
 
 -h / --help      Display manual.
 
@@ -107,12 +113,13 @@ class JobDescription:
     >>> job = JobDescription(sys.argv, duration=200)
     """
     
-    def __init__(self, argv, output='schedule.log', duration_seconds=180, gap_seconds=180, target_source=None, print_help=False, station_set='nl',
+    def __init__(self, argv, output='schedule.log', wait_seconds=600, duration_seconds=180, gap_seconds=180, target_source=None, print_help=False, station_set='nl',
                  include_list=[], exclude_list=[]):
         """
         Set default values and call parse_commandline(argv)
         """
         self.output                = output
+        self.wait_seconds          = wait_seconds
         self.duration_seconds      = duration_seconds
         self.gap_seconds           = gap_seconds
         self.target_source         = target_source
@@ -130,17 +137,21 @@ class JobDescription:
         self. May raise a GetoptError in case of commandline parsing
         problems.
         """
-        options,args = getopt(argv[1:], 'o:d:i:e:s:g:h',
+        options,args = getopt(argv[1:], 'o:d:i:e:s:g:w:h',
                               ['output=',
                                'duration=',
                                'include=',
                                'exclude=',
                                'stations=',
                                'gap=',
+                               'wait=',
                                'help'])
         for (option, value) in options:
             if option in ['-o', '--output']:
                 self.output = value
+                
+            elif option in ['-w', '--wait']:
+                self.wait_seconds = int(value)
                 
             elif option in ['-d', '--duration']:
                 self.duration_seconds = int(value)
@@ -190,7 +201,7 @@ def plan_observing_sequence(job_description):
                 ['HBA_JOINED' , 'HBA_HIGH' , '52..255' , 200]
                 ]
     now           = ephem.Observer().date
-    start_date    = ephem.Date(now + ephem.minute*10)
+    start_date    = ephem.Date(now + ephem.second*self.wait_seconds)
     target_source = job_description.target_source
     if target_source is None:
         target_source = SourceCatalogue().closest_to_meridian(lofar_current_sidereal_time() + ephem.second*len(schedule)*(job_description.duration_seconds +job_description.gap_seconds)*0.5)
