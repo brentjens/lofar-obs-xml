@@ -201,7 +201,7 @@ def plan_observing_sequence(job_description):
                 ['HBA_JOINED' , 'HBA_HIGH' , '52..255' , 200]
                 ]
     now           = ephem.Observer().date
-    start_date    = ephem.Date(now + ephem.second*self.wait_seconds)
+    start_date    = ephem.Date(now + ephem.second*job_description.wait_seconds)
     target_source = job_description.target_source
     if target_source is None:
         target_source = SourceCatalogue().closest_to_meridian(lofar_current_sidereal_time() + ephem.second*len(schedule)*(job_description.duration_seconds +job_description.gap_seconds)*0.5)
