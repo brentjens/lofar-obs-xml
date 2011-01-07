@@ -109,7 +109,7 @@ class Observation:
               </stations>
               <startTime>"""+mom_timestamp(*self.start_date)+"""</startTime>
               <endTime>"""+mom_timestamp(*ephem.Date(ephem.Date(self.start_date)+ephem.second*(self.duration_seconds+0.0001)).tuple())+"""</endTime>
-              <duration>"""+str(self.duration_seconds)+"""</duration>
+              <duration>"""+mom_duration(seconds=self.duration_seconds)+"""</duration>
             </userSpecification>
             <systemSpecification>
               <correlatedData>true</correlatedData>
