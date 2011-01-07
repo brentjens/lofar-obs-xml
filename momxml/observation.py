@@ -5,7 +5,7 @@ import ephem
 
 
 class Observation:
-    def __init__(self, target_source, antenna_set, frequency_range, start_date, duration_seconds, station_list, clock_mhz, subband_spec):
+    def __init__(self, target_source, antenna_set, frequency_range, start_date, duration_seconds, station_list, clock_mhz, subband_spec, channels_per_subband=64):
         """
         *target_source*    : Instance of class TargetSource
         *antenna_set*      : One of 'LBA_INNER', 'LBA_OUTER', 'HBA_ZERO', 'HBA_ONE',
@@ -31,6 +31,7 @@ class Observation:
         self.station_list     = station_list
         self.clock_mhz        = int(clock_mhz)
         self.start_date       = start_date
+        self.channels_per_subband=channels_per_subband
         if type(subband_spec) == type(''):
             self.subband_spec     = subband_spec
         elif type(subband_spec) == type([]):
@@ -94,6 +95,7 @@ class Observation:
               <clock mode=\""""+str(self.clock_mhz)+""" MHz\"/>
               <instrumentFilter>"""+mom_frequency_range(self.frequency_range)+"""</instrumentFilter>
               <integrationInterval>1</integrationInterval>
+              <channelsPerSubband>"""+str(self.channels_per_subband)+"""</channelsPerSubband>
               <pencilBeams>
                 <flyseye>false</flyseye>
                 <pencilBeamList/>
