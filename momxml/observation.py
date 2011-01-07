@@ -7,22 +7,23 @@ import ephem
 class Observation:
     def __init__(self, target_source, antenna_set, frequency_range, start_date, duration_seconds, station_list, clock_mhz, subband_spec, channels_per_subband=64):
         """
-        *target_source*    : Instance of class TargetSource
-        *antenna_set*      : One of 'LBA_INNER', 'LBA_OUTER', 'HBA_ZERO', 'HBA_ONE',
-                             'HBA_DUAL', or 'HBA_JOINED'
-        *frequency_range*  : One of 'LBA_LOW' (10-90/70 MHz), 'LBA_HIGH' (30-90/70 MHz),
-                             'HBA_LOW' (110-190 MHz), 'HBA_MID' (170-230 MHz), or
-                             'HBA_HIGH' (210-250 MHz)
-        *start_date*       : UTC time of the beginning of the observation as a tuple
-                             with format (year, month, day, hour, minute, second)
-        *duration_seconds* : Observation duration in seconds
-        *station_list*     : List of stations, e.g. ['CS001', 'RS205', 'DE601']. An
-                             easy way to generate such a list is through the
-                             utilities.get_station_list() function.
-        *clock_mhz*        : An integer value of 200 or 160.
-        *subband_spec*     : Either a string with a MoM compatible subband specification,
-                             for example '77..324', or a list of integers, for example
-                             [77, 79, 81]
+        *target_source*        : Instance of class TargetSource                               
+        *antenna_set*          : One of 'LBA_INNER', 'LBA_OUTER', 'HBA_ZERO', 'HBA_ONE',      
+                                 'HBA_DUAL', or 'HBA_JOINED'                                  
+        *frequency_range*      : One of 'LBA_LOW' (10-90/70 MHz), 'LBA_HIGH' (30-90/70 MHz),  
+                                 'HBA_LOW' (110-190 MHz), 'HBA_MID' (170-230 MHz), or         
+                                 'HBA_HIGH' (210-250 MHz)                                     
+        *start_date*           : UTC time of the beginning of the observation as a tuple      
+                                 with format (year, month, day, hour, minute, second)         
+        *duration_seconds*     : Observation duration in seconds                              
+        *station_list*         : List of stations, e.g. ['CS001', 'RS205', 'DE601']. An       
+                                 easy way to generate such a list is through the              
+                                 utilities.get_station_list() function.                       
+        *clock_mhz*            : An integer value of 200 or 160.                              
+        *subband_spec*         : Either a string with a MoM compatible subband specification, 
+                                 for example '77..324', or a list of integers, for example    
+                                 [77, 79, 81]
+        *channels_per_subband* : Number of channels per subband. Default is 64
         """
         self.target_source    = target_source
         self.antenna_set       = antenna_set
