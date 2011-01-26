@@ -17,7 +17,7 @@ def print_version():
     """
     Print version info to standard output
     """
-    return sys.stdout.write('genvalobs version 0.4 (c) 2010 Michiel Brentjens <brentjens@astron.nl>\n')
+    return sys.stdout.write('genvalobs version 0.5 (c) 2010 Michiel Brentjens <brentjens@astron.nl>\n')
 
 
 def prerror(message):
@@ -74,7 +74,7 @@ Options:
                  station set.
                  
 -w / --wait      Number of seconds to wait before the first observation
-                 must begin. Default is 600 seconds.
+                 must begin. Default is 720 seconds.
 
 -h / --help      Display manual.
 
@@ -113,7 +113,7 @@ class JobDescription:
     >>> job = JobDescription(sys.argv, duration=200)
     """
     
-    def __init__(self, argv, output='schedule.log', wait_seconds=600, duration_seconds=180, gap_seconds=180, target_source=None, print_help=False, station_set='nl',
+    def __init__(self, argv, output='schedule.log', wait_seconds=720, duration_seconds=180, gap_seconds=180, target_source=None, print_help=False, station_set='nl',
                  include_list=[], exclude_list=[]):
         """
         Set default values and call parse_commandline(argv)
