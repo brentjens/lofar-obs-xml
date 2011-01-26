@@ -24,7 +24,7 @@ def get_station_list(station_set, include_list=[], exclude_list=[]):
     core     = ['CS001']+superterp+['CS017', 'CS021', 'CS024', 'CS026', 'CS030',
                                     'CS032', 'CS101', 'CS103', 'CS201', 'CS301',
                                     'CS302', 'CS401', 'CS501']
-    remote   = ['RS106', 'RS205', 'RS208', 'RS306', 'RS307', 'RS503']
+    remote   = ['RS106', 'RS205', 'RS208', 'RS306', 'RS307', 'RS406', 'RS503']
     nl       = core + remote
     europe   = ['DE601', 'DE602', 'DE603', 'DE604', 'UK608', 'FR606']
     all_stations = nl + europe

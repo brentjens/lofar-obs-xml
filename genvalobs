@@ -17,7 +17,7 @@ def print_version():
     """
     Print version info to standard output
     """
-    return sys.stdout.write('genvalobs version 0.1 (c) 2010 Michiel Brentjens <brentjens@astron.nl>\n')
+    return sys.stdout.write('genvalobs version 0.4 (c) 2010 Michiel Brentjens <brentjens@astron.nl>\n')
 
 
 def prerror(message):
