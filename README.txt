@@ -56,14 +56,29 @@ contains spaces. The following sources are supported:
 - "Her A"  / her: LST 14:00--20:00
 - "Cyg A"  / cyg: LST 16:00--24:00
 
+If no source is specified, the program chooses the source that is
+closest to the meridian at transit.
+
 Options:
--o / --output    Specify output directory. Default is the current
-                 directory.
+-o / --output    Name of the output file. Default is
+                 lofar-validation-yyyymmdd-hhmmss.xml
 
 -d / --duration  Duration of individual observations in
-                 seconds. Default is 300.
+                 seconds. Default is 180.
 
--i / --interval  Interval between observations in seconds. Default
-                 is 90.
+-g / --gap       Gap between observations in seconds. Default
+                 is 180.
+
+-s / --stations  Station set. One of: superterp, core, remote, nl,
+                 europe, all. Default is nl.
+
+-i / --include   Comma separated list of station names to add to
+                 station set.
+
+-e / --exclude   Comma separated list of stations to exlude from
+                 station set.
+                 
+-w / --wait      Number of seconds to wait before the first observation
+                 must begin. Default is 720 seconds.
 
 -h / --help      Display manual.
