@@ -17,7 +17,7 @@ def print_version():
     """
     Print version info to standard output
     """
-    return sys.stdout.write('genvalobs version 0.5 (c) 2010 Michiel Brentjens <brentjens@astron.nl>\n')
+    return sys.stdout.write('genvalobs version 0.6 (c) 2010 Michiel Brentjens <brentjens@astron.nl>\n')
 
 
 def prerror(message):
@@ -213,7 +213,7 @@ def plan_observing_sequence(job_description):
     previous_clock=200
     for antenna_set, frequency_range, subband_spec, clock_mhz in schedule:
         if previous_clock != clock_mhz: # If clock switches, allow for one minute extra
-            start_date = ephem.Date(start_date + ephem.minute)
+            start_date = ephem.Date(start_date + 2*ephem.minute)
             pass
         observations.append(Observation(
             target_source    = target_source,
