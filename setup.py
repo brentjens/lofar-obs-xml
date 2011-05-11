@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='genvalobs',
-      version='0.6',
+      version='0.7',
       description='Generate XML file with LOFAR system validation observations',
       author='Michiel Brentjens',
       author_email='brentjens@astron.nl',
