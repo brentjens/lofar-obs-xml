@@ -1,6 +1,7 @@
 from momformats   import *
 from targetsource import *
 from utilities    import *
+from math import ceil
 import ephem
 
 
@@ -64,6 +65,14 @@ class Observation:
     def __str__(self):
         obs_name=self.target_source.name+' '+self.antenna_set
         now=ephem.Observer().date
+
+        start_date=self.start_date
+        end_date=ephem.Date(ephem.Date(self.start_date) + ephem.second*(self.duration_seconds)).tuple()
+        rounded_start_date=start_date[:-1]+(int(round(start_date[-1])),)
+        rounded_end_date=end_date[:-1]+(int(round(end_date[-1])),)
+
+        print rounded_start_date
+        print rounded_end_date
         return """
         <lofar:observation>
           <name>"""+obs_name+"""</name>
@@ -108,8 +117,8 @@ class Observation:
               <stations>
                 """+'\n                '.join(['<station name=\"'+n+'\" />' for n in self.station_list])+"""
               </stations>
-              <startTime>"""+mom_timestamp(*self.start_date)+"""</startTime>
-              <endTime>"""+mom_timestamp(*ephem.Date(ephem.Date(self.start_date)+ephem.second*(self.duration_seconds+0.0001)).tuple())+"""</endTime>
+              <startTime>"""+mom_timestamp(*rounded_start_date)+"""</startTime>
+              <endTime>"""+mom_timestamp(*rounded_end_date)+"""</endTime>
               <duration>"""+mom_duration(seconds=self.duration_seconds)+"""</duration>
             </userSpecification>
             <systemSpecification>
