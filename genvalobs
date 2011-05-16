@@ -216,14 +216,16 @@ def plan_observing_sequence(job_description):
             start_date = ephem.Date(start_date + 2*ephem.minute)
             pass
         observations.append(Observation(
-            target_source    = target_source,
-            antenna_set      = antenna_set,
-            frequency_range  = frequency_range,
-            start_date       = start_date.tuple(),
-            duration_seconds = job_description.duration_seconds,
-            station_list     = stations,
-            clock_mhz        = clock_mhz,
-            subband_spec     = subband_spec))
+            antenna_set              = antenna_set,
+            frequency_range          = frequency_range,
+            start_date               = start_date.tuple(),
+            duration_seconds         = job_description.duration_seconds,
+            station_list             = stations,
+            clock_mhz                = clock_mhz,
+            integration_time_seconds = 1,
+            beam_list=[Beam(
+                target_source            = target_source,
+                subband_spec             = subband_spec)]))
         start_date = ephem.Date(start_date + ephem.second*job_description.duration_seconds + ephem.second*job_description.gap_seconds)
         previous_clock=clock_mhz
         pass

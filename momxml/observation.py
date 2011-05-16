@@ -2,44 +2,58 @@ from momformats   import *
 from targetsource import *
 from utilities    import *
 from math import ceil
+import copy
 import ephem
 
-
-class Observation:
-    def __init__(self, target_source, antenna_set, frequency_range, start_date, duration_seconds, station_list, clock_mhz, subband_spec, channels_per_subband=64):
+class Beam(object):
+    def __init__(self, target_source, subband_spec):
         """
         *target_source*        : Instance of class TargetSource                               
-        *antenna_set*          : One of 'LBA_INNER', 'LBA_OUTER', 'HBA_ZERO', 'HBA_ONE',      
-                                 'HBA_DUAL', or 'HBA_JOINED'                                  
-        *frequency_range*      : One of 'LBA_LOW' (10-90/70 MHz), 'LBA_HIGH' (30-90/70 MHz),  
-                                 'HBA_LOW' (110-190 MHz), 'HBA_MID' (170-230 MHz), or         
-                                 'HBA_HIGH' (210-250 MHz)                                     
-        *start_date*           : UTC time of the beginning of the observation as a tuple      
-                                 with format (year, month, day, hour, minute, second)         
-        *duration_seconds*     : Observation duration in seconds                              
-        *station_list*         : List of stations, e.g. ['CS001', 'RS205', 'DE601']. An       
-                                 easy way to generate such a list is through the              
-                                 utilities.get_station_list() function.                       
-        *clock_mhz*            : An integer value of 200 or 160.                              
         *subband_spec*         : Either a string with a MoM compatible subband specification, 
                                  for example '77..324', or a list of integers, for example    
                                  [77, 79, 81]
-        *channels_per_subband* : Number of channels per subband. Default is 64
         """
-        self.target_source    = target_source
-        self.antenna_set       = antenna_set
-        self.frequency_range  = frequency_range
-        self.duration_seconds = duration_seconds
-        self.station_list     = station_list
-        self.clock_mhz        = int(clock_mhz)
-        self.start_date       = start_date
-        self.channels_per_subband=channels_per_subband
+        self.target_source = target_source
+        self.subband_spec  = subband_spec
         if type(subband_spec) == type(''):
             self.subband_spec     = subband_spec
         elif type(subband_spec) == type([]):
             self.subband_spec = ','.join(map(str,subband_spec))
         else:
             raise ValueError('subband specification must be a string or a list of integers; you provided %s instead' % (str(subband_spec),))
+        pass
+    pass
+
+
+class Observation(object):
+    def __init__(self, antenna_set, frequency_range, start_date, duration_seconds, station_list, clock_mhz, beam_list, integration_time_seconds=2, channels_per_subband=64):
+        """
+        *antenna_set*            : One of 'LBA_INNER', 'LBA_OUTER', 'HBA_ZERO', 'HBA_ONE',
+                                  'HBA_DUAL', or 'HBA_JOINED'                                  
+        *frequency_range*        : One of 'LBA_LOW' (10-90/70 MHz), 'LBA_HIGH' (30-90/70 MHz),
+                                   'HBA_LOW' (110-190 MHz), 'HBA_MID' (170-230 MHz), or         
+                                   'HBA_HIGH' (210-250 MHz)     
+        *start_date*             : UTC time of the beginning of the observation as a tuple 
+                                   with format (year, month, day, hour, minute, second)
+        *duration_seconds*       : Observation duration in seconds                    
+        *station_list*           : List of stations, e.g. ['CS001', 'RS205', 'DE601']. An 
+                                   easy way to generate such a list is through the 
+                                   utilities.get_station_list() function.
+        *clock_mhz*              : An integer value of 200 or 160.
+        *beam_list*              : A list of Beam objects, which contain source/subband
+                                   specifications. Provide at least one beam.
+        *integration_time_seconds: Correlator integration time in seconds. Default is 2
+        *channels_per_subband*   : Number of channels per subband. Default is 64
+        """
+        self.antenna_set              = antenna_set
+        self.frequency_range          = frequency_range
+        self.duration_seconds         = duration_seconds
+        self.station_list             = station_list
+        self.clock_mhz                = int(clock_mhz)
+        self.start_date               = start_date
+        self.integration_time_seconds = int(round(integration_time_seconds))
+        self.channels_per_subband     = channels_per_subband
+        self.beam_list                = copy.deepcopy(beam_list)
         self.validate()
         pass
 
@@ -63,7 +77,7 @@ class Observation:
 
 
     def __str__(self):
-        obs_name=self.target_source.name+' '+self.antenna_set
+        obs_name=self.beam_list[0].target_source.name+' '+self.antenna_set
         now=ephem.Observer().date
 
         start_date=self.start_date
@@ -73,7 +87,7 @@ class Observation:
 
         print rounded_start_date
         print rounded_end_date
-        return """
+        observation_str="""
         <lofar:observation>
           <name>"""+obs_name+"""</name>
           <description>"""+obs_name+"""</description>
@@ -104,7 +118,7 @@ class Observation:
               <antenna>"""+mom_antenna_name_from_mac_name(self.antenna_set)+"""</antenna>
               <clock mode=\""""+str(self.clock_mhz)+""" MHz\"/>
               <instrumentFilter>"""+mom_frequency_range(self.frequency_range)+"""</instrumentFilter>
-              <integrationInterval>1</integrationInterval>
+              <integrationInterval>"""+str(self.integration_time_seconds)+"""</integrationInterval>
               <channelsPerSubband>"""+str(self.channels_per_subband)+"""</channelsPerSubband>
               <pencilBeams>
                 <flyseye>false</flyseye>
@@ -138,9 +152,13 @@ class Observation:
             </systemSpecification>
           </lofar:observationAttributes>
           <children>
-            <item index=\"0\">
+        """
+
+        for id,beam in enumerate(self.beam_list):
+            observation_str +="""
+            <item index=\""""+str(id)+"""\">
               <lofar:measurement xsi:type=\"lofar:UVMeasurementType\">
-                <name>"""+self.target_source.name+"""</name>
+                <name>"""+beam.target_source.name+"""</name>
                 <description>"""+obs_name+"""</description>
                 <statusHistory>
                   <item index=\"0\">
@@ -159,24 +177,26 @@ class Observation:
                 <lofar:uvMeasurementAttributes>
                   <measurementType>Target</measurementType>
                   <specification>
-                    <targetName>"""+self.target_source.name+"""</targetName>
-                    <ra>"""+repr(self.target_source.ra_deg())+"""</ra>
-                    <dec>"""+repr(self.target_source.dec_deg())+"""</dec>
+                    <targetName>"""+beam.target_source.name+"""</targetName>
+                    <ra>"""+repr(beam.target_source.ra_deg())+"""</ra>
+                    <dec>"""+repr(beam.target_source.dec_deg())+"""</dec>
                     <equinox>J2000</equinox>
                     <duration>"""+mom_duration(seconds=self.duration_seconds)+"""</duration>
                     <subbandsSpecification>
                       <bandWidth unit=\"MHz\">48.4375</bandWidth>
                       <centralFrequency unit=\"MHz\">139.21875</centralFrequency>
-                      <contiguous>true</contiguous>
-                      <subbands>"""+self.subband_spec+"""</subbands>
+                      <contiguous>false</contiguous>
+                      <subbands>"""+beam.subband_spec+"""</subbands>
                     </subbandsSpecification>
                   </specification>
                 </lofar:uvMeasurementAttributes>
               </lofar:measurement>
-            </item>
+            </item>"""
+        observation_str+="""
           </children>
         </lofar:observation>
 """
+        return observation_str
 
 
 
