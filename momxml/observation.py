@@ -85,8 +85,6 @@ class Observation(object):
         rounded_start_date=start_date[:-1]+(int(round(start_date[-1])),)
         rounded_end_date=end_date[:-1]+(int(round(end_date[-1])),)
 
-        print rounded_start_date
-        print rounded_end_date
         observation_str="""
         <lofar:observation>
           <name>"""+obs_name+"""</name>
