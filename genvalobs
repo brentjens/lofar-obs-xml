@@ -151,14 +151,26 @@ class JobDescription:
                 self.output = value
                 
             elif option in ['-w', '--wait']:
-                self.wait_seconds = int(value)
+                try:
+                    self.wait_seconds = int(value)
+                except (ValueError,):
+                    raise GetoptError('Wait time must be an integer in seconds.\nYou specified: "%s"' % (value,))
+
                 
             elif option in ['-d', '--duration']:
-                self.duration_seconds = int(value)
-                
+                try:
+                    self.duration_seconds = int(value)
+                except (ValueError,):
+                    raise GetoptError('Duration must be an integer in seconds.\nYou specified: "%s"' % (value,))
+
+
             elif option in ['-g', '--gap']:
-                self.gap_seconds = int(value)
-                
+                try:
+                    self.gap_seconds = int(value)
+                except (ValueError,):
+                    raise GetoptError('Gap must be an integer in seconds.\nYou specified: "%s"' % (value,))
+
+
             elif  option in ['-s', '--stations']:
                 self.station_set = value
                 
@@ -258,7 +270,7 @@ if __name__ == '__main__':
         print_version()
         print 'Current LST: '+str(lofar_current_sidereal_time())
         exit(main(sys.argv))
-    except (OSError, IOError, GetoptError, SourceSpecificationError):
+    except (OSError, IOError, GetoptError, SourceSpecificationError, InvalidStationSetError):
         prerror(sys.exc_info()[1].args[0])
         print_short_help()
         exit(-1)

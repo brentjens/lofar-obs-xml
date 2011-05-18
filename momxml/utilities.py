@@ -1,5 +1,9 @@
 import ephem
 from math import pi
+import sys
+
+class InvalidStationSetError(ValueError):
+    pass
 
 def unique(sequence):
     return list(set(sequence))
@@ -35,7 +39,10 @@ def get_station_list(station_set, include_list=[], exclude_list=[]):
                     'nl'       : nl,
                     'europe'   : europe,
                     'all'      : all_stations}
-    superset= unique(lookup_table[station_set] + include_list)
+    try:
+        superset= unique(lookup_table[station_set] + include_list)
+    except (KeyError,):
+        raise InvalidStationSetError('"'+sys.exc_info()[1].args[0]+'" is not a valid station set.')
     return sorted([s for s in superset if s not in exclude_list])
 
 
