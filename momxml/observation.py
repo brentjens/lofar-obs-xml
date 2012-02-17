@@ -26,7 +26,7 @@ class Beam(object):
 
 
 class Observation(object):
-    def __init__(self, antenna_set, frequency_range, start_date, duration_seconds, station_list, clock_mhz, beam_list, integration_time_seconds=2, channels_per_subband=64):
+    def __init__(self, antenna_set, frequency_range, start_date, duration_seconds, stations, clock_mhz, beam_list, integration_time_seconds=2, channels_per_subband=64):
         """
         *antenna_set*            : One of 'LBA_INNER', 'LBA_OUTER', 'HBA_ZERO', 'HBA_ONE',
                                   'HBA_DUAL', or 'HBA_JOINED'                                  
@@ -36,9 +36,9 @@ class Observation(object):
         *start_date*             : UTC time of the beginning of the observation as a tuple 
                                    with format (year, month, day, hour, minute, second)
         *duration_seconds*       : Observation duration in seconds                    
-        *station_list*           : List of stations, e.g. ['CS001', 'RS205', 'DE601']. An 
+        *stations*               : List of stations, e.g. ['CS001', 'RS205', 'DE601']. An 
                                    easy way to generate such a list is through the 
-                                   utilities.get_station_list() function.
+                                   utilities.station_list() function.
         *clock_mhz*              : An integer value of 200 or 160.
         *beam_list*              : A list of Beam objects, which contain source/subband
                                    specifications. Provide at least one beam.
@@ -48,7 +48,7 @@ class Observation(object):
         self.antenna_set              = antenna_set
         self.frequency_range          = frequency_range
         self.duration_seconds         = duration_seconds
-        self.station_list             = station_list
+        self.stations                 = stations
         self.clock_mhz                = int(clock_mhz)
         self.start_date               = start_date
         self.integration_time_seconds = int(round(integration_time_seconds))
@@ -133,7 +133,7 @@ class Observation(object):
               </stokes>
               <stationSet>Custom</stationSet>
               <stations>
-                """+'\n                '.join(['<station name=\"'+n+'\" />' for n in self.station_list])+"""
+                """+'\n                '.join(['<station name=\"'+n+'\" />' for n in self.stations])+"""
               </stations>
               <startTime>"""+mom_timestamp(*rounded_start_date)+"""</startTime>
               <endTime>"""+mom_timestamp(*rounded_end_date)+"""</endTime>

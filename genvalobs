@@ -218,9 +218,9 @@ def plan_observing_sequence(job_description):
     if target_source is None:
         target_source = SourceCatalogue().closest_to_meridian(lofar_current_sidereal_time() + ephem.second*len(schedule)*(job_description.duration_seconds +job_description.gap_seconds)*0.5)
         pass
-    stations      = get_station_list(job_description.station_set,
-                                     job_description.include_list,
-                                     job_description.exclude_list)
+    stations      = station_list(job_description.station_set,
+                                 include = job_description.include_list,
+                                 exclude = job_description.exclude_list)
     observations  = []
     previous_clock=200
     for antenna_set, frequency_range, subband_spec, clock_mhz in schedule:
@@ -232,7 +232,7 @@ def plan_observing_sequence(job_description):
             frequency_range          = frequency_range,
             start_date               = start_date.tuple(),
             duration_seconds         = job_description.duration_seconds,
-            station_list             = stations,
+            stations                 = stations,
             clock_mhz                = clock_mhz,
             integration_time_seconds = 1,
             beam_list=[Beam(
