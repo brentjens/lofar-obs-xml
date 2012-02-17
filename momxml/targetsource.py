@@ -1,27 +1,59 @@
-class SourceSpecificationError (StandardError):
-    pass
+class SourceSpecificationError (ValueError):
+    r'''
+    Raised in case of badly specified TargetSource.
+    '''
 
 
 class TargetSource:
-    def __init__(self, name='', ra_hms=(0,0,0), dec_sdms=('+',0,0,0), ra_deg=None, dec_deg=None):
-        """
-        *name*     : string containing the name of the source
-        
-        *ra_hms*   : J2000 right ascension as a sequence of at most
-                     three numbers (hours, minutes, seconds)
+    r'''
+    A target source to be used when specifying a Beam within an
+    Observation. Specify either ra_hms or ra_deg, never both. Same for
+    dec_sdms or dec_deg.
 
-        *dec_sdms* : J2000 declination as a sequence of at most four
-                     elements (sign, degrees, minutes, seconds). The
-                     sign one of the single element strings '+' or
-                     '-'.
-        """
-        self.name     = name
-        self.ra_hms   = ra_hms
+    **Parameters**
+
+    name : string
+        Contains the name of the source.
+
+    ra_hms : None or tuple of numbers
+        J2000 right ascension as a sequence of at most three numbers
+        (hours, minutes, seconds)
+
+    dec_sdms : None or tuple
+        J2000 declination as a sequence of at most four elements
+        (sign, degrees, minutes, seconds). The sign is one of the
+        single element strings '+' or '-'.
+
+    ra_deg : None or number
+        J2000 ra in degrees.
+
+    dec_deg : None or number
+        J2000 declination in degrees.
+
+    **Raises**
+
+    SourceSpecificationError
+        In case of badly specified TargetSource.
+
+    **Examples**
+
+    >>> TargetSource('Cyg A', ra_hms = (19, 59, 28.3565), dec_sdms = ('+', 40, 44, 2.099) )
+    TargetSource(name     = 'Cyg A',
+                 ra_hms   = (19, 59, 28.3565),
+                 dec_sdms = ('+', 40, 44, 2.099),
+                 ra_deg   = None,
+                 dec_deg  = None)
+
+    '''
+    
+    def __init__(self, name = '', ra_hms = (0,0,0), dec_sdms = ('+',0,0,0),
+                 ra_deg = None, dec_deg = None):
+        self.name         = name
+        self.ra_hms       = ra_hms
         self.ra_deg_val   = ra_deg
-        self.dec_sdms = dec_sdms
+        self.dec_sdms     = dec_sdms
         self.dec_deg_val  = dec_deg
         self.validate_and_normalize()
-        pass
 
 
     def validate_and_normalize(self):
@@ -64,9 +96,9 @@ class TargetSource:
 
 
     def dec_deg(self):
-        """
+        r'''
         Return declination in degrees
-        """
+        '''
         if self.dec_deg_val is None:
             abs_deg = (self.dec_sdms[1]+self.dec_sdms[2]/60.0 +self.dec_sdms[3]/3600.0)
             if self.dec_sdms[0] == '-':
@@ -75,10 +107,16 @@ class TargetSource:
                 return abs_deg
         else:
             return self.dec_deg_val
-        
+
 
     def __repr__(self):
-        return 'TargetSource(name='+repr(self.name)+', ra_hms='+repr(self.ra_hms)+', dec_sdms='+repr(self.dec_sdms)+')'
-
+        return '''TargetSource(name     = %r,
+             ra_hms   = %r,
+             dec_sdms = %r,
+             ra_deg   = %r,
+             dec_deg  = %r)''' % (self.name,
+                                  self.ra_hms, self.dec_sdms,
+                                  self.ra_deg_val, self.dec_deg_val)
+        
     def __str__(self):
         return repr(self)
