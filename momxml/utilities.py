@@ -25,7 +25,8 @@ def lofar_current_sidereal_time():
 
 def get_station_list(station_set, include_list=[], exclude_list=[]):
     superterp= ['CS002', 'CS003', 'CS004', 'CS005', 'CS006', 'CS007']
-    core     = ['CS001']+superterp+['CS017', 'CS021', 'CS024', 'CS026', 'CS030',
+    core     = ['CS001']+superterp+['CS011', 'CS013', 'CS017', 'CS021', 'CS024',
+                                    'CS026', 'CS028', 'CS030', 'CS031',
                                     'CS032', 'CS101', 'CS103', 'CS201', 'CS301',
                                     'CS302', 'CS401', 'CS501']
     remote   = ['RS106', 'RS205', 'RS208', 'RS306', 'RS307', 'RS406', 'RS503', 'RS508', 'RS509']

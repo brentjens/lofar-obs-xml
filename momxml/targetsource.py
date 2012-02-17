@@ -3,7 +3,7 @@ class SourceSpecificationError (StandardError):
 
 
 class TargetSource:
-    def __init__(self, name='', ra_hms=(0,0,0), dec_sdms=('+',0,0,0)):
+    def __init__(self, name='', ra_hms=(0,0,0), dec_sdms=('+',0,0,0), ra_deg=None, dec_deg=None):
         """
         *name*     : string containing the name of the source
         
@@ -17,7 +17,9 @@ class TargetSource:
         """
         self.name     = name
         self.ra_hms   = ra_hms
+        self.ra_deg_val   = ra_deg
         self.dec_sdms = dec_sdms
+        self.dec_deg_val  = dec_deg
         self.validate_and_normalize()
         pass
 
@@ -55,18 +57,25 @@ class TargetSource:
         """
         Return right ascension in degrees
         """
-        return (self.ra_hms[0]+self.ra_hms[1]/60.0 +self.ra_hms[2]/3600.0)*180/12.0
+        if self.ra_deg_val is None:
+            return (self.ra_hms[0]+self.ra_hms[1]/60.0 +self.ra_hms[2]/3600.0)*180/12.0
+        else:
+            return self.ra_deg_val
 
 
     def dec_deg(self):
         """
         Return declination in degrees
         """
-        abs_deg = (self.dec_sdms[1]+self.dec_sdms[2]/60.0 +self.dec_sdms[3]/3600.0)
-        if self.dec_sdms[0] == '-':
-            return -abs_deg
+        if self.dec_deg_val is None:
+            abs_deg = (self.dec_sdms[1]+self.dec_sdms[2]/60.0 +self.dec_sdms[3]/3600.0)
+            if self.dec_sdms[0] == '-':
+                return -abs_deg
+            else:
+                return abs_deg
         else:
-            return abs_deg
+            return self.dec_deg_val
+        
 
     def __repr__(self):
         return 'TargetSource(name='+repr(self.name)+', ra_hms='+repr(self.ra_hms)+', dec_sdms='+repr(self.dec_sdms)+')'

@@ -118,10 +118,16 @@ class Observation(object):
               <instrumentFilter>"""+mom_frequency_range(self.frequency_range)+"""</instrumentFilter>
               <integrationInterval>"""+str(self.integration_time_seconds)+"""</integrationInterval>
               <channelsPerSubband>"""+str(self.channels_per_subband)+"""</channelsPerSubband>
+              <coherentDedisperseChannels>false</coherentDedisperseChannels>
               <pencilBeams>
                 <flyseye>false</flyseye>
                 <pencilBeamList/>
               </pencilBeams>
+              <tiedArrayBeams>
+                  <flyseye>false</flyseye>
+                  <tiedArrayBeamList/>
+              </tiedArrayBeams>
+
               <stokes>
                 <integrateChannels>false</integrateChannels>
               </stokes>
@@ -132,6 +138,8 @@ class Observation(object):
               <startTime>"""+mom_timestamp(*rounded_start_date)+"""</startTime>
               <endTime>"""+mom_timestamp(*rounded_end_date)+"""</endTime>
               <duration>"""+mom_duration(seconds=self.duration_seconds)+"""</duration>
+              <bypassPff>false</bypassPff>
+              <enableSuperterp>false</enableSuperterp>
             </userSpecification>
             <systemSpecification>
               <correlatedData>true</correlatedData>
@@ -143,10 +151,16 @@ class Observation(object):
                 <flyseye>false</flyseye>
                 <pencilBeamList/>
               </pencilBeams>
+              <tiedArrayBeams>
+                  <flyseye>false</flyseye>
+                  <tiedArrayBeamList/>
+              </tiedArrayBeams>
               <stokes>
                 <integrateChannels>false</integrateChannels>
               </stokes>
               <stations/>
+              <bypassPff>false</bypassPff>
+              <enableSuperterp>false</enableSuperterp>
             </systemSpecification>
           </lofar:observationAttributes>
           <children>
@@ -186,6 +200,10 @@ class Observation(object):
                       <contiguous>false</contiguous>
                       <subbands>"""+beam.subband_spec+"""</subbands>
                     </subbandsSpecification>
+                    <tiedArrayBeams>
+                        <flyseye>false</flyseye>
+                        <tiedArrayBeamList/>
+                    </tiedArrayBeams>
                   </specification>
                 </lofar:uvMeasurementAttributes>
               </lofar:measurement>
@@ -200,7 +218,7 @@ class Observation(object):
 
 
 
-def as_xml_mom_project(observations, project='LOFAROPS'):
+def as_xml_mom_project(observations, project='2012LOFAROBS'):
     """
     Format a list of *observations* as an XML string that can be
     uploaded to a MoM project with name *project*.
