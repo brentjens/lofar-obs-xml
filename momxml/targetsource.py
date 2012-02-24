@@ -46,7 +46,7 @@ class TargetSource:
 
     '''
     
-    def __init__(self, name = '', ra_hms = (0,0,0), dec_sdms = ('+',0,0,0),
+    def __init__(self, name = '', ra_hms = None, dec_sdms = None,
                  ra_deg = None, dec_deg = None):
         self.name         = name
         self.ra_hms       = ra_hms
@@ -64,12 +64,16 @@ class TargetSource:
         and dec_sdms with zeroes until their lengths are 3 and 4, respectively.
         """
         if type(self.name) == type(u''):
-            raise SourceSpecificationError('Source name may not be a unicode string.')
+            raise SourceSpecificationError(
+                'Source name may not be a unicode string.')
         if type(self.name) != type(''):
-            raise SourceSpecificationError('Source name must be a string. You specified %s' % (str(self.name),))
+            raise SourceSpecificationError(
+                'Source name must be a string. You specified %s' % 
+                (str(self.name),))
         
         if len(self.ra_hms) > 3:
-            raise SourceSpecificationError('ra_hms must be specified as a sequence of at most three elements (hours, minutes, seconds), instead, you specified '+str(self.ra_hms))
+            raise SourceSpecificationError(
+                'ra_hms must be a sequence of at most three elements (hours, minutes, seconds), instead, you specified '+str(self.ra_hms))
 
         self.ra_hms = tuple(self.ra_hms) +(0,)*(3-len(self.ra_hms))
         
