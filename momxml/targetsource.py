@@ -1,3 +1,9 @@
+r'''
+Specification of target sources to use in Observation Beams.
+'''
+
+from momxml.angles import Angle
+
 class SourceSpecificationError (ValueError):
     r'''
     Raised in case of badly specified TargetSource.
@@ -7,28 +13,18 @@ class SourceSpecificationError (ValueError):
 class TargetSource:
     r'''
     A target source to be used when specifying a Beam within an
-    Observation. Specify either ra_hms or ra_deg, never both. Same for
-    dec_sdms or dec_deg.
+    Observation.
 
     **Parameters**
 
-    name : string
+    name : non-unicode string
         Contains the name of the source.
 
-    ra_hms : None or tuple of numbers
-        J2000 right ascension as a sequence of at most three numbers
-        (hours, minutes, seconds)
+    ra_angle : None or an Angle
+        J2000 right ascension.
 
-    dec_sdms : None or tuple
-        J2000 declination as a sequence of at most four elements
-        (sign, degrees, minutes, seconds). The sign is one of the
-        single element strings '+' or '-'.
-
-    ra_deg : None or number
-        J2000 ra in degrees.
-
-    dec_deg : None or number
-        J2000 declination in degrees.
+    dec_angle : None or an Angle
+        J2000 declination.
 
     **Raises**
 
@@ -37,32 +33,56 @@ class TargetSource:
 
     **Examples**
 
-    >>> TargetSource('Cyg A', ra_hms = (19, 59, 28.3565), dec_sdms = ('+', 40, 44, 2.099) )
-    TargetSource(name     = 'Cyg A',
-                 ra_hms   = (19, 59, 28.3565),
-                 dec_sdms = ('+', 40, 44, 2.099),
-                 ra_deg   = None,
-                 dec_deg  = None)
+    >>> TargetSource('Cyg A', ra_angle = Angle(shms = ('+', 19, 59, 28.3565)), dec_angle = Angle(sdms = ('+', 40, 44, 2.099)) )
+    TargetSource(name      = 'Cyg A',
+                 ra_angle  = Angle(shms = ('+', 19, 59, 28.3565)),
+                 dec_angle = Angle(sdms = ('+', 40, 44, 2.099)))
+
 
     '''
     
-    def __init__(self, name = '', ra_hms = None, dec_sdms = None,
-                 ra_deg = None, dec_deg = None):
-        self.name         = name
-        self.ra_hms       = ra_hms
-        self.ra_deg_val   = ra_deg
-        self.dec_sdms     = dec_sdms
-        self.dec_deg_val  = dec_deg
+    def __init__(self, name = '', ra_angle = None, dec_angle = None):
+        self.name      = name
+        self.ra_angle  = ra_angle
+        self.dec_angle = dec_angle
         self.validate_and_normalize()
 
 
     def validate_and_normalize(self):
-        """
-        Validates type and contents of data members. Raises a
-        SourceSpecificationError in case of problems.  If all is well,
-        it returns a reference to self. If necessary, it pads ra_hms
-        and dec_sdms with zeroes until their lengths are 3 and 4, respectively.
-        """
+        r'''
+        Validates type and contents of data members. This method is
+        called by the constructor.
+
+        **Returns**
+
+        A reference to ``self``.
+
+        **Raises**
+
+        SourceSpecificationError
+            In case of a badly specified target source.
+
+        **Examples**
+
+        >>> TargetSource('Cyg A', ra_angle = Angle(shms = ('+', 19, 59, 28.3565)), dec_angle = Angle(sdms = ('+', 40, 44, 2.099)) )
+        TargetSource(name      = 'Cyg A',
+                     ra_angle  = Angle(shms = ('+', 19, 59, 28.3565)),
+                     dec_angle = Angle(sdms = ('+', 40, 44, 2.099)))
+        >>> TargetSource(u'Cyg A', ra_angle = Angle(shms = ('+', 19, 59, 28.3565)), dec_angle = Angle(sdms = ('+', 40, 44, 2.099)) )
+        Traceback (most recent call last):
+        ...
+        SourceSpecificationError: Source name may not be a unicode string.
+        >>> TargetSource('Cyg A', ra_angle = 3.0, dec_angle = Angle(sdms = ('+', 40, 44, 2.099)) )
+        Traceback (most recent call last):
+        ...
+        SourceSpecificationError: ra_angle must be a momxml.Angle, not 3.0
+
+        >>> TargetSource('Cyg A', ra_angle = Angle(shms = ('+', 19, 59, 28.3565)), dec_angle = -2)
+        Traceback (most recent call last):
+        ...
+        SourceSpecificationError: dec_angle must be a momxml.Angle, not -2
+
+        '''
         if type(self.name) == type(u''):
             raise SourceSpecificationError(
                 'Source name may not be a unicode string.')
@@ -70,57 +90,58 @@ class TargetSource:
             raise SourceSpecificationError(
                 'Source name must be a string. You specified %s' % 
                 (str(self.name),))
-        
-        if len(self.ra_hms) > 3:
+        if self.ra_angle.__class__.__name__ != 'Angle':
             raise SourceSpecificationError(
-                'ra_hms must be a sequence of at most three elements (hours, minutes, seconds), instead, you specified '+str(self.ra_hms))
+                'ra_angle must be a momxml.Angle, not %r' % self.ra_angle)
 
-        self.ra_hms = tuple(self.ra_hms) +(0,)*(3-len(self.ra_hms))
-        
-        
-        if len(self.dec_sdms) > 4 or len(self.dec_sdms) == 0:
-            raise SourceSpecificationError('dec_sdms must be specified as a sequence of at least one and at most four elements (sign +/-, degrees, minutes, seconds), instead, you specified '+str(self.dec_sdms))
-        
-        if not self.dec_sdms[0] in ['+', '-']:
-            raise SourceSpecificationError('The first element of dec_sdms must be either a ''+'' or a ''-'', instead it is \''+str(self.dec_sdms[0])+'\'.')
+        if self.dec_angle.__class__.__name__ != 'Angle':
+            raise SourceSpecificationError(
+                'dec_angle must be a momxml.Angle, not %r' % self.dec_angle)
 
-        self.dec_sdms = tuple(self.dec_sdms) +(0,)*(4-len(self.dec_sdms))
         return self
 
 
 
     def ra_deg(self):
-        """
+        r'''
         Return right ascension in degrees
-        """
-        if self.ra_deg_val is None:
-            return (self.ra_hms[0]+self.ra_hms[1]/60.0 +self.ra_hms[2]/3600.0)*180/12.0
-        else:
-            return self.ra_deg_val
+
+        **Returns**
+
+        A float.
+
+        **Examples**
+
+        >>> TargetSource('Cyg A', ra_angle = Angle(deg = 299.868152), dec_angle = Angle(deg = 40.733916) ).ra_deg()
+        299.868152
+
+        '''
+        return self.ra_angle.as_deg()
 
 
     def dec_deg(self):
         r'''
         Return declination in degrees
+
+        **Returns**
+
+        A float.
+
+        **Examples**
+
+        >>> TargetSource('Cyg A', ra_angle = Angle(deg = 299.868152), dec_angle = Angle(deg = 40.733916) ).dec_deg()
+        40.733916
+
         '''
-        if self.dec_deg_val is None:
-            abs_deg = (self.dec_sdms[1]+self.dec_sdms[2]/60.0 +self.dec_sdms[3]/3600.0)
-            if self.dec_sdms[0] == '-':
-                return -abs_deg
-            else:
-                return abs_deg
-        else:
-            return self.dec_deg_val
+        return self.dec_angle.as_deg()
 
-
+    
     def __repr__(self):
-        return '''TargetSource(name     = %r,
-             ra_hms   = %r,
-             dec_sdms = %r,
-             ra_deg   = %r,
-             dec_deg  = %r)''' % (self.name,
-                                  self.ra_hms, self.dec_sdms,
-                                  self.ra_deg_val, self.dec_deg_val)
-        
-    def __str__(self):
-        return repr(self)
+        return ('''TargetSource(name      = %r,
+             ra_angle  = Angle(shms = %r),
+             dec_angle = Angle(sdms = %r))''' % 
+             (self.name,
+              self.ra_angle.as_shms()[0:3]  + 
+              (float('%7.4f' % self.ra_angle.as_shms()[-1]),),
+              self.dec_angle.as_sdms()[0:3] + 
+              (float('%7.4f' % self.dec_angle.as_sdms()[-1]),)))

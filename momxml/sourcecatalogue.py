@@ -15,7 +15,9 @@ class SourceCatalogue:
         pass
 
     def target_source_from_row(self, row):
-        return TargetSource(name=row[0][0],ra_hms=row[1], dec_sdms=row[2])
+        return TargetSource(name      = row[0][0],
+                            ra_angle  = Angle(shms = ('+',)+row[1]),
+                            dec_angle = Angle(sdms = row[2]))
 
 
     def find_source(self, source_name):

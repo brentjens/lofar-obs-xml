@@ -82,8 +82,9 @@ class Observation(object):
 
         start_date=self.start_date
         end_date=ephem.Date(ephem.Date(self.start_date) + ephem.second*(self.duration_seconds)).tuple()
-        rounded_start_date=start_date[:-1]+(int(round(start_date[-1])),)
-        rounded_end_date=end_date[:-1]+(int(round(end_date[-1])),)
+        rounded_start_date = start_date[:-1]+(int(round(start_date[-1])),)
+        rounded_end_date   = end_date[:-1]+(int(round(end_date[-1])),)
+        now = now.tuple()[:-1] + (int(round(now.tuple()[-1])),)
 
         observation_str="""
         <lofar:observation>
@@ -95,7 +96,7 @@ class Observation(object):
                 <name>Brentjens,  Michiel</name>
                 <roles>Friend</roles>
                 <user id=\"791\"/>
-                <timeStamp>"""+mom_timestamp(*now.tuple())+"""</timeStamp>
+                <timeStamp>"""+mom_timestamp(*now)+"""</timeStamp>
                 <mom2:openedStatus/>
               </mom2ObjectStatus>
             </item>
@@ -137,7 +138,7 @@ class Observation(object):
               </stations>
               <startTime>"""+mom_timestamp(*rounded_start_date)+"""</startTime>
               <endTime>"""+mom_timestamp(*rounded_end_date)+"""</endTime>
-              <duration>"""+mom_duration(seconds=self.duration_seconds)+"""</duration>
+              <duration>"""+mom_duration(seconds = self.duration_seconds)+"""</duration>
               <bypassPff>false</bypassPff>
               <enableSuperterp>false</enableSuperterp>
             </userSpecification>
@@ -178,7 +179,7 @@ class Observation(object):
                       <name>Brentjens,  Michiel</name>
                       <roles>Friend</roles>
                       <user id=\"791\"/>
-                      <timeStamp>"""+mom_timestamp(*now.tuple())+"""</timeStamp>
+                      <timeStamp>"""+mom_timestamp(*now)+"""</timeStamp>
                       <mom2:openedStatus/>
                     </mom2ObjectStatus>
                   </item>
