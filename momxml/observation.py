@@ -81,7 +81,7 @@ class Observation(object):
 
 
 
-    def __str__(self):
+    def xml(self, project_name):
         obs_name=self.beam_list[0].target_source.name+' '+self.antenna_set
         now=ephem.Observer().date
 
@@ -111,7 +111,7 @@ class Observation(object):
           </currentStatus>
           <lofar:observationAttributes>
             <name>"""+obs_name+"""</name>
-            <projectName>LOFAROPS</projectName>
+            <projectName>"""+project_name+"""</projectName>
             <instrument>Interferometer</instrument>
             <userSpecification>
               <correlatedData>true</correlatedData>
@@ -236,7 +236,7 @@ def as_xml_mom_project(observations, project='2012LOFAROBS'):
     <name>"""+project+"""</name>
     <description>"""+project+"""</description>
     <children>
-      <item>"""+'      </item>\n      <item>'.join(map(str, observations))+"""
+      <item>"""+'      </item>\n      <item>'.join([obs.xml(project) for obs in observations])+"""
       </item>
     </children>
 </mom2:project>
