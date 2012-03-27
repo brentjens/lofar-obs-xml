@@ -6,23 +6,28 @@ import copy
 import ephem
 
 class Beam(object):
-    def __init__(self, target_source, subband_spec):
+    def __init__(self, target_source, subband_spec, measurement_type = 'Target'):
         """
         *target_source*        : Instance of class TargetSource                               
         *subband_spec*         : Either a string with a MoM compatible subband specification, 
                                  for example '77..324', or a list of integers, for example    
                                  [77, 79, 81]
+        *measurement_type*     : 'Target' or 'Calibration'
         """
         self.target_source = target_source
         self.subband_spec  = subband_spec
+        self.measurement_type = measurement_type
+        
         if type(subband_spec) == type(''):
             self.subband_spec     = subband_spec
         elif type(subband_spec) == type([]):
             self.subband_spec = ','.join(map(str,subband_spec))
         else:
             raise ValueError('subband specification must be a string or a list of integers; you provided %s instead' % (str(subband_spec),))
-        pass
-    pass
+
+        if measurement_type not in ['Target', 'Calibration']:
+            raise ValueError('measurement_type %r not in [\'Target\', \'Calibration\']' % measurement_type)
+
 
 
 class Observation(object):
@@ -188,7 +193,7 @@ class Observation(object):
                   <mom2:openedStatus/>
                 </currentStatus>
                 <lofar:uvMeasurementAttributes>
-                  <measurementType>Target</measurementType>
+                  <measurementType>"""+beam.measurement_type+"""</measurementType>
                   <specification>
                     <targetName>"""+beam.target_source.name+"""</targetName>
                     <ra>"""+repr(beam.target_source.ra_deg())+"""</ra>
