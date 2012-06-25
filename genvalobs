@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-import os,sys
+import os, sys
 from getopt import gnu_getopt as getopt
 from getopt import GetoptError
 import ephem
@@ -64,6 +64,9 @@ Options:
 -g / --gap       Gap between observations in seconds. Default
                  is 60.
 
+-c / --clocks    Comma separated list of allowed clock frequencies
+                 in MHz. Default is 200. Other example: -c 160,200.
+
 -s / --stations  Station set. One of: superterp, core, remote, nl,
                  europe, all. Default is nl.
 
@@ -72,7 +75,7 @@ Options:
 
 -e / --exclude   Comma separated list of stations to exlude from
                  station set.
-                 
+
 -w / --wait      Number of seconds to wait before the first observation
                  must begin. Default is 540 seconds.
 
@@ -109,12 +112,14 @@ class JobDescription:
     parsing. Its data members are the program settings. One can
     specify default values when the object is constructed. Example
     usage:
-    
+
     >>> job = JobDescription(sys.argv, duration=200)
     """
-    
-    def __init__(self, argv, output='schedule.log', wait_seconds=540, duration_seconds=120, gap_seconds=60, target_source=None, print_help=False, station_set='nl',
-                 include_list=[], exclude_list=[]):
+
+    def __init__(self, argv, output = 'schedule.log', wait_seconds = 540,
+                 duration_seconds = 120, gap_seconds=60, target_source = None,
+                 allowed_clocks_mhz = [200], print_help = False,
+                 station_set = 'nl', include_list = [], exclude_list = []):
         """
         Set default values and call parse_commandline(argv)
         """
@@ -123,13 +128,14 @@ class JobDescription:
         self.duration_seconds      = duration_seconds
         self.gap_seconds           = gap_seconds
         self.target_source         = target_source
+        self.allowed_clocks_mhz    = allowed_clocks_mhz,
         self.print_help            = print_help
         self.station_set           = station_set
         self.exclude_list          = exclude_list
         self.include_list          = include_list
         self.parse_commandline(argv)
         pass
-    
+
 
     def parse_commandline(self, argv):
         """
@@ -137,31 +143,38 @@ class JobDescription:
         self. May raise a GetoptError in case of commandline parsing
         problems.
         """
-        options,args = getopt(argv[1:], 'o:d:i:e:s:g:w:h',
-                              ['output=',
-                               'duration=',
-                               'include=',
-                               'exclude=',
-                               'stations=',
-                               'gap=',
-                               'wait=',
-                               'help'])
+        options, args = getopt(argv[1:], 'o:d:i:e:s:g:w:hc:',
+                               ['output=',
+                                'duration=',
+                                'clocks=',
+                                'include=',
+                                'exclude=',
+                                'stations=',
+                                'gap=',
+                                'wait=',
+                                'help'])
         for (option, value) in options:
             if option in ['-o', '--output']:
                 self.output = value
-                
+
             elif option in ['-w', '--wait']:
                 try:
                     self.wait_seconds = int(value)
                 except (ValueError,):
                     raise GetoptError('Wait time must be an integer in seconds.\nYou specified: "%s"' % (value,))
 
-                
+
             elif option in ['-d', '--duration']:
                 try:
                     self.duration_seconds = int(value)
                 except (ValueError,):
                     raise GetoptError('Duration must be an integer in seconds.\nYou specified: "%s"' % (value,))
+
+            elif option in ['-c', '--clocks']:
+                self.allowed_clocks_mhz = [int(clock) for clock in value.split(',')]
+                for clock in self.allowed_clocks_mhz:
+                    if clock not in [160, 200]:
+                        raise GetoptError('Allowed clocks are 160 and 200, not %d' % clock)
 
 
             elif option in ['-g', '--gap']:
@@ -173,13 +186,13 @@ class JobDescription:
 
             elif  option in ['-s', '--stations']:
                 self.station_set = value
-                
+
             elif  option in ['-i', '--include']:
                 self.include_list = value.upper().split(',')
-                
+
             elif  option in ['-e', '--exclude']:
                 self.exclude_list = value.upper().split(',')
-                
+
             elif option in ['-h', '--help']:
                 self.print_help = True
                 return self
@@ -195,28 +208,34 @@ class JobDescription:
 
 
 def plan_observing_sequence(job_description):
-    schedule = [['LBA_INNER'  , 'LBA_LOW' , '54..297' , 200],
-                ['LBA_OUTER'  , 'LBA_LOW' , '54..297' , 200],
-                ['LBA_INNER'  , 'LBA_HIGH', '156..399', 200],
-                ['LBA_OUTER'  , 'LBA_HIGH', '156..399', 200],
-                ['HBA_ZERO'   , 'HBA_LOW' , '77..320' , 200],
-                ['HBA_ONE'    , 'HBA_LOW' , '77..320' , 200],
-                ['HBA_DUAL'   , 'HBA_LOW' , '77..320' , 200],
-                ['HBA_JOINED' , 'HBA_LOW' , '77..320' , 200],
-                ['HBA_ZERO'   , 'HBA_MID' , '66..309' , 160],
-                ['HBA_ONE'    , 'HBA_MID' , '66..309' , 160],
-                ['HBA_DUAL'   , 'HBA_MID' , '66..309' , 160],
-                ['HBA_JOINED' , 'HBA_MID' , '66..309' , 160],
-                ['HBA_ZERO'   , 'HBA_HIGH' , '52..255' , 200],
-                ['HBA_ONE'    , 'HBA_HIGH' , '52..255' , 200],
-                ['HBA_DUAL'   , 'HBA_HIGH' , '52..255' , 200],
-                ['HBA_JOINED' , 'HBA_HIGH' , '52..255' , 200]
-                ]
+    full_schedule = [['LBA_INNER'     , 'LBA_LOW' , '54..297' , 200],
+                     ['LBA_OUTER'     , 'LBA_LOW' , '54..297' , 200],
+                     ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200],
+                     ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200],
+                     ['HBA_ZERO'      , 'HBA_LOW' , '77..320' , 200],
+                     ['HBA_ONE'       , 'HBA_LOW' , '77..320' , 200],
+                     ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200],
+                     ['HBA_DUAL_INNER', 'HBA_LOW' , '77..320' , 200],
+                     ['HBA_JOINED'    , 'HBA_LOW' , '77..320' , 200],
+                     ['HBA_ZERO'      , 'HBA_MID' , '66..309' , 160],
+                     ['HBA_ONE'       , 'HBA_MID' , '66..309' , 160],
+                     ['HBA_DUAL'      , 'HBA_MID' , '66..309' , 160],
+                     ['HBA_DUAL_INNER', 'HBA_MID' , '66..309' , 160],
+                     ['HBA_JOINED'    , 'HBA_MID' , '66..309' , 160],
+                     ['HBA_ZERO'      , 'HBA_HIGH' , '52..255' , 200],
+                     ['HBA_ONE'       , 'HBA_HIGH' , '52..255' , 200],
+                     ['HBA_DUAL'      , 'HBA_HIGH' , '52..255' , 200],
+                     ['HBA_DUAL_INNER', 'HBA_HIGH' , '52..255' , 200],
+                     ['HBA_JOINED'    , 'HBA_HIGH' , '52..255' , 200]
+                     ]
+    schedule      = [obs for obs in full_schedule if obs[-1] in job_description.allowed_clocks_mhz]
     now           = ephem.Observer().date
     start_date    = ephem.Date(now + ephem.second*job_description.wait_seconds)
     target_source = job_description.target_source
     if target_source is None:
-        target_source = SourceCatalogue().closest_to_meridian(lofar_current_sidereal_time() + ephem.second*len(schedule)*(job_description.duration_seconds +job_description.gap_seconds)*0.5)
+        target_source = SourceCatalogue().closest_to_meridian(lofar_current_sidereal_time() +
+                                                              ephem.second*len(schedule)*(job_description.duration_seconds +
+                                                                                          job_description.gap_seconds)*0.5)
         pass
     stations      = station_list(job_description.station_set,
                                  include = job_description.include_list,
@@ -238,12 +257,14 @@ def plan_observing_sequence(job_description):
             beam_list=[Beam(
                 target_source            = target_source,
                 subband_spec             = subband_spec)]))
-        start_date = ephem.Date(start_date + ephem.second*job_description.duration_seconds + ephem.second*job_description.gap_seconds)
+        start_date = ephem.Date(start_date
+                                + ephem.second*job_description.duration_seconds
+                                + ephem.second*job_description.gap_seconds)
         previous_clock=clock_mhz
         pass
     return observations
-                                
-                            
+
+
 
 
 
@@ -258,7 +279,7 @@ def main(argv):
     out=open(job_description.output, 'w')
     out.write(as_xml_mom_project(plan_observing_sequence(job_description)))
     out.close()
-    
+
     return 0
 
 
