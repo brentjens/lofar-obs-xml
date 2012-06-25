@@ -10,7 +10,7 @@ class InvalidStationSetError(ValueError):
     r'''
     To be raised if an invalid station set is provided.
     '''
-    
+
 
 def unique(sequence):
     r'''
@@ -35,7 +35,7 @@ def unique(sequence):
     return list(set(sequence))
 
 
-def lofar_current_sidereal_time():
+def lofar_sidereal_time(date):
     r'''
     Returns an ephem.Angle object with the current sidereal time at
     LOFAR CS002 LBA. The CS002 LBA position in ITRF2005 coordinates at
@@ -49,7 +49,8 @@ def lofar_current_sidereal_time():
     >>> lofar.long      = +6.869837540*pi/180
     >>> lofar.lat       = +52.915122495*pi/180
     >>> lofar.elevation = +49.344
-    >>> abs(lofar.sidereal_time() - lofar_current_sidereal_time())
+    >>> lofar.date      = ephem.Observer().date
+    >>> abs(lofar.sidereal_time() - lofar_sidereal_time(lofar.date))
     0.0
     '''
     # CS002 LBA in ITRF2005, epoch 2009.5
@@ -57,6 +58,7 @@ def lofar_current_sidereal_time():
     lofar.long      = +6.869837540*pi/180
     lofar.lat       = +52.915122495*pi/180
     lofar.elevation = +49.344
+    lofar.date      = date
     return lofar.sidereal_time()
 
 
@@ -132,7 +134,7 @@ def station_list(station_set, include = None, exclude = None):
         if include is None:
             include_list = []
         else:
-            include_list = include                
+            include_list = include
         superset = unique(lookup_table[station_set] + include_list)
     except (KeyError,):
         raise InvalidStationSetError('%s is not a valid station set.' %

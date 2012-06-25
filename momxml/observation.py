@@ -8,16 +8,16 @@ import ephem
 class Beam(object):
     def __init__(self, target_source, subband_spec, measurement_type = 'Target'):
         """
-        *target_source*        : Instance of class TargetSource                               
-        *subband_spec*         : Either a string with a MoM compatible subband specification, 
-                                 for example '77..324', or a list of integers, for example    
+        *target_source*        : Instance of class TargetSource
+        *subband_spec*         : Either a string with a MoM compatible subband specification,
+                                 for example '77..324', or a list of integers, for example
                                  [77, 79, 81]
         *measurement_type*     : 'Target' or 'Calibration'
         """
         self.target_source = target_source
         self.subband_spec  = subband_spec
         self.measurement_type = measurement_type
-        
+
         if type(subband_spec) == type(''):
             self.subband_spec     = subband_spec
         elif type(subband_spec) == type([]):
@@ -34,15 +34,15 @@ class Observation(object):
     def __init__(self, antenna_set, frequency_range, start_date, duration_seconds, stations, clock_mhz, beam_list, integration_time_seconds=2, channels_per_subband=64):
         """
         *antenna_set*            : One of 'LBA_INNER', 'LBA_OUTER', 'HBA_ZERO', 'HBA_ONE',
-                                  'HBA_DUAL', or 'HBA_JOINED'                                  
+                                  'HBA_DUAL', or 'HBA_JOINED'
         *frequency_range*        : One of 'LBA_LOW' (10-90/70 MHz), 'LBA_HIGH' (30-90/70 MHz),
-                                   'HBA_LOW' (110-190 MHz), 'HBA_MID' (170-230 MHz), or         
-                                   'HBA_HIGH' (210-250 MHz)     
-        *start_date*             : UTC time of the beginning of the observation as a tuple 
+                                   'HBA_LOW' (110-190 MHz), 'HBA_MID' (170-230 MHz), or
+                                   'HBA_HIGH' (210-250 MHz)
+        *start_date*             : UTC time of the beginning of the observation as a tuple
                                    with format (year, month, day, hour, minute, second)
-        *duration_seconds*       : Observation duration in seconds                    
-        *stations*               : List of stations, e.g. ['CS001', 'RS205', 'DE601']. An 
-                                   easy way to generate such a list is through the 
+        *duration_seconds*       : Observation duration in seconds
+        *stations*               : List of stations, e.g. ['CS001', 'RS205', 'DE601']. An
+                                   easy way to generate such a list is through the
                                    utilities.station_list() function.
         *clock_mhz*              : An integer value of 200 or 160.
         *beam_list*              : A list of Beam objects, which contain source/subband
@@ -67,7 +67,8 @@ class Observation(object):
     def validate(self):
         valid_antenna_sets = ['LBA_INNER', 'LBA_OUTER',
                               'HBA_ZERO', 'HBA_ONE',
-                              'HBA_DUAL', 'HBA_JOINED']
+                              'HBA_DUAL', 'HBA_JOINED',
+                              'HBA_DUAL_INNER']
         valid_frequency_ranges = ['LBA_LOW', 'LBA_HIGH', 'HBA_LOW', 'HBA_MID', 'HBA_HIGH']
         valid_clocks           = [160, 200]
 
@@ -241,5 +242,3 @@ def as_xml_mom_project(observations, project='2012LOFAROBS'):
     </children>
 </mom2:project>
 """
-
-

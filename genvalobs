@@ -228,15 +228,24 @@ def plan_observing_sequence(job_description):
                      ['HBA_DUAL_INNER', 'HBA_HIGH' , '52..255' , 200],
                      ['HBA_JOINED'    , 'HBA_HIGH' , '52..255' , 200]
                      ]
+    print job_description.allowed_clocks_mhz
+    print job_description.wait_seconds
+
     schedule      = [obs for obs in full_schedule if obs[-1] in job_description.allowed_clocks_mhz]
     now           = ephem.Observer().date
     start_date    = ephem.Date(now + ephem.second*job_description.wait_seconds)
+    print 'LST at start observation: %s' % str(lofar_sidereal_time(start_date))
+
+    mean_lst      = lofar_sidereal_time(
+                       start_date +
+                       ephem.second*len(schedule)*(job_description.duration_seconds +
+                                                   job_description.gap_seconds)*0.5)
+
     target_source = job_description.target_source
     if target_source is None:
-        target_source = SourceCatalogue().closest_to_meridian(lofar_current_sidereal_time() +
-                                                              ephem.second*len(schedule)*(job_description.duration_seconds +
-                                                                                          job_description.gap_seconds)*0.5)
-        pass
+        target_source = SourceCatalogue().closest_to_meridian(mean_lst)
+    print target_source
+
     stations      = station_list(job_description.station_set,
                                  include = job_description.include_list,
                                  exclude = job_description.exclude_list)
@@ -289,7 +298,7 @@ def main(argv):
 if __name__ == '__main__':
     try:
         print_version()
-        print 'Current LST: '+str(lofar_current_sidereal_time())
+        print 'Current LST: '+str(lofar_sidereal_time(ephem.Observer().date))
         exit(main(sys.argv))
     except (OSError, IOError, GetoptError, SourceSpecificationError, InvalidStationSetError):
         prerror(sys.exc_info()[1].args[0])
