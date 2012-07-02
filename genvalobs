@@ -48,8 +48,7 @@ contains spaces. The following sources are supported:
 - \"Cas A\"  / cas: LST 21:00--03:00
 - \"3C 123\" / 123: LST 01:30--07:30
 - \"3C 196\" / 196: LST 05:00--11:00
-- \"Vir A\"  / vir: LST 09:30--15:30
-- \"Her A\"  / her: LST 14:00--20:00
+- \"3C 295\" / 295: LST 11:00--17:00
 - \"Cyg A\"  / cyg: LST 16:00--24:00
 
 If no source is specified, the program chooses the source that is
