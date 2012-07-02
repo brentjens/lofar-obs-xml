@@ -43,7 +43,7 @@ def lofar_sidereal_time(date):
 
     **Examples**
 
-    >>> type(lofar_current_sidereal_time())
+    >>> type(lofar_sidereal_time(ephem.Observer().date))
     <type 'ephem.Angle'>
     >>> lofar           = ephem.Observer()
     >>> lofar.long      = +6.869837540*pi/180
