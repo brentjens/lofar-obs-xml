@@ -128,7 +128,7 @@ class JobDescription:
         self.duration_seconds      = duration_seconds
         self.gap_seconds           = gap_seconds
         self.target_source         = target_source
-        self.allowed_clocks_mhz    = allowed_clocks_mhz,
+        self.allowed_clocks_mhz    = allowed_clocks_mhz
         self.print_help            = print_help
         self.station_set           = station_set
         self.exclude_list          = exclude_list
