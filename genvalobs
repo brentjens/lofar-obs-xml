@@ -45,8 +45,8 @@ usage: genvalobs [options] \"source name\"
 The source name must be enclosed in single or double quotes if it
 contains spaces. The following sources are supported:
 
-- \"Cas A\"  / cas: LST 21:00--03:00
-- \"3C 123\" / 123: LST 01:30--07:30
+- \"3C 48\"  /  48: LST 22:30--04:30
+- \"3C 147\" / 147: LST 02:30--08:30
 - \"3C 196\" / 196: LST 05:00--11:00
 - \"3C 295\" / 295: LST 11:00--17:00
 - \"Cyg A\"  / cyg: LST 16:00--24:00
