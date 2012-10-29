@@ -72,7 +72,7 @@ def station_list(station_set, include = None, exclude = None):
     **Parameters**
 
     station_set : string
-        One of 'superterp', 'core', 'remote', 'nl', or 'all', where
+        One of 'superterp', 'core', 'remote', 'nl', 'all', or 'none', where
         'nl' is the concatenation of the 'core' and 'remote' sets, and
         all is 'nl' plus 'europe'.
 
@@ -117,7 +117,7 @@ def station_list(station_set, include = None, exclude = None):
                                          'CS031', 'CS032', 'CS101', 'CS103',
                                          'CS201', 'CS301', 'CS302', 'CS401',
                                          'CS501']
-    remote    = ['RS106', 'RS205', 'RS208', 'RS306', 'RS307', 'RS406', 'RS503',
+    remote    = ['RS106', 'RS205', 'RS208', 'RS305', 'RS306', 'RS307', 'RS406', 'RS503',
                  'RS508', 'RS509']
     netherlands = core + remote
     europe    = ['DE601', 'DE602', 'DE603', 'DE604', 'DE605', 'FR606', 'SE607',
@@ -129,7 +129,8 @@ def station_list(station_set, include = None, exclude = None):
                     'remote'   : remote,
                     'nl'       : netherlands,
                     'europe'   : europe,
-                    'all'      : all_stations}
+                    'all'      : all_stations,
+                    'none'     : []}
     try:
         if include is None:
             include_list = []

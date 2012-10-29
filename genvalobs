@@ -68,7 +68,7 @@ Options:
                  in MHz. Default is 200. Other example: -c 160,200.
 
 -s / --stations  Station set. One of: superterp, core, remote, nl,
-                 europe, all. Default is nl.
+                 europe, all, or none. Default is nl.
 
 -i / --include   Comma separated list of station names to add to
                  station set.
