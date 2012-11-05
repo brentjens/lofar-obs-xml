@@ -1,5 +1,11 @@
-from targetsource import *
+from momxml import TargetSource
 from numpy import exp,pi
+
+
+def target_source_from_row(self, row):
+    return TargetSource(name      = row[0][0],
+                        ra_angle  = Angle(shms = ('+',)+row[1]),
+                        dec_angle = Angle(sdms = row[2]))
 
 
 class SourceCatalogue:
@@ -17,20 +23,18 @@ class SourceCatalogue:
             ]
         pass
 
-    def target_source_from_row(self, row):
-        return TargetSource(name      = row[0][0],
-                            ra_angle  = Angle(shms = ('+',)+row[1]),
-                            dec_angle = Angle(sdms = row[2]))
-
 
     def find_source(self, source_name):
         selection = filter(lambda row: source_name in row[0], self.source_table)
         if len(selection) != 1:
             raise SourceSpecificationError('"'+str(source_name)+'" is not one of the standard sources; choose one of:\n- '+ '\n- '.join([', '.join(map(lambda s: '"'+s+'"',r[0])) for r in self.source_table]))
-        return self.target_source_from_row(selection[0])
+        return target_source_from_row(selection[0])
 
-
+        
+        
     def closest_to_meridian(self, lst_rad):
+        r'''
+        '''
         lst_complex = exp(1j*(lst_rad+0.0))
         min_dist=2.1
         best_source = None
