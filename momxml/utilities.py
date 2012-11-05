@@ -35,6 +35,28 @@ def unique(sequence):
     return list(set(sequence))
 
 
+def flatten_list(list_of_lists):
+    r'''
+    Takes a list of lists and spits out one list with all sub lists
+    concatenated. [[1, 2, 3], [4, 5]] -> [1, 2, 3, 4, 5]
+
+    **Parameters**
+
+    list_of_lists : list of lists
+        The list to flatten.
+
+    **Returns**
+
+    A one dimensional list.
+
+    **Examples**
+
+    >>> flatten_list([[1, 2, 3], ['a', True], ['b', ['c', 4]]])
+    [1, 2, 3, 'a', True, 'b', ['c', 4]]
+    '''
+    return [element for sub_list in list_of_lists for element in sub_list]
+
+
 def lofar_sidereal_time(date):
     r'''
     Returns an ephem.Angle object with the current sidereal time at
