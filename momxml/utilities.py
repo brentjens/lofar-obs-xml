@@ -84,6 +84,22 @@ def lofar_sidereal_time(date):
     return lofar.sidereal_time()
 
 
+def next_date_with_lofar_lst(lst_rad, start_date = None):
+    r'''
+    '''
+    if not start_date:
+        start_date = ephem.Observer().date
+    else:
+        start_date = ephem.Date(start_date)
+        
+    lst_at_start_rad  = lofar_sidereal_time(start_date)
+    if lst_rad < lst_at_start_rad:
+        lst_rad += 2*pi
+    delta_lst_rad = lst_rad - lst_at_start_rad
+    delta_utc_rad = delta_lst_rad/1.002737904
+    return ephem.Date(start_date + ephem.hour*(delta_utc_rad*12/pi))
+
+
 
 def station_list(station_set, include = None, exclude = None):
     r'''
