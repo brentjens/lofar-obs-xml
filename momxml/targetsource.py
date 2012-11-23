@@ -4,6 +4,7 @@ Specification of target sources to use in Observation Beams.
 
 from momxml.angles import Angle
 import urllib
+import sys
 
 class NoSimbadCoordinatesError(RuntimeError):
     r'''
@@ -205,15 +206,36 @@ Identifiers (20):
 ================================================================================
 """
     >>> target_source_from_simbad_response('Trifid Nebula', simbad_trifid)
+
+    >>> simbad_ncp = """
+C.D.S.  -  SIMBAD4 rel 1.201  -  2012.11.05CET13:43:39
+
+NCP
+---
+
+Object NAME NORTH CELESTIAL POLE  ---  ?  ---  OID=@331211   (@@90175,17)  ---  coobox=2389
+
+Coordinates(ICRS,ep=J2000,eq=2000): 00 00 00  +90 00.0 (~) ~ [~ ~ ~] ~                  
+
+Identifiers (3):
+   NAME NORTH CELESTIAL POLE       GAL 122.9+27.1                  NAME NCP                      
+================================================================================
+"""
+    >>> target_source_from_simbad_response('NCP', simbad_ncp)
     '''
     coordinate_lines = [line for line in simbad_response.split('\n')
                          if 'Coordinates(ICRS,ep=J2000,eq=2000)' in line]
     if len(coordinate_lines) > 0:
         words    = coordinate_lines[0].split()
         ra_angle = Angle(shms =
-                         ('+', int(words[1]), int(words[2]), float(words[3])))
-        dec_angle = Angle(sdms =
-                          (words[4][0], int(words[4][1:]), int(words[5]), float(words[6])))
+                         ('+', float(words[1]), float(words[2]), float(words[3])))
+        if words[6][0] in '0123456789':
+            dec_angle = Angle(sdms =
+                              (words[4][0], float (words[4][1:]), float(words[5]), float(words[6])))
+        else:
+            dec_angle = Angle(sdms =
+                              (words[4][0], float (words[4][1:]), float(words[5]), 0.0))
+            
         return TargetSource(name      = source_name,
                             ra_angle  = ra_angle,
                             dec_angle = dec_angle)
