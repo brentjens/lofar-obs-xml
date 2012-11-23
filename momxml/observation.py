@@ -5,6 +5,53 @@ from math import ceil
 import copy
 import ephem
 
+
+class Folder(object):
+    def __init__(self, name, children=None, description=None, mom_id=None):
+        self.name        = name
+        self.children    = children
+        self.description = description
+        self.mom_id      = mom_id
+
+
+    def xml(self, project_name):
+        preamble        = ''
+        children_string = ''
+        appendix        = ''
+        
+        if self.mom_id:
+            preamble = '''
+<lofar:folder mom2Id="%s">''' % self.mom_id
+        else:
+            preamble = '''
+<lofar:folder>'''
+        
+        preamble += '''
+    <name>'''+self.name+'''</name>'''
+
+        if self.description:
+            preamble += '''<description>'''+self.description+'''</description>'''
+        preamble += '''
+    <children>
+'''
+        if self.children:
+            preamble += '<item>\n'
+
+            children_string = '''</item>
+<item>'''.join([child.xml(project_name) for child in self.children])
+
+            appendix += '</item>'
+
+        appendix += '''
+    </children>
+    </lofar:folder>
+        '''
+        return preamble + children_string + appendix
+
+
+
+
+
 class Beam(object):
     def __init__(self, target_source, subband_spec, measurement_type = 'Target'):
         """

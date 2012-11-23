@@ -291,8 +291,16 @@ def main(argv):
         print_manual()
         return -1
 
+    observations = plan_observing_sequence(job_description)
+    folder_date  = observations[0].start_date
+    
+    sub_folder     = Folder(name =  '%04d-%02d-%02d %02d:%02d' % folder_date[:-1],
+                            description = 'Validation observations %04d-%02d-%02d %02d:%02d' % folder_date[:-1],
+                            children    = observations)
+    val_obs_folder = Folder(name = 'Validation Obs', mom_id=63624,
+                            children = [sub_folder])
     out=open(job_description.output, 'w')
-    out.write(as_xml_mom_project(plan_observing_sequence(job_description)))
+    out.write(as_xml_mom_project([val_obs_folder]))
     out.close()
 
     return 0

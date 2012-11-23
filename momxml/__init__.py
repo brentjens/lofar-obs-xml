@@ -9,7 +9,7 @@ from momxml.utilities import InvalidStationSetError
 from momxml.targetsource    import SourceSpecificationError, NoSimbadCoordinatesError
 from momxml.targetsource    import TargetSource, simbad
 from momxml.sourcecatalogue import SourceCatalogue
-from momxml.observation     import Beam, Observation, as_xml_mom_project
+from momxml.observation     import Folder, Beam, Observation, as_xml_mom_project
 
 import ephem
 
