@@ -31,7 +31,7 @@ class Beam(object):
 
 
 class Observation(object):
-    def __init__(self, antenna_set, frequency_range, start_date, duration_seconds, stations, clock_mhz, beam_list, integration_time_seconds=2, channels_per_subband=64):
+    def __init__(self, antenna_set, frequency_range, start_date, duration_seconds, stations, clock_mhz, beam_list, integration_time_seconds=2, channels_per_subband=64, name=None, bit_mode=16):
         """
         *antenna_set*            : One of 'LBA_INNER', 'LBA_OUTER', 'HBA_ZERO', 'HBA_ONE',
                                   'HBA_DUAL', or 'HBA_JOINED'
@@ -49,6 +49,8 @@ class Observation(object):
                                    specifications. Provide at least one beam.
         *integration_time_seconds: Correlator integration time in seconds. Default is 2
         *channels_per_subband*   : Number of channels per subband. Default is 64
+        *name*                   : Name of the observation. Defaults to name of first target plus antenna set.
+        *bit_mode*               : number of bits per sample. Either 4, 8, or 16.
         """
         self.antenna_set              = antenna_set
         self.frequency_range          = frequency_range
@@ -59,7 +61,10 @@ class Observation(object):
         self.integration_time_seconds = int(round(integration_time_seconds))
         self.channels_per_subband     = channels_per_subband
         self.beam_list                = copy.deepcopy(beam_list)
+        self.name                     = name
+        self.bit_mode                 = bit_mode
         self.validate()
+        
         pass
 
 
@@ -71,10 +76,12 @@ class Observation(object):
                               'HBA_DUAL_INNER']
         valid_frequency_ranges = ['LBA_LOW', 'LBA_HIGH', 'HBA_LOW', 'HBA_MID', 'HBA_HIGH']
         valid_clocks           = [160, 200]
+        valid_bit_modes        = [4, 8, 16]
 
         validate_enumeration('Observation antenna set', self.antenna_set, valid_antenna_sets)
         validate_enumeration('Observation frequency range', self.frequency_range, valid_frequency_ranges)
         validate_enumeration('Observation clock frequency', self.clock_mhz, valid_clocks)
+        validate_enumeration('Observation observation bit mode', self.bit_mode, valid_bit_modes)
 
         if type(self.start_date) != type(tuple([])) or len(self.start_date) != 6:
             raise ValueError('Observation start_date must be a tuple of length 6; you provided %s'%(self.start_date,))
@@ -84,6 +91,9 @@ class Observation(object):
 
     def xml(self, project_name):
         obs_name=self.beam_list[0].target_source.name+' '+self.antenna_set
+        if self.name:
+            obs_name = self.name
+
         now=ephem.Observer().date
 
         start_date=self.start_date
@@ -142,11 +152,13 @@ class Observation(object):
               <stations>
                 """+'\n                '.join(['<station name=\"'+n+'\" />' for n in self.stations])+"""
               </stations>
+              <timeFrame>UT</timeFrame>
               <startTime>"""+mom_timestamp(*rounded_start_date)+"""</startTime>
               <endTime>"""+mom_timestamp(*rounded_end_date)+"""</endTime>
               <duration>"""+mom_duration(seconds = self.duration_seconds)+"""</duration>
               <bypassPff>false</bypassPff>
               <enableSuperterp>false</enableSuperterp>
+              <numberOfBitsPerSample>"""+str(self.bit_mode)+"""</numberOfBitsPerSample>
             </userSpecification>
             <systemSpecification>
               <correlatedData>true</correlatedData>
