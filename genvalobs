@@ -79,6 +79,8 @@ Options:
 -w / --wait      Number of seconds to wait before the first observation
                  must begin. Default is 540 seconds.
 
+-b / --bitmode   Number of bits per sample. 4, 8, or 16. Default is 16.
+
 -h / --help      Display manual.
 
 """)
@@ -119,7 +121,8 @@ class JobDescription:
     def __init__(self, argv, output = 'schedule.log', wait_seconds = 540,
                  duration_seconds = 120, gap_seconds=60, target_source = None,
                  allowed_clocks_mhz = [200], print_help = False,
-                 station_set = 'nl', include_list = [], exclude_list = []):
+                 station_set = 'nl', include_list = [], exclude_list = [],
+                 bit_mode = 16):
         """
         Set default values and call parse_commandline(argv)
         """
@@ -133,6 +136,7 @@ class JobDescription:
         self.station_set           = station_set
         self.exclude_list          = exclude_list
         self.include_list          = include_list
+        self.bit_mode              = bit_mode
         self.parse_commandline(argv)
         pass
 
@@ -143,7 +147,7 @@ class JobDescription:
         self. May raise a GetoptError in case of commandline parsing
         problems.
         """
-        options, args = getopt(argv[1:], 'o:d:i:e:s:g:w:hc:',
+        options, args = getopt(argv[1:], 'o:d:i:e:s:g:w:hc:b:',
                                ['output=',
                                 'duration=',
                                 'clocks=',
@@ -152,7 +156,8 @@ class JobDescription:
                                 'stations=',
                                 'gap=',
                                 'wait=',
-                                'help'])
+                                'help',
+                                'bitmode='])
         for (option, value) in options:
             if option in ['-o', '--output']:
                 self.output = value
@@ -186,6 +191,12 @@ class JobDescription:
 
             elif  option in ['-s', '--stations']:
                 self.station_set = value
+
+            elif  option in ['-b', '--bitmode']:
+                try:
+                    self.bit_mode = int(value)
+                except (ValueError,):
+                    raise GetoptError('Bit mode must be 4, 8, or 16, not %s"' % (value,))
 
             elif  option in ['-i', '--include']:
                 self.include_list = value.upper().split(',')
@@ -263,6 +274,7 @@ def plan_observing_sequence(job_description):
             stations                 = stations,
             clock_mhz                = clock_mhz,
             integration_time_seconds = 1,
+            bit_mode                 = job_description.bit_mode,
             beam_list=[Beam(
                 target_source            = target_source,
                 subband_spec             = subband_spec)]))
