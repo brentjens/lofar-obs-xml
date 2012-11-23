@@ -79,8 +79,6 @@ Options:
 -w / --wait      Number of seconds to wait before the first observation
                  must begin. Default is 540 seconds.
 
--b / --bitmode   Number of bits per sample. 4, 8, or 16. Default is 16.
-
 -h / --help      Display manual.
 
 """)
@@ -121,8 +119,7 @@ class JobDescription:
     def __init__(self, argv, output = 'schedule.log', wait_seconds = 540,
                  duration_seconds = 120, gap_seconds=60, target_source = None,
                  allowed_clocks_mhz = [200], print_help = False,
-                 station_set = 'nl', include_list = [], exclude_list = [],
-                 bit_mode = 16):
+                 station_set = 'nl', include_list = [], exclude_list = []):
         """
         Set default values and call parse_commandline(argv)
         """
@@ -136,7 +133,6 @@ class JobDescription:
         self.station_set           = station_set
         self.exclude_list          = exclude_list
         self.include_list          = include_list
-        self.bit_mode              = bit_mode
         self.parse_commandline(argv)
         pass
 
@@ -147,7 +143,7 @@ class JobDescription:
         self. May raise a GetoptError in case of commandline parsing
         problems.
         """
-        options, args = getopt(argv[1:], 'o:d:i:e:s:g:w:hc:b:v',
+        options, args = getopt(argv[1:], 'o:d:i:e:s:g:w:hc:v',
                                ['output=',
                                 'duration=',
                                 'clocks=',
@@ -157,8 +153,7 @@ class JobDescription:
                                 'gap=',
                                 'wait=',
                                 'help',
-                                'version',
-                                'bitmode='])
+                                'version'])
         for (option, value) in options:
             if option in ['-v', '--version']:
                 exit(0)
@@ -195,12 +190,6 @@ class JobDescription:
             elif  option in ['-s', '--stations']:
                 self.station_set = value
 
-            elif  option in ['-b', '--bitmode']:
-                try:
-                    self.bit_mode = int(value)
-                except (ValueError,):
-                    raise GetoptError('Bit mode must be 4, 8, or 16, not %s"' % (value,))
-
             elif  option in ['-i', '--include']:
                 self.include_list = value.upper().split(',')
 
@@ -222,25 +211,27 @@ class JobDescription:
 
 
 def plan_observing_sequence(job_description):
-    full_schedule = [['LBA_INNER'     , 'LBA_LOW' , '54..297' , 200],
-                     ['LBA_OUTER'     , 'LBA_LOW' , '54..297' , 200],
-                     ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200],
-                     ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200],
-                     ['HBA_ZERO'      , 'HBA_LOW' , '77..320' , 200],
-                     ['HBA_ONE'       , 'HBA_LOW' , '77..320' , 200],
-                     ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200],
-                     ['HBA_DUAL_INNER', 'HBA_LOW' , '77..320' , 200],
-                     ['HBA_JOINED'    , 'HBA_LOW' , '77..320' , 200],
-                     ['HBA_ZERO'      , 'HBA_MID' , '66..309' , 160],
-                     ['HBA_ONE'       , 'HBA_MID' , '66..309' , 160],
-                     ['HBA_DUAL'      , 'HBA_MID' , '66..309' , 160],
-                     ['HBA_DUAL_INNER', 'HBA_MID' , '66..309' , 160],
-                     ['HBA_JOINED'    , 'HBA_MID' , '66..309' , 160],
-                     ['HBA_ZERO'      , 'HBA_HIGH' , '52..255' , 200],
-                     ['HBA_ONE'       , 'HBA_HIGH' , '52..255' , 200],
-                     ['HBA_DUAL'      , 'HBA_HIGH' , '52..255' , 200],
-                     ['HBA_DUAL_INNER', 'HBA_HIGH' , '52..255' , 200],
-                     ['HBA_JOINED'    , 'HBA_HIGH' , '52..255' , 200]
+    full_schedule = [['LBA_OUTER'     , 'LBA_LOW' , '12..499' , 200,  8],
+                     ['HBA_DUAL'      , 'HBA_LOW' , '12..499' , 200,  8],
+                     ['LBA_INNER'     , 'LBA_LOW' , '54..297' , 200, 16],
+                     ['LBA_OUTER'     , 'LBA_LOW' , '54..297' , 200, 16],
+                     ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16],
+                     ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16],
+                     ['HBA_ZERO'      , 'HBA_LOW' , '77..320' , 200, 16],
+                     ['HBA_ONE'       , 'HBA_LOW' , '77..320' , 200, 16],
+                     ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16],
+                     ['HBA_DUAL_INNER', 'HBA_LOW' , '77..320' , 200, 16],
+                     ['HBA_JOINED'    , 'HBA_LOW' , '77..320' , 200, 16],
+                     ['HBA_ZERO'      , 'HBA_MID' , '66..309' , 160, 16],
+                     ['HBA_ONE'       , 'HBA_MID' , '66..309' , 160, 16],
+                     ['HBA_DUAL'      , 'HBA_MID' , '66..309' , 160, 16],
+                     ['HBA_DUAL_INNER', 'HBA_MID' , '66..309' , 160, 16],
+                     ['HBA_JOINED'    , 'HBA_MID' , '66..309' , 160, 16],
+                     ['HBA_ZERO'      , 'HBA_HIGH', '52..255' , 200, 16],
+                     ['HBA_ONE'       , 'HBA_HIGH', '52..255' , 200, 16],
+                     ['HBA_DUAL'      , 'HBA_HIGH', '52..255' , 200, 16],
+                     ['HBA_DUAL_INNER', 'HBA_HIGH', '52..255' , 200, 16],
+                     ['HBA_JOINED'    , 'HBA_HIGH', '52..255' , 200, 16]
                      ]
     print job_description.allowed_clocks_mhz
     print job_description.wait_seconds
@@ -265,7 +256,7 @@ def plan_observing_sequence(job_description):
                                  exclude = job_description.exclude_list)
     observations  = []
     previous_clock=200
-    for antenna_set, frequency_range, subband_spec, clock_mhz in schedule:
+    for antenna_set, frequency_range, subband_spec, clock_mhz, bit_mode in schedule:
         if previous_clock != clock_mhz: # If clock switches, allow for two minutes extra
             start_date = ephem.Date(start_date + 2*ephem.minute)
             pass
@@ -277,7 +268,7 @@ def plan_observing_sequence(job_description):
             stations                 = stations,
             clock_mhz                = clock_mhz,
             integration_time_seconds = 1,
-            bit_mode                 = job_description.bit_mode,
+            bit_mode                 = bit_mode,
             beam_list=[Beam(
                 target_source            = target_source,
                 subband_spec             = subband_spec)]))
