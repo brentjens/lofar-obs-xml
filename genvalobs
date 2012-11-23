@@ -236,7 +236,7 @@ def plan_observing_sequence(job_description):
     print job_description.allowed_clocks_mhz
     print job_description.wait_seconds
 
-    schedule      = [obs for obs in full_schedule if obs[-1] in job_description.allowed_clocks_mhz]
+    schedule      = [obs for obs in full_schedule if obs[3] in job_description.allowed_clocks_mhz]
     now           = ephem.Observer().date
     start_date    = ephem.Date(now + ephem.second*job_description.wait_seconds)
     print 'LST at start observation: %s' % str(lofar_sidereal_time(start_date))
