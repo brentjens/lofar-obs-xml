@@ -9,3 +9,4 @@ from momxml.sourcecatalogue import SourceCatalogue
 from momxml.observation     import Beam, Observation, as_xml_mom_project
 
 import ephem
+__version__ = '0.8.4'

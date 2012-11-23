@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
+from momxml import __version__
 
 setup(name='genvalobs',
-      version      = '0.8.3',
+      version      = __version__,
       description  = 'Generate XML file with LOFAR system validation observations',
       author       = 'Michiel Brentjens',
       author_email = 'brentjens@astron.nl',
