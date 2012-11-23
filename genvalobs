@@ -7,7 +7,7 @@ from getopt import GetoptError
 import ephem
 from math import pi
 from momxml import *
-
+from momxml import __version__
 
 #
 # Various messages
@@ -147,7 +147,7 @@ class JobDescription:
         self. May raise a GetoptError in case of commandline parsing
         problems.
         """
-        options, args = getopt(argv[1:], 'o:d:i:e:s:g:w:hc:b:',
+        options, args = getopt(argv[1:], 'o:d:i:e:s:g:w:hc:b:v',
                                ['output=',
                                 'duration=',
                                 'clocks=',
@@ -157,8 +157,11 @@ class JobDescription:
                                 'gap=',
                                 'wait=',
                                 'help',
+                                'version',
                                 'bitmode='])
         for (option, value) in options:
+            if option in ['-v', '--version']:
+                exit(0)
             if option in ['-o', '--output']:
                 self.output = value
 
