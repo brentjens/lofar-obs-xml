@@ -1,8 +1,8 @@
-from momxml import TargetSource
+from momxml import TargetSource, Angle
 from numpy import exp,pi
+from momxml import lofar_sidereal_time
 
-
-def target_source_from_row(self, row):
+def target_source_from_row(row):
     return TargetSource(name      = row[0][0],
                         ra_angle  = Angle(shms = ('+',)+row[1]),
                         dec_angle = Angle(sdms = row[2]))
@@ -18,10 +18,10 @@ class SourceCatalogue:
             #[['Vir A', 'vir'] , (12, 30, 49.4), ('+', 12, 23, 28.0)],
             [['3C 295', '295'], (14, 11, 20.6), ('+', 52, 12,  9.0)],
             #[['Her A', 'her'] , (16, 51, 08.1), ('+',  4, 59, 33.0)],
-            [['Cyg A', 'cyg'] , (19, 59, 28.3), ('+', 40, 44,  2.0)],
+            #[['Cyg A', 'cyg'] , (19, 59, 28.3), ('+', 40, 44,  2.0)],
+            [['3C 380', '380'] , (18, 29, 31.7248), ('+', 48, 44, 46.9515)]
             #[['Cas A', 'cas'] , (23, 23, 24.0), ('+', 58, 48, 54.0)]
             ]
-        pass
 
 
     def find_source(self, source_name):
@@ -48,4 +48,8 @@ class SourceCatalogue:
                 min_dist    = dist
                 pass
             pass
-        return self.target_source_from_row(best_source)
+        return target_source_from_row(best_source)
+
+    
+    def cal_source(self, obs_date):
+        return self.closest_to_meridian(lofar_sidereal_time(obs_date))
