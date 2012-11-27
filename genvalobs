@@ -241,15 +241,14 @@ def plan_observing_sequence(job_description):
     start_date    = ephem.Date(now + ephem.second*job_description.wait_seconds)
     print 'LST at start observation: %s' % str(lofar_sidereal_time(start_date))
 
-    mean_lst      = lofar_sidereal_time(
-                       start_date +
-                       ephem.second*len(schedule)*(job_description.duration_seconds +
-                                                   job_description.gap_seconds)*0.5)
+    mean_date     = (start_date +
+                     ephem.second*len(schedule)*(job_description.duration_seconds +
+                                                 job_description.gap_seconds)*0.5)
 
-    target_source = job_description.target_source
-    if target_source is None:
-        target_source = SourceCatalogue().closest_to_meridian(mean_lst)
-    print target_source
+    mean_lst      = lofar_sidereal_time(mean_date)
+    print 'Mean date: ' + repr(mean_date)
+    print 'Mean LST: '+str(mean_lst)
+    print 'Mean LST rad: %f' % float(mean_lst)
 
     stations      = station_list(job_description.station_set,
                                  include = job_description.include_list,
@@ -257,6 +256,10 @@ def plan_observing_sequence(job_description):
     observations  = []
     previous_clock=200
     for antenna_set, frequency_range, subband_spec, clock_mhz, bit_mode in schedule:
+        target_source = job_description.target_source
+        if target_source is None:
+            target_source = SourceCatalogue().cal_source(mean_date, antenna_set[0:3])
+        print target_source
         if previous_clock != clock_mhz: # If clock switches, allow for two minutes extra
             start_date = ephem.Date(start_date + 2*ephem.minute)
             pass
