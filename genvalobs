@@ -55,31 +55,34 @@ If no source is specified, the program chooses the source that is
 closest to the meridian at transit.
 
 Options:
--o / --output    Name of the output file. Default is
-                 lofar-validation-yyyymmdd-hhmmss.xml
+-o / --output     Name of the output file. Default is
+                  lofar-validation-yyyymmdd-hhmmss.xml
 
--d / --duration  Duration of individual observations in
-                 seconds. Default is 120.
+-d / --duration   Duration of individual observations in
+                  seconds. Default is 120.
 
--g / --gap       Gap between observations in seconds. Default
-                 is 60.
+-g / --gap        Gap between observations in seconds. Default
+                  is 60.
 
--c / --clocks    Comma separated list of allowed clock frequencies
-                 in MHz. Default is 200. Other example: -c 160,200.
+-c / --clocks     Comma separated list of allowed clock frequencies
+                  in MHz. Default is 200. Other example: -c 160,200.
 
--s / --stations  Station set. One of: superterp, core, remote, nl,
-                 europe, all, or none. Default is nl.
+-s / --stations   Station set. One of: superterp, core, remote, nl,
+                  europe, all, or none. Default is nl.
 
--i / --include   Comma separated list of station names to add to
-                 station set.
+-i / --include    Comma separated list of station names to add to
+                  station set.
 
--e / --exclude   Comma separated list of stations to exlude from
-                 station set.
+-e / --exclude    Comma separated list of stations to exlude from
+                  station set.
 
--w / --wait      Number of seconds to wait before the first observation
-                 must begin. Default is 540 seconds.
+-w / --wait       Number of seconds to wait before the first observation
+                  must begin. Default is 540 seconds.
 
--h / --help      Display manual.
+-t / --start-date Specify an exact date and time to start the first
+                  observation. Format: "yyyy/mm/dd hh:mm:ss.s"
+
+-h / --help       Display manual.
 
 """)
 
@@ -119,7 +122,8 @@ class JobDescription:
     def __init__(self, argv, output = 'schedule.log', wait_seconds = 540,
                  duration_seconds = 120, gap_seconds=60, target_source = None,
                  allowed_clocks_mhz = [200], print_help = False,
-                 station_set = 'nl', include_list = [], exclude_list = []):
+                 station_set = 'nl', include_list = [], exclude_list = [],
+                 start_date = None):
         """
         Set default values and call parse_commandline(argv)
         """
@@ -133,6 +137,7 @@ class JobDescription:
         self.station_set           = station_set
         self.exclude_list          = exclude_list
         self.include_list          = include_list
+        self.start_date            = start_date
         self.parse_commandline(argv)
         pass
 
@@ -143,7 +148,7 @@ class JobDescription:
         self. May raise a GetoptError in case of commandline parsing
         problems.
         """
-        options, args = getopt(argv[1:], 'o:d:i:e:s:g:w:hc:v',
+        options, args = getopt(argv[1:], 'o:d:i:e:s:g:w:hc:vt:',
                                ['output=',
                                 'duration=',
                                 'clocks=',
@@ -152,6 +157,7 @@ class JobDescription:
                                 'stations=',
                                 'gap=',
                                 'wait=',
+                                'start-date=',
                                 'help',
                                 'version'])
         for (option, value) in options:
@@ -196,6 +202,9 @@ class JobDescription:
             elif  option in ['-e', '--exclude']:
                 self.exclude_list = value.upper().split(',')
 
+            elif option in ['-t', '--start-date']:
+                self.start_date = ephem.Date(value)
+
             elif option in ['-h', '--help']:
                 self.print_help = True
                 return self
@@ -239,6 +248,9 @@ def plan_observing_sequence(job_description):
     schedule      = [obs for obs in full_schedule if obs[3] in job_description.allowed_clocks_mhz]
     now           = ephem.Observer().date
     start_date    = ephem.Date(now + ephem.second*job_description.wait_seconds)
+    if job_description.start_date:
+        start_date = job_description.start_date
+
     print 'LST at start observation: %s' % str(lofar_sidereal_time(start_date))
 
     mean_date     = (start_date +
