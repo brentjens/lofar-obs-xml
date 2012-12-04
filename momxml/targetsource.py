@@ -161,67 +161,24 @@ def target_source_from_simbad_response(source_name, simbad_response):
     
     **Examples**
 
-    >>> simbad_response = """C.D.S.  -  SIMBAD4 rel 1.201  -  2012.11.02CET07:49:05
-
-NGC 891
--------
-
-Object NGC 891  ---  GiG  ---  OID=@27433   (@@140880,0)  ---  coobox=2606
-
-Coordinates(ICRS,ep=J2000,eq=2000): 02 22 32.907  +42 20 53.95 (IR  ) B [~ ~ ~] 2006AJ....131.1163S
-
-Identifiers (22):
-   NGC 891                         IRAS F02194+4207                IRAS 02193+4207               
-   ISOSS J02225+4221               JCMTSE J022233.0+422050         JCMTSF J022233.0+422050       
-   LEDA 9031                       2MASS J02223247+4220494         2MASX J02223290+4220539       
-   MCG+07-05-046                   PSCz Q02193+4207                TC 454                        
-   UGC 1831                        UZC J022233.4+422102            ZOAG G140.38-17.42            
-   Z 538-52                        Z 0219.4+4207                   [BTW2003] J0222+4219          
-   [CHM2007] LDC 160 J022232.90+4220539  [M98c] 021924.3+420710          [SLK2004] 299                 
-   [VDD93] 15                                                                                    
-================================================================================
-"""
+    >>> simbad_response = open('examples/simbad-ngc891.txt').read()
     >>> target_source_from_simbad_response('NGC 891', simbad_response)
     TargetSource(name      = 'NGC 891',
                  ra_angle  = Angle(shms = ('+', 2, 22, 32.907)),
                  dec_angle = Angle(sdms = ('+', 42, 20, 53.95)))
 
-    >>> simbad_trifid = """C.D.S.  -  SIMBAD4 rel 1.201  -  2012.11.02CET13:53:30
-
-Trifid Nebula
--------------
-
-Object M 20  ---  HII  ---  OID=@2517890   (@@115109,0)  ---  coobox=18517
-
-Coordinates(ICRS,ep=J2000,eq=2000): 18 02 42  -22 58.3 (Opt ) E [~ ~ ~] 2009MNRAS.399.2146W
-
-Identifiers (20):
-   M 20                            C 1759-230                      Cl Collinder 360              
-   CSI-23-17593 1                  CTB 45                          GRS 007.00 -00.30             
-   LBN 006.99-00.17                LBN 27                          LMH 12                        
-   MM 11                           MSH 17-2-16                     NAME TRIFID NEBULA            
-   NGC 6514                        NRL 10                          OCISM 2                       
-   OCl 23.0                        [DGW65] 99                      [KPR2004b] 425                
-   [SC95] M 208                    [SC95] M 215                                                  
-================================================================================
-"""
+    >>> simbad_trifid = open('examples/simbad-trifid.txt').read()
     >>> target_source_from_simbad_response('Trifid Nebula', simbad_trifid)
+    TargetSource(name      = 'Trifid Nebula',
+                 ra_angle  = Angle(shms = ('+', 18, 2, 42.0)),
+                 dec_angle = Angle(sdms = ('-', 22, 58, 18.0)))
 
-    >>> simbad_ncp = """
-C.D.S.  -  SIMBAD4 rel 1.201  -  2012.11.05CET13:43:39
-
-NCP
----
-
-Object NAME NORTH CELESTIAL POLE  ---  ?  ---  OID=@331211   (@@90175,17)  ---  coobox=2389
-
-Coordinates(ICRS,ep=J2000,eq=2000): 00 00 00  +90 00.0 (~) ~ [~ ~ ~] ~                  
-
-Identifiers (3):
-   NAME NORTH CELESTIAL POLE       GAL 122.9+27.1                  NAME NCP                      
-================================================================================
-"""
+    >>> simbad_ncp = open('examples/simbad-ncp.txt').read()
     >>> target_source_from_simbad_response('NCP', simbad_ncp)
+    TargetSource(name      = 'NCP',
+                 ra_angle  = Angle(shms = ('+', 0, 0, 0.0)),
+                 dec_angle = Angle(sdms = ('+', 90, 0, 0.0)))
+
     '''
     coordinate_lines = [line for line in simbad_response.split('\n')
                          if 'Coordinates(ICRS,ep=J2000,eq=2000)' in line]

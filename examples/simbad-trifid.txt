@@ -1,0 +1,18 @@
+C.D.S.  -  SIMBAD4 rel 1.201  -  2012.11.02CET13:53:30
+
+Trifid Nebula
+-------------
+
+Object M 20  ---  HII  ---  OID=@2517890   (@@115109,0)  ---  coobox=18517
+
+Coordinates(ICRS,ep=J2000,eq=2000): 18 02 42  -22 58.3 (Opt ) E [~ ~ ~] 2009MNRAS.399.2146W
+
+Identifiers (20):
+   M 20                            C 1759-230                      Cl Collinder 360              
+   CSI-23-17593 1                  CTB 45                          GRS 007.00 -00.30             
+   LBN 006.99-00.17                LBN 27                          LMH 12                        
+   MM 11                           MSH 17-2-16                     NAME TRIFID NEBULA            
+   NGC 6514                        NRL 10                          OCISM 2                       
+   OCl 23.0                        [DGW65] 99                      [KPR2004b] 425                
+   [SC95] M 208                    [SC95] M 215                                                  
+================================================================================

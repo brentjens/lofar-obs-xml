@@ -1,0 +1,12 @@
+C.D.S.  -  SIMBAD4 rel 1.201  -  2012.11.05CET13:43:39
+
+NCP
+---
+
+Object NAME NORTH CELESTIAL POLE  ---  ?  ---  OID=@331211   (@@90175,17)  ---  coobox=2389
+
+Coordinates(ICRS,ep=J2000,eq=2000): 00 00 00  +90 00.0 (~) ~ [~ ~ ~] ~                  
+
+Identifiers (3):
+   NAME NORTH CELESTIAL POLE       GAL 122.9+27.1                  NAME NCP                      
+================================================================================
