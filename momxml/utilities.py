@@ -131,9 +131,9 @@ def station_list(station_set, include = None, exclude = None):
     >>> len(station_list('core'))
     24
     >>> station_list('remote')
-    ['RS106', 'RS205', 'RS208', 'RS306', 'RS307', 'RS406', 'RS503', 'RS508', 'RS509']
+    ['RS106', 'RS205', 'RS208', 'RS305', 'RS306', 'RS307', 'RS406', 'RS407', 'RS409', 'RS503', 'RS508', 'RS509']
     >>> len(station_list('nl'))
-    33
+    36
     >>> (station_list('nl', exclude = station_list('remote')) ==
     ...  station_list('core'))
     True
@@ -142,7 +142,7 @@ def station_list(station_set, include = None, exclude = None):
     >>> station_list('all')==station_list('nl', include=station_list('europe'))
     True
     >>> len(unique(station_list('all')))
-    41
+    44
     >>> station_list('wsrt')
     Traceback (most recent call last):
     ...
