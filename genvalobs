@@ -43,7 +43,7 @@ def print_manual():
 usage: genvalobs [options] \"source name\"
 
 The source name must be enclosed in single or double quotes if it
-contains spaces. The following sources are supported:
+contains spaces. The following sources are recommended:
 
 - \"3C 48\"  /  48: LST 22:30--04:30
 - \"3C 147\" / 147: LST 02:30--08:30
@@ -52,7 +52,9 @@ contains spaces. The following sources are supported:
 - \"Cyg A\"  / cyg: LST 16:00--24:00
 
 If no source is specified, the program chooses the source that is
-closest to the meridian at transit.
+closest to the meridian at the central LST of the observing
+sequence. The program has separate calibrator lists for LBA and HBA
+observations.
 
 Options:
 -o / --output     Name of the output file. Default is
@@ -68,7 +70,11 @@ Options:
                   in MHz. Default is 200. Other example: -c 160,200.
 
 -s / --stations   Station set. One of: superterp, core, remote, nl,
-                  europe, all, or none. Default is nl.
+                  europe, all, or none. Default is nl. EU stations
+                  that conflict with certain HBA1 core fields are
+                  excluded from the HBA_ONE, HBA_ONE_INNER, HBA_DUAL,
+                  and HBA_DUAL_INNER observations. They are taken
+                  along in all other observations.
 
 -i / --include    Comma separated list of station names to add to
                   station set.
@@ -274,13 +280,16 @@ def plan_observing_sequence(job_description):
         print target_source
         if previous_clock != clock_mhz: # If clock switches, allow for two minutes extra
             start_date = ephem.Date(start_date + 2*ephem.minute)
-            pass
+        good_stations = stations
+        if antenna_set in ['HBA_ONE', 'HBA_DUAL', 'HBA_ONE_INNER', 'HBA_DUAL_INNER']:
+            good_stations = exclude_conflicting_eu_stations(good_stations)
+
         observations.append(Observation(
             antenna_set              = antenna_set,
             frequency_range          = frequency_range,
             start_date               = start_date.tuple(),
             duration_seconds         = job_description.duration_seconds,
-            stations                 = stations,
+            stations                 = good_stations,
             clock_mhz                = clock_mhz,
             integration_time_seconds = 1,
             bit_mode                 = bit_mode,
