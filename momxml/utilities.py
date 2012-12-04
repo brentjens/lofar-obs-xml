@@ -186,6 +186,55 @@ def station_list(station_set, include = None, exclude = None):
 
 
 
+def exclude_conflicting_eu_stations(stations):
+    r'''
+    
+    The international stations are connected to the same BlueGene
+    IONodes as the HBA1 ear in some core stations. For HBA_ONE,
+    HBA_DUAL_INNER, and HBA_DUAL mode, we need to remove either the
+    core stations, or the eu stations that conflict. This function
+    removes the conflicting eu stations.
+
+    **Parameters**
+
+    stations : list of strings
+        The station names in the observation.
+
+    **Returns**
+
+    A list of strings containing only non-conflicting stations, from
+    which the EU stations have been removed.
+
+    **Examples**
+
+    >>> exclude_conflicting_eu_stations(['CS001', 'CS002', 'RS407'])
+    ['CS001', 'CS002', 'RS407']
+    >>> exclude_conflicting_eu_stations(['CS001', 'CS002', 'RS407', 'DE605'])
+    ['CS001', 'CS002', 'RS407', 'DE605']
+    >>> exclude_conflicting_eu_stations(['CS001', 'CS002', 'CS028', 'RS407', 'DE601', 'DE605', 'UK608'])
+    ['CS001', 'CS002', 'CS028', 'RS407', 'DE605', 'UK608']
+
+    '''
+    exclude_dict = {'DE601': 'CS001',
+                    'DE602': 'CS031',
+                    'DE603': 'CS028',
+                    'DE604': 'CS011',
+                    'DE605': 'CS401',
+                    'FR606': 'CS030',
+                    'SE607': 'CS301',
+                    'UK608': 'CS013'}
+    good_stations = []
+    
+    for station in stations:
+        try:
+            if exclude_dict[station] not in stations:
+                good_stations.append(station)
+        except KeyError:
+            good_stations.append(station)
+    return good_stations
+
+
+
 def validate_enumeration(name, value, allowed):
     r'''
     If ``value`` of kind ``name`` is not in the list of ``allowed``
