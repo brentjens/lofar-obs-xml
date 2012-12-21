@@ -91,11 +91,11 @@ def next_date_with_lofar_lst(lst_rad, start_date = None):
         start_date = ephem.Observer().date
     else:
         start_date = ephem.Date(start_date)
-        
-    lst_at_start_rad  = lofar_sidereal_time(start_date)
-    if lst_rad < lst_at_start_rad:
-        lst_rad += 2*pi
-    delta_lst_rad = lst_rad - lst_at_start_rad
+    lst = lst_rad
+    lst_at_start_rad  = float(lofar_sidereal_time(start_date))
+    while lst < lst_at_start_rad:
+        lst = lst + 2*pi
+    delta_lst_rad = lst - lst_at_start_rad
     delta_utc_rad = delta_lst_rad/1.002737904
     return ephem.Date(start_date + ephem.hour*(delta_utc_rad*12/pi))
 
@@ -131,9 +131,9 @@ def station_list(station_set, include = None, exclude = None):
     >>> len(station_list('core'))
     24
     >>> station_list('remote')
-    ['RS106', 'RS205', 'RS208', 'RS305', 'RS306', 'RS307', 'RS406', 'RS407', 'RS409', 'RS503', 'RS508', 'RS509']
+    ['RS106', 'RS205', 'RS208', 'RS305', 'RS306', 'RS307', 'RS310', 'RS406', 'RS407', 'RS409', 'RS503', 'RS508', 'RS509']
     >>> len(station_list('nl'))
-    36
+    37
     >>> (station_list('nl', exclude = station_list('remote')) ==
     ...  station_list('core'))
     True
@@ -142,7 +142,7 @@ def station_list(station_set, include = None, exclude = None):
     >>> station_list('all')==station_list('nl', include=station_list('europe'))
     True
     >>> len(unique(station_list('all')))
-    44
+    45
     >>> station_list('wsrt')
     Traceback (most recent call last):
     ...
@@ -155,7 +155,7 @@ def station_list(station_set, include = None, exclude = None):
                                          'CS031', 'CS032', 'CS101', 'CS103',
                                          'CS201', 'CS301', 'CS302', 'CS401',
                                          'CS501']
-    remote    = ['RS106', 'RS205', 'RS208', 'RS305', 'RS306', 'RS307',
+    remote    = ['RS106', 'RS205', 'RS208', 'RS305', 'RS306', 'RS307', 'RS310',
                  'RS406', 'RS407', 'RS409', 'RS503','RS508', 'RS509']
     netherlands = core + remote
     europe    = ['DE601', 'DE602', 'DE603', 'DE604', 'DE605', 'FR606', 'SE607',
