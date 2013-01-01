@@ -1,4 +1,4 @@
-__version__ = '0.9'
+__version__ = '0.9.1'
 
 from momxml.angles    import signum, sign_char, int_from_sign_char, Angle
 
