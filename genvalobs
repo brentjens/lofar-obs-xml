@@ -88,6 +88,9 @@ Options:
 -t / --start-date Specify an exact date and time to start the first
                   observation. Format: "yyyy/mm/dd hh:mm:ss.s"
 
+-p / --project    Name of the project under which the observations
+                  belong. Default: '2013LOFAROBS'
+
 -h / --help       Display manual.
 
 """)
@@ -129,7 +132,7 @@ class JobDescription:
                  duration_seconds = 120, gap_seconds=60, target_source = None,
                  allowed_clocks_mhz = [200], print_help = False,
                  station_set = 'nl', include_list = [], exclude_list = [],
-                 start_date = None):
+                 start_date = None, project='2013LOFAROBS'):
         """
         Set default values and call parse_commandline(argv)
         """
@@ -144,6 +147,7 @@ class JobDescription:
         self.exclude_list          = exclude_list
         self.include_list          = include_list
         self.start_date            = start_date
+        self.project               = project
         self.parse_commandline(argv)
         pass
 
@@ -154,7 +158,7 @@ class JobDescription:
         self. May raise a GetoptError in case of commandline parsing
         problems.
         """
-        options, args = getopt(argv[1:], 'o:d:i:e:s:g:w:hc:vt:',
+        options, args = getopt(argv[1:], 'o:d:i:e:s:g:w:hc:vt:p:',
                                ['output=',
                                 'duration=',
                                 'clocks=',
@@ -164,6 +168,7 @@ class JobDescription:
                                 'gap=',
                                 'wait=',
                                 'start-date=',
+                                'project=',
                                 'help',
                                 'version'])
         for (option, value) in options:
@@ -210,6 +215,9 @@ class JobDescription:
 
             elif option in ['-t', '--start-date']:
                 self.start_date = ephem.Date(value)
+
+            elif option in ['-p', '--project']:
+                self.project = value
 
             elif option in ['-h', '--help']:
                 self.print_help = True
@@ -321,10 +329,10 @@ def main(argv):
     sub_folder     = Folder(name =  '%04d-%02d-%02d %02d:%02d' % folder_date[:-1],
                             description = 'Validation observations %04d-%02d-%02d %02d:%02d' % folder_date[:-1],
                             children    = observations)
-    val_obs_folder = Folder(name = 'Validation Obs', mom_id=63624,
+    val_obs_folder = Folder(name = 'Validation Obs', mom_id=192732,
                             children = [sub_folder])
     out=open(job_description.output, 'w')
-    out.write(as_xml_mom_project([val_obs_folder]))
+    out.write(as_xml_mom_project([val_obs_folder], project=job_description.project))
     out.close()
 
     return 0

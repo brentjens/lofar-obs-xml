@@ -284,7 +284,7 @@ class Observation(object):
 
 
 
-def as_xml_mom_project(observations, project='2012LOFAROBS'):
+def as_xml_mom_project(observations, project='2013LOFAROBS'):
     """
     Format a list of *observations* as an XML string that can be
     uploaded to a MoM project with name *project*.
