@@ -113,8 +113,12 @@ class Angle(object):
 
     **Parameters**
 
+    hms : None or tuple
+        An angle in hours, minutes, and seconds,
+        e.g. (13, 59, 12.4).
+
     shms : None or tuple
-        An angle in hours, minutes, and seconds, e.g. ('+', 13, 59,
+        A signed  angle in hours, minutes, and seconds, e.g. ('+', 13, 59,
         12.4). The sign is required.
     
     sdms : None or tuple
@@ -143,7 +147,7 @@ class Angle(object):
 
     Hours:
 
-    >>> Angle(shms = ('+', 3, 15, 30.2))
+    >>> Angle(hms = (3, 15, 30.2))
     Angle(rad = 0.853044216323)
     >>> Angle(shms = ('-', 3, 15, 30.2))
     Angle(rad = -0.853044216323)
@@ -160,15 +164,18 @@ class Angle(object):
     >>> Angle(rad = -0.0568696144215, deg = 12)
     Traceback (most recent call last):
     ...
-    ValueError: Specify exactly none of shms, sdms, rad, or deg.
+    ValueError: Specify exactly one of hms, shms, sdms, rad, or deg.
 
     '''
-    def __init__(self, shms = None, sdms = None, rad = None, deg = None):
-        none_count = [shms, sdms, rad, deg].count(None)
-        if none_count != 3:
-            raise ValueError('Specify exactly none of shms, sdms, rad, or deg.')
+    def __init__(self, hms = None, shms = None, sdms = None,
+                 rad = None, deg = None):
+        none_count = [hms, shms, sdms, rad, deg].count(None)
+        if none_count != 4:
+            raise ValueError('Specify exactly one of hms, shms, sdms, rad, or deg.')
         self.rad = 0.0
         
+        if hms is not None:
+            self.set_shms('+', *hms)
         if shms is not None:
             self.set_shms(*shms)
         if sdms is not None:
