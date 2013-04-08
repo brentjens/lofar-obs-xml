@@ -77,6 +77,69 @@ class Beam(object):
 
 
 
+
+class OLAP(object):
+    def __init__(self,
+                 channels_per_subband     = 64,
+                 integration_time_seconds = 2,
+                 correlated_data          = True,
+                 filtered_data            = False,
+                 beamformed_data          = False,
+                 coherent_stokes_data     = False,
+                 incoherent_stokes_data   = False,
+                 flyseye                  = False,
+                 stokes_integrate_channels = False,
+                 coherent_dedispersed_channels = False,
+                 bypass_pff                    = False,
+                 enable_superterp              = False
+                 ):
+        r'''
+        '''
+        self.channels_per_subband = channels_per_subband
+        self.integration_time_seconds  = integration_time_seconds
+        self.correlated_data           = correlated_data
+        self.filtered_data             = filtered_data
+        self.beamformed_data           = beamformed_data
+        self.coherent_stokes_data      = coherent_stokes_data
+        self.incoherent_stokes_data    = incoherent_stokes_data
+        self.flyseye                   = flyseye
+        self.stokes_integrate_channels = stokes_integrate_channels
+        self.coherent_dedispersed_channels = coherent_dedispersed_channels
+        self.bypass_pff                = bypass_pff
+        self.enable_superterp          = enable_superterp
+
+
+    def xml(self, project_name):
+        r'''
+        '''
+        def lower_case(bool):
+            return repr(bool).lower()
+
+        output = '''
+              <correlatedData>'''+lower_case(self.correlated_data)+'''</correlatedData>
+              <filteredData>'''+lower_case(self.filtered_data)+'''</filteredData>
+              <beamformedData>'''+lower_case(self.beamformed_data)+'''</beamformedData>
+              <coherentStokesData>'''+lower_case(self.coherent_stokes_data)+'''</coherentStokesData>
+              <incoherentStokesData>'''+lower_case(self.incoherent_stokes_data)+'''</incoherentStokesData>
+              <pencilBeams>
+                <flyseye>'''+lower_case(self.flyseye)+'''</flyseye>
+                <pencilBeamList/>
+              </pencilBeams>
+              <tiedArrayBeams>
+                  <flyseye>'''+lower_case(self.flyseye)+'''</flyseye>
+                  <tiedArrayBeamList/>
+              </tiedArrayBeams>
+              <stokes>
+                <integrateChannels>'''+lower_case(self.stokes_integrate_channels)+'''</integrateChannels>
+              </stokes>
+              <stations/>
+              <bypassPff>'''+lower_case(self.bypass_pff)+'''</bypassPff>
+              <enableSuperterp>'''+lower_case(self.enable_superterp)+'''</enableSuperterp>
+        '''
+        return output
+
+
+
 class Observation(object):
     def __init__(self, antenna_set, frequency_range, start_date, duration_seconds, stations, clock_mhz, beam_list, integration_time_seconds=2, channels_per_subband=64, name=None, bit_mode=16):
         """

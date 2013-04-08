@@ -21,9 +21,9 @@ def mom_antenna_name_from_mac_name(mac_name):
     **Examples**
 
     >>> valid_names =  ['LBA_INNER', 'LBA_OUTER', 'LBA', 'HBA', 'HBA_ZERO', 
-    ...                 'HBA_ONE', 'HBA_DUAL', 'HBA_JOINED']
+    ...                 'HBA_ONE', 'HBA_DUAL', 'HBA_JOINED', 'HBA_DUAL_INNER']
     >>> [mom_antenna_name_from_mac_name(name) for name in valid_names]
-    ['LBA Inner', 'LBA Outer', 'LBA', 'HBA', 'HBA Zero', 'HBA One', 'HBA Dual', 'HBA Joined']
+    ['LBA Inner', 'LBA Outer', 'LBA', 'HBA', 'HBA Zero', 'HBA One', 'HBA Dual', 'HBA Joined', 'HBA Dual Inner']
     '''
     name = mac_name.split('_')
     return ' '.join([name[0]] + [s.capitalize() for s in name[1:]])
