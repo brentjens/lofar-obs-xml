@@ -57,6 +57,33 @@ def flatten_list(list_of_lists):
     return [element for sub_list in list_of_lists for element in sub_list]
 
 
+def lofar_observer(date = None):
+    r'''
+    **Parameters**
+
+    date : ephem.Date
+        The date to set for the ephem.Observer() instance
+    
+    **Returns**
+    
+    An ephem.Observer() instance for the LOFAR core.
+
+    **Examples**
+    
+    >>> lofar_observer('2013/04/15 12:34:56')
+    <ephem.Observer date='2013/4/15 12:34:56' epoch='2000/1/1 12:00:00' lon=6:52:11.4 lat=52:54:54.4 elevation=49.344m horizon=0:00:00.0 temp=15.0C pressure=1010.0mBar>
+
+    '''
+    lofar           = ephem.Observer()
+    lofar.long      = +6.869837540*pi/180
+    lofar.lat       = +52.915122495*pi/180
+    lofar.elevation = +49.344
+    if date is not None:
+        lofar.date = date
+    return lofar
+
+    
+
 def lofar_sidereal_time(date):
     r'''
     Returns an ephem.Angle object with the current sidereal time at
@@ -76,11 +103,7 @@ def lofar_sidereal_time(date):
     0.0
     '''
     # CS002 LBA in ITRF2005, epoch 2009.5
-    lofar           = ephem.Observer()
-    lofar.long      = +6.869837540*pi/180
-    lofar.lat       = +52.915122495*pi/180
-    lofar.elevation = +49.344
-    lofar.date      = date
+    lofar           = lofar_observer(date)
     return lofar.sidereal_time()
 
 
@@ -98,6 +121,66 @@ def next_date_with_lofar_lst(lst_rad, start_date = None):
     delta_lst_rad = lst - lst_at_start_rad
     delta_utc_rad = delta_lst_rad/1.002737904
     return ephem.Date(start_date + ephem.hour*(delta_utc_rad*12/pi))
+
+
+def next_sunrise(date, observer = None):
+    r'''
+    Return an ephem.Date instance with the next sunrise at LOFAR, or
+    any other ephem.Observer, if provided.
+
+    **Parameters**
+    
+    date : ephem.Date
+        Date from which to look for sunrise.
+
+    observer : None or ephem.Observer
+        Location for which Sunrise is computed. Default is LOFAR core
+        if None is provided.
+
+    **Returns**
+    
+    An ephem.Date instance.
+
+    **Examples**
+    
+    >>> print(next_sunrise('2013/04/03 12:00:00'))
+    2013/4/4 04:58:56
+    '''
+
+    if observer is None:
+        observer = lofar_observer(date)
+    return observer.next_rising(ephem.Sun())
+
+
+
+
+def next_sunset(date, observer = None):
+    r'''
+    Return an ephem.Date instance with the next sunset at LOFAR, or
+    any other ephem.Observer, if provided.
+
+    **Parameters**
+    
+    date : ephem.Date
+        Date from which to look for sunrise.
+
+    observer : None or ephem.Observer
+        Location for which Sunrise is computed. Default is LOFAR core
+        if None is provided.
+
+    **Returns**
+    
+    An ephem.Date instance.
+
+    **Examples**
+    
+    >>> print(next_sunset('2013/04/03 12:00:00'))
+    2013/4/3 18:11:17
+    '''
+
+    if observer is None:
+        observer = lofar_observer(date)
+    return observer.next_setting(ephem.Sun())
 
 
 
