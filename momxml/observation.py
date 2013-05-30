@@ -78,6 +78,46 @@ class Beam(object):
 
 
 
+class Stokes(object):
+    r'''
+    '''
+
+    def __init__(self, mode, subbands_per_file = 512, number_collapsed_channels = 0, stokes_downsampling_steps = 1, polarizations = 'I'):
+        r'''
+        pol is either 'I' or 'IQUV'; mode is 'coherent' or 'incoherent'.
+        '''
+        self.mode                      = mode
+        self.subbands_per_file         = subbands_per_file
+        self.number_collapsed_channels = number_collapsed_channels
+        self.stokes_downsampling_steps = stokes_downsampling_steps
+        self.polarizations             = polarizations
+
+
+    def stokes_suffix(self):
+        r'''
+        return CS or IS, depending on whether these are coherent or incoherent stokes settings.
+        coherent stokes settings also need tied array beams / fly's eye stuff specified.
+        '''
+        return self.mode[0].upper()+'S'
+
+
+    def xml(self, project_name):
+        r'''
+        '''
+        return '''
+                <subbandsPerFile%(suffix)s>%(subbands_per_file)d</subbandsPerFile%(suffix)s>
+                <numberCollapsedChannels%(suffix)s>%(number_collapsed_channels)d</numberCollapsedChannels%(suffix)s>
+                <stokesDownsamplingSteps%(suffix)s>%(stokes_downsampling_steps)d</stokesDownsamplingSteps%(suffix)s>
+                <which%(suffix)s>%(polarizations)s</which%(suffix)s>
+        ''' % {'suffix': self.stokes_suffix(),
+               'subbands_per_file': self.subbands_per_file,
+               'number_collapsed_channels': self.number_collapsed_channels,
+               'stokes_downsampling_steps': self.stokes_downsampling_steps,
+               'polarizations': self.polarizations}
+               
+
+
+
 class OLAP(object):
     def __init__(self,
                  channels_per_subband     = 64,
@@ -85,8 +125,8 @@ class OLAP(object):
                  correlated_data          = True,
                  filtered_data            = False,
                  beamformed_data          = False,
-                 coherent_stokes_data     = False,
-                 incoherent_stokes_data   = False,
+                 coherent_stokes_data     = None,
+                 incoherent_stokes_data   = None,
                  flyseye                  = False,
                  stokes_integrate_channels = False,
                  coherent_dedispersed_channels = False,
@@ -109,18 +149,54 @@ class OLAP(object):
         self.enable_superterp          = enable_superterp
 
 
+    def need_beam_observation(self):
+        r'''
+        '''
+        return (self.coherent_stokes_data or self.incoherent_stokes_data or 
+                self.filtered_data or self.beamformed_data or self.flyseye)
+
+
+
+    def instrument_name(self):
+        r'''
+        '''
+        if self.need_beam_observation():
+            return 'Beam Observation'
+        else:
+            return 'Interferometer'
+
+
+
+    def default_template(self):
+        r'''
+        '''
+        if self.need_beam_observation():
+            return 'BeamObservation'
+        else:
+            return 'Interferometer'
+        
+
+
     def xml(self, project_name):
         r'''
         '''
         def lower_case(bool):
             return repr(bool).lower()
-
+            
+        incoherent_stokes = self.incoherent_stokes_data is not None
+        coherent_stokes = self.coherent_stokes_data is not None
+            
         output = '''
               <correlatedData>'''+lower_case(self.correlated_data)+'''</correlatedData>
               <filteredData>'''+lower_case(self.filtered_data)+'''</filteredData>
               <beamformedData>'''+lower_case(self.beamformed_data)+'''</beamformedData>
-              <coherentStokesData>'''+lower_case(self.coherent_stokes_data)+'''</coherentStokesData>
-              <incoherentStokesData>'''+lower_case(self.incoherent_stokes_data)+'''</incoherentStokesData>
+              <coherentStokesData>'''+lower_case(coherent_stokes)+'''</coherentStokesData>
+              <incoherentStokesData>'''+lower_case(incoherent_stokes)+'''</incoherentStokesData>'''
+        if self.correlated_data:
+            output += '''
+              <integrationInterval>'''+str(self.integration_time_seconds)+'''</integrationInterval>'''
+        output +='''
+              <channelsPerSubband>'''+str(self.channels_per_subband)+'''</channelsPerSubband>
               <pencilBeams>
                 <flyseye>'''+lower_case(self.flyseye)+'''</flyseye>
                 <pencilBeamList/>
@@ -130,9 +206,16 @@ class OLAP(object):
                   <tiedArrayBeamList/>
               </tiedArrayBeams>
               <stokes>
-                <integrateChannels>'''+lower_case(self.stokes_integrate_channels)+'''</integrateChannels>
+                <integrateChannels>'''+lower_case(self.stokes_integrate_channels)+'''</integrateChannels>'''
+        if self.incoherent_stokes_data:
+            output += '''
+'''+self.incoherent_stokes_data.xml(project_name)
+        if self.coherent_stokes_data:
+            output += '''
+'''+self.coherent_stokes_data.xml(project_name)
+
+        output += '''
               </stokes>
-              <stations/>
               <bypassPff>'''+lower_case(self.bypass_pff)+'''</bypassPff>
               <enableSuperterp>'''+lower_case(self.enable_superterp)+'''</enableSuperterp>
         '''
@@ -234,6 +317,7 @@ class Observation(object):
             <name>"""+obs_name+"""</name>
             <projectName>"""+project_name+"""</projectName>
             <instrument>Interferometer</instrument>
+            <defaultTemplate>Interferometer</defaultTemplate>
             <userSpecification>
               <correlatedData>true</correlatedData>
               <filteredData>false</filteredData>
