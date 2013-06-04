@@ -234,27 +234,32 @@ class JobDescription:
 
 
 def plan_observing_sequence(job_description):
-    full_schedule = [['LBA_OUTER'     , 'LBA_LOW' , '12..499' , 200,  8],
-                     ['HBA_DUAL'      , 'HBA_LOW' , '12..499' , 200,  8],
-                     ['LBA_INNER'     , 'LBA_LOW' , '54..297' , 200, 16],
-                     ['LBA_OUTER'     , 'LBA_LOW' , '54..297' , 200, 16],
-                     ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16],
-                     ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16],
-                     ['HBA_ZERO'      , 'HBA_LOW' , '77..320' , 200, 16],
-                     ['HBA_ONE'       , 'HBA_LOW' , '77..320' , 200, 16],
-                     ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16],
-                     ['HBA_DUAL_INNER', 'HBA_LOW' , '77..320' , 200, 16],
-                     ['HBA_JOINED'    , 'HBA_LOW' , '77..320' , 200, 16],
-                     ['HBA_ZERO'      , 'HBA_MID' , '66..309' , 160, 16],
-                     ['HBA_ONE'       , 'HBA_MID' , '66..309' , 160, 16],
-                     ['HBA_DUAL'      , 'HBA_MID' , '66..309' , 160, 16],
-                     ['HBA_DUAL_INNER', 'HBA_MID' , '66..309' , 160, 16],
-                     ['HBA_JOINED'    , 'HBA_MID' , '66..309' , 160, 16],
-                     ['HBA_ZERO'      , 'HBA_HIGH', '52..255' , 200, 16],
-                     ['HBA_ONE'       , 'HBA_HIGH', '52..255' , 200, 16],
-                     ['HBA_DUAL'      , 'HBA_HIGH', '52..255' , 200, 16],
-                     ['HBA_DUAL_INNER', 'HBA_HIGH', '52..255' , 200, 16],
-                     ['HBA_JOINED'    , 'HBA_HIGH', '52..255' , 200, 16]
+    # Possible products:
+    #  'XC', 'IS', 'CS', 'FE' for cross cor, incoherent stokes, coherent stokes, Fly's eye
+    full_schedule = [['LBA_OUTER'     , 'LBA_LOW' , '12..499' , 200,  8, 'XC'],
+                     ['HBA_DUAL'      , 'HBA_LOW' , '12..499' , 200,  8, 'XC'],
+                     ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, 'FE'],
+                     ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, 'FE'],
+                     ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, 'FE'],
+                     ['LBA_INNER'     , 'LBA_LOW' , '54..297' , 200, 16, 'XC'],
+                     ['LBA_OUTER'     , 'LBA_LOW' , '54..297' , 200, 16, 'XC'],
+                     ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, 'XC'],
+                     ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, 'XC'],
+                     ['HBA_ZERO'      , 'HBA_LOW' , '77..320' , 200, 16, 'XC'],
+                     ['HBA_ONE'       , 'HBA_LOW' , '77..320' , 200, 16, 'XC'],
+                     ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, 'XC'],
+                     ['HBA_DUAL_INNER', 'HBA_LOW' , '77..320' , 200, 16, 'XC'],
+                     ['HBA_JOINED'    , 'HBA_LOW' , '77..320' , 200, 16, 'XC'],
+                     ['HBA_ZERO'      , 'HBA_MID' , '66..309' , 160, 16, 'XC'],
+                     ['HBA_ONE'       , 'HBA_MID' , '66..309' , 160, 16, 'XC'],
+                     ['HBA_DUAL'      , 'HBA_MID' , '66..309' , 160, 16, 'XC'],
+                     ['HBA_DUAL_INNER', 'HBA_MID' , '66..309' , 160, 16, 'XC'],
+                     ['HBA_JOINED'    , 'HBA_MID' , '66..309' , 160, 16, 'XC'],
+                     ['HBA_ZERO'      , 'HBA_HIGH', '52..255' , 200, 16, 'XC'],
+                     ['HBA_ONE'       , 'HBA_HIGH', '52..255' , 200, 16, 'XC'],
+                     ['HBA_DUAL'      , 'HBA_HIGH', '52..255' , 200, 16, 'XC'],
+                     ['HBA_DUAL_INNER', 'HBA_HIGH', '52..255' , 200, 16, 'XC'],
+                     ['HBA_JOINED'    , 'HBA_HIGH', '52..255' , 200, 16, 'XC']
                      ]
     print job_description.allowed_clocks_mhz
     print job_description.wait_seconds
@@ -281,10 +286,14 @@ def plan_observing_sequence(job_description):
                                  exclude = job_description.exclude_list)
     observations  = []
     previous_clock=200
-    for antenna_set, frequency_range, subband_spec, clock_mhz, bit_mode in schedule:
+    for antenna_set, frequency_range, subband_spec, clock_mhz, bit_mode, data_products in schedule:
         target_source = job_description.target_source
         if target_source is None:
-            target_source = SourceCatalogue().cal_source(mean_date, antenna_set[0:3])
+            if 'FE' in data_products or 'CS' in data_products or 'IS' in data_products:
+                target_source = SourceCatalogue().psr_source(mean_date, antenna_set[0:3])
+            else:
+                target_source = SourceCatalogue().cal_source(mean_date, antenna_set[0:3])
+        print data_products + ' ' + antenna_set
         print target_source
         if previous_clock != clock_mhz: # If clock switches, allow for two minutes extra
             start_date = ephem.Date(start_date + 2*ephem.minute)
@@ -292,20 +301,41 @@ def plan_observing_sequence(job_description):
         if antenna_set in ['HBA_ONE', 'HBA_DUAL', 'HBA_ONE_INNER', 'HBA_DUAL_INNER']:
             good_stations = exclude_conflicting_eu_stations(good_stations)
 
+        channels_per_subband = 64
+        coherent_stokes_data = None
+        tied_array_beams     = None
+        duration_seconds     = job_description.duration_seconds
+        if 'FE' in data_products:
+            channels_per_subband = 16
+            coherent_stokes_data = Stokes('coherent',
+                                          stokes_downsampling_steps = 64)
+            tied_array_beams     = TiedArrayBeams(flyseye = True, beam_offsets=[(0.0, 0.0)])
+            if 'LBA' == antenna_set[0:3]:
+                duration_seconds = 300.0
+
+
+        backend = BackendProcessing(
+            integration_time_seconds = 1,
+            correlated_data          = 'XC' in data_products,
+            channels_per_subband     = channels_per_subband,
+            coherent_stokes_data     = coherent_stokes_data,
+            tied_array_beams         = tied_array_beams)
+
         observations.append(Observation(
+            name                     = data_products + ' ' + antenna_set,
             antenna_set              = antenna_set,
             frequency_range          = frequency_range,
             start_date               = start_date.tuple(),
-            duration_seconds         = job_description.duration_seconds,
+            duration_seconds         = duration_seconds,
             stations                 = good_stations,
             clock_mhz                = clock_mhz,
-            backend                  = BackendProcessing(integration_time_seconds = 1),
+            backend                  = backend,
             bit_mode                 = bit_mode,
             beam_list=[Beam(
                 target_source            = target_source,
                 subband_spec             = subband_spec)]))
         start_date = ephem.Date(start_date
-                                + ephem.second*job_description.duration_seconds
+                                + ephem.second*duration_seconds
                                 + ephem.second*job_description.gap_seconds)
         previous_clock=clock_mhz
         pass

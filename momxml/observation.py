@@ -269,7 +269,7 @@ class BackendProcessing(object):
         coherent_stokes = self.coherent_stokes_data is not None
         flyseye = False
         if coherent_stokes:
-            flyseye = self.coherent_stokes_data.flyseye
+            flyseye = self.tied_array_beams.flyseye
 
             
         output = '''
