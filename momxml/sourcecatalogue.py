@@ -29,6 +29,21 @@ class SourceCatalogue:
                 ]}
 
 
+
+        self.pulsar_table = {'HBA': [
+            [['PSR B0329+54'], ( 3, 32, 59.368) , ('+', 54, 34, 43.57)],
+            [['PSR B1508+55'], (15,  9, 25.6298), ('+', 55, 31, 32.394)],
+            [['PSR B2217+47'], (22, 19, 48.139) , ('+', 47, 54, 53.93)]
+            ],
+                             'LBA': [
+            [['PSR B0809+74'], ( 8, 14, 59.50)  , ('+', 74, 29,  5.70)],
+            [['PSR B1133+16'], (11, 36,  3.2477), ('+', 15, 51,  4.48)],
+            [['PSR B1919+21'], (19, 21, 44.815) , ('+', 21, 53,  2.25)]
+                             ]}
+
+
+
+
     def find_source(self, source_name):
         selection = filter(lambda row: source_name in row[0], self.source_table)
         if len(selection) != 1:
@@ -38,14 +53,14 @@ class SourceCatalogue:
 
         
         
-    def closest_to_meridian(self, lst_rad, lba_or_hba):
+    def closest_to_meridian(self, lst_rad, lba_or_hba, source_table):
         r'''
         '''
         lst_rad = float(lst_rad)
         lst_complex = exp(1j*(lst_rad+0.0))
         min_dist=2.1
         best_source = None
-        for source in self.source_table[lba_or_hba]:
+        for source in source_table[lba_or_hba]:
             ra = source[1]
             ra_rad = (ra[0]+ra[1]/60.0 + ra[2]/3600.0)*pi/12.0
             ra_complex = exp(1j*ra_rad)
@@ -59,4 +74,13 @@ class SourceCatalogue:
 
     
     def cal_source(self, obs_date, lba_or_hba):
-        return self.closest_to_meridian(lofar_sidereal_time(obs_date), lba_or_hba)
+        return self.closest_to_meridian(lofar_sidereal_time(obs_date),
+                                        lba_or_hba,
+                                        source_table = self.source_table)
+
+
+    def psr_source(self, obs_date, lba_or_hba):
+        return self.closest_to_meridian(lofar_sidereal_time(obs_date),
+                                        lba_or_hba,
+                                        source_table = self.pulsar_table)
+        
