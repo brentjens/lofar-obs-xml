@@ -299,7 +299,7 @@ def plan_observing_sequence(job_description):
             duration_seconds         = job_description.duration_seconds,
             stations                 = good_stations,
             clock_mhz                = clock_mhz,
-            integration_time_seconds = 1,
+            backend                  = BackendProcessing(integration_time_seconds = 1),
             bit_mode                 = bit_mode,
             beam_list=[Beam(
                 target_source            = target_source,

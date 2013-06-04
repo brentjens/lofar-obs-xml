@@ -1,6 +1,6 @@
-from momformats   import *
-from targetsource import *
-from utilities    import *
+from momxml.momformats   import *
+from momxml.targetsource import *
+from momxml.utilities    import *
 from math import ceil
 import copy
 import ephem
@@ -49,6 +49,9 @@ class Folder(object):
         return preamble + children_string + appendix
 
 
+def lower_case(boolean):
+    return repr(boolean).lower()
+
 
 
 
@@ -74,6 +77,47 @@ class Beam(object):
 
         if measurement_type not in ['Target', 'Calibration']:
             raise ValueError('measurement_type %r not in [\'Target\', \'Calibration\']' % measurement_type)
+
+
+
+
+
+
+
+class TiedArrayBeams(object):
+    def __init__(self, flyseye    = False,
+                 beam_offsets     = None,
+                 nr_tab_rings     = 0,
+                 tab_ring_size    = 0):
+        self.flyseye          = flyseye
+        self.beam_offsets     = beam_offsets
+        self.nr_tab_rings     = nr_tab_rings
+        self.tab_ring_size    = tab_ring_size
+
+
+    def xml(self):
+        output = ('''                        <tiedArrayBeams>
+                            <flyseye>%s</flyseye>
+                            <nrTabRings>%d</nrTabRings>
+                            <tabRingSize>%f</tabRingSize>''' %
+                  (lower_case(self.flyseye),
+                   self.nr_tab_rings,
+                   self.tab_ring_size))
+        if len(self.beam_offsets) > 0:
+            output += ('''
+                            <tiedArrayBeamList>
+                                %s
+                            </tiedArrayBeamList>''' %
+            '\n                                '.join(
+                ['<tiedArrayBeam><coherent>true</coherent><angle1>%f</angle1><angle2>%f</angle2></tiedArrayBeam>' % (angle_1, angle_2) for angle_1, angle_2 in self.beam_offsets]))
+        else:
+            output += '''
+                            <tiedArrayBeamList/>'''
+        output += '''
+                        </tiedArrayBeams>'''
+        return output
+
+
 
 
 
@@ -118,7 +162,15 @@ class Stokes(object):
 
 
 
-class OLAP(object):
+
+
+
+
+
+
+
+
+class BackendProcessing(object):
     def __init__(self,
                  channels_per_subband     = 64,
                  integration_time_seconds = 2,
@@ -127,22 +179,22 @@ class OLAP(object):
                  beamformed_data          = False,
                  coherent_stokes_data     = None,
                  incoherent_stokes_data   = None,
-                 flyseye                  = False,
                  stokes_integrate_channels = False,
                  coherent_dedispersed_channels = False,
+                 tied_array_beams              = None,
                  bypass_pff                    = False,
                  enable_superterp              = False
                  ):
         r'''
         '''
         self.channels_per_subband = channels_per_subband
-        self.integration_time_seconds  = integration_time_seconds
+        self.integration_time_seconds  = int(round(integration_time_seconds))
         self.correlated_data           = correlated_data
         self.filtered_data             = filtered_data
         self.beamformed_data           = beamformed_data
         self.coherent_stokes_data      = coherent_stokes_data
+        self.tied_array_beams          = tied_array_beams
         self.incoherent_stokes_data    = incoherent_stokes_data
-        self.flyseye                   = flyseye
         self.stokes_integrate_channels = stokes_integrate_channels
         self.coherent_dedispersed_channels = coherent_dedispersed_channels
         self.bypass_pff                = bypass_pff
@@ -153,7 +205,7 @@ class OLAP(object):
         r'''
         '''
         return (self.coherent_stokes_data or self.incoherent_stokes_data or 
-                self.filtered_data or self.beamformed_data or self.flyseye)
+                self.filtered_data or self.beamformed_data)
 
 
 
@@ -175,6 +227,36 @@ class OLAP(object):
         else:
             return 'Interferometer'
         
+            
+    def measurement_type(self):
+        if self.need_beam_observation():
+            return 'lofar:BFMeasurementType'
+        else:
+            return 'lofar:UVMeasurementType'
+
+
+    def measurement_attributes(self):
+        if self.need_beam_observation():
+            return 'bfMeasurementAttributes'
+        else:
+            return 'uvMeasurementAttributes'
+
+
+    def tied_array_beam_list(self):
+        if self.need_beam_observation():
+            coherent = self.coherent_stokes_data is not None 
+            if self.tied_array_beams is not None:
+                return self.tied_array_beams.xml()
+            else:
+                return """
+                      <tiedArrayBeamList>
+                          <tiedArrayBeam>
+                              <coherent>"""+lower_case(coherent)+"""</coherent>
+                          </tiedArrayBeam>
+                      </tiedArrayBeamList>"""
+        else:
+            return "                        <tiedArrayBeamList/>"
+
 
 
     def xml(self, project_name):
@@ -185,6 +267,10 @@ class OLAP(object):
             
         incoherent_stokes = self.incoherent_stokes_data is not None
         coherent_stokes = self.coherent_stokes_data is not None
+        flyseye = False
+        if coherent_stokes:
+            flyseye = self.coherent_stokes_data.flyseye
+
             
         output = '''
               <correlatedData>'''+lower_case(self.correlated_data)+'''</correlatedData>
@@ -198,13 +284,9 @@ class OLAP(object):
         output +='''
               <channelsPerSubband>'''+str(self.channels_per_subband)+'''</channelsPerSubband>
               <pencilBeams>
-                <flyseye>'''+lower_case(self.flyseye)+'''</flyseye>
+                <flyseye>'''+lower_case(flyseye)+'''</flyseye>
                 <pencilBeamList/>
-              </pencilBeams>
-              <tiedArrayBeams>
-                  <flyseye>'''+lower_case(self.flyseye)+'''</flyseye>
-                  <tiedArrayBeamList/>
-              </tiedArrayBeams>
+              </pencilBeams>''' + self.tied_array_beam_list()+'''
               <stokes>
                 <integrateChannels>'''+lower_case(self.stokes_integrate_channels)+'''</integrateChannels>'''
         if self.incoherent_stokes_data:
@@ -223,8 +305,12 @@ class OLAP(object):
 
 
 
+
+
+
 class Observation(object):
-    def __init__(self, antenna_set, frequency_range, start_date, duration_seconds, stations, clock_mhz, beam_list, integration_time_seconds=2, channels_per_subband=64, name=None, bit_mode=16):
+    def __init__(self, antenna_set, frequency_range, start_date, duration_seconds,
+                 stations, clock_mhz, beam_list, backend, name=None, bit_mode=16):
         """
         *antenna_set*            : One of 'LBA_INNER', 'LBA_OUTER', 'HBA_ZERO', 'HBA_ONE',
                                   'HBA_DUAL', or 'HBA_JOINED'
@@ -240,8 +326,7 @@ class Observation(object):
         *clock_mhz*              : An integer value of 200 or 160.
         *beam_list*              : A list of Beam objects, which contain source/subband
                                    specifications. Provide at least one beam.
-        *integration_time_seconds: Correlator integration time in seconds. Default is 2
-        *channels_per_subband*   : Number of channels per subband. Default is 64
+        *backend*                : BackendProcessing instance with correlator settings
         *name*                   : Name of the observation. Defaults to name of first target plus antenna set.
         *bit_mode*               : number of bits per sample. Either 4, 8, or 16.
         """
@@ -251,8 +336,7 @@ class Observation(object):
         self.stations                 = stations
         self.clock_mhz                = int(clock_mhz)
         self.start_date               = start_date
-        self.integration_time_seconds = int(round(integration_time_seconds))
-        self.channels_per_subband     = channels_per_subband
+        self.backend                  = backend
         self.beam_list                = copy.deepcopy(beam_list)
         self.name                     = name
         self.bit_mode                 = bit_mode
@@ -316,32 +400,13 @@ class Observation(object):
           <lofar:observationAttributes>
             <name>"""+obs_name+"""</name>
             <projectName>"""+project_name+"""</projectName>
-            <instrument>Interferometer</instrument>
-            <defaultTemplate>Interferometer</defaultTemplate>
+            <instrument>"""+self.backend.instrument_name()+"""</instrument>
+            <defaultTemplate>"""+self.backend.default_template()+"""</defaultTemplate>
             <userSpecification>
-              <correlatedData>true</correlatedData>
-              <filteredData>false</filteredData>
-              <beamformedData>false</beamformedData>
-              <coherentStokesData>false</coherentStokesData>
-              <incoherentStokesData>false</incoherentStokesData>
               <antenna>"""+mom_antenna_name_from_mac_name(self.antenna_set)+"""</antenna>
               <clock mode=\""""+str(self.clock_mhz)+""" MHz\"/>
               <instrumentFilter>"""+mom_frequency_range(self.frequency_range)+"""</instrumentFilter>
-              <integrationInterval>"""+str(self.integration_time_seconds)+"""</integrationInterval>
-              <channelsPerSubband>"""+str(self.channels_per_subband)+"""</channelsPerSubband>
-              <coherentDedisperseChannels>false</coherentDedisperseChannels>
-              <pencilBeams>
-                <flyseye>false</flyseye>
-                <pencilBeamList/>
-              </pencilBeams>
-              <tiedArrayBeams>
-                  <flyseye>false</flyseye>
-                  <tiedArrayBeamList/>
-              </tiedArrayBeams>
-
-              <stokes>
-                <integrateChannels>false</integrateChannels>
-              </stokes>
+"""+self.backend.xml(project_name)+"""
               <stationSet>Custom</stationSet>
               <stations>
                 """+'\n                '.join(['<station name=\"'+n+'\" />' for n in self.stations])+"""
@@ -350,31 +415,9 @@ class Observation(object):
               <startTime>"""+mom_timestamp(*rounded_start_date)+"""</startTime>
               <endTime>"""+mom_timestamp(*rounded_end_date)+"""</endTime>
               <duration>"""+mom_duration(seconds = self.duration_seconds)+"""</duration>
-              <bypassPff>false</bypassPff>
-              <enableSuperterp>false</enableSuperterp>
               <numberOfBitsPerSample>"""+str(self.bit_mode)+"""</numberOfBitsPerSample>
             </userSpecification>
-            <systemSpecification>
-              <correlatedData>true</correlatedData>
-              <filteredData>false</filteredData>
-              <beamformedData>false</beamformedData>
-              <coherentStokesData>false</coherentStokesData>
-              <incoherentStokesData>false</incoherentStokesData>
-              <pencilBeams>
-                <flyseye>false</flyseye>
-                <pencilBeamList/>
-              </pencilBeams>
-              <tiedArrayBeams>
-                  <flyseye>false</flyseye>
-                  <tiedArrayBeamList/>
-              </tiedArrayBeams>
-              <stokes>
-                <integrateChannels>false</integrateChannels>
-              </stokes>
-              <stations/>
-              <bypassPff>false</bypassPff>
-              <enableSuperterp>false</enableSuperterp>
-            </systemSpecification>
+            <systemSpecification/>
           </lofar:observationAttributes>
           <children>
         """
@@ -382,7 +425,7 @@ class Observation(object):
         for id,beam in enumerate(self.beam_list):
             observation_str +="""
             <item index=\""""+str(id)+"""\">
-              <lofar:measurement xsi:type=\"lofar:UVMeasurementType\">
+              <lofar:measurement xsi:type=\""""+self.backend.measurement_type()+"""\">
                 <name>"""+beam.target_source.name+"""</name>
                 <description>"""+obs_name+"""</description>
                 <statusHistory>
@@ -399,7 +442,7 @@ class Observation(object):
                 <currentStatus>
                   <mom2:openedStatus/>
                 </currentStatus>
-                <lofar:uvMeasurementAttributes>
+                <lofar:"""+self.backend.measurement_attributes()+""">
                   <measurementType>"""+beam.measurement_type+"""</measurementType>
                   <specification>
                     <targetName>"""+beam.target_source.name+"""</targetName>
@@ -412,13 +455,9 @@ class Observation(object):
                       <centralFrequency unit=\"MHz\">139.21875</centralFrequency>
                       <contiguous>false</contiguous>
                       <subbands>"""+beam.subband_spec+"""</subbands>
-                    </subbandsSpecification>
-                    <tiedArrayBeams>
-                        <flyseye>false</flyseye>
-                        <tiedArrayBeamList/>
-                    </tiedArrayBeams>
+                    </subbandsSpecification>"""+self.backend.tied_array_beam_list()+"""
                   </specification>
-                </lofar:uvMeasurementAttributes>
+                </lofar:"""+self.backend.measurement_attributes()+""">
               </lofar:measurement>
             </item>"""
         observation_str+="""
