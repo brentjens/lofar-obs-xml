@@ -5,9 +5,11 @@ import os, sys
 from getopt import gnu_getopt as getopt
 from getopt import GetoptError
 import ephem
+import argparse
 from math import pi
 from momxml import *
 from momxml import __version__
+
 
 #
 # Various messages
@@ -35,65 +37,84 @@ def print_short_help():
     return sys.stdout.write('genvalobs: use "genvalobs --help" for help\n')
 
 
-def print_manual():
-    """
-    Print basic manual to standard output.
-    """
-    return sys.stdout.write("""
-usage: genvalobs [options] \"source name\"
 
-The source name must be enclosed in single or double quotes if it
-contains spaces. The following sources are recommended:
+def parse_arguments():
+    r'''
+    '''
+    parser = argparse.ArgumentParser()
+    #usage='%(prog)s [options] \'source name\'')
+    
 
-- \"3C 48\"  /  48: LST 22:30--04:30
-- \"3C 147\" / 147: LST 02:30--08:30
-- \"3C 196\" / 196: LST 05:00--11:00
-- \"3C 295\" / 295: LST 11:00--17:00
-- \"Cyg A\"  / cyg: LST 16:00--24:00
+    parser.add_argument('-o', '--output', metavar='FILENAME',
+                        help='Name of the output file.',
+                        default='lofar-validation-%04d%02d%02d-%02d%02d%02d.xml' % ephem.Observer().date.tuple())
+    
+    parser.add_argument('-d', '--duration', metavar='SECONDS',
+                        help='Duration of individual observations in seconds.',
+                        type=int, default=120)
 
-If no source is specified, the program chooses the source that is
-closest to the meridian at the central LST of the observing
-sequence. The program has separate calibrator lists for LBA and HBA
-observations.
+    parser.add_argument('-g', '--gap', metavar='SECONDS',
+                        help='Gap between observations in seconds.',
+                        type=int, default=60)
 
-Options:
--o / --output     Name of the output file. Default is
-                  lofar-validation-yyyymmdd-hhmmss.xml
+    parser.add_argument('-c', '--clocks', metavar='CLOCK_MHZ', action='append',
+                        choices = [160, 200],
+                        help='Allowed clock frequencies. Choose 160 or 200. Option can be provided multiple times if more than one clock frequency is required.',
+                        type=int, default=None)
 
--d / --duration   Duration of individual observations in
-                  seconds. Default is 120.
+    parser.add_argument('-s', '--stations', metavar='STATION_SET',
+                        choices=['superterp', 'core', 'remote', 'nl', 'europe', 'all', 'none'],
+                        help='''One of superterp, core, remote, nl, europe, all, or none. EU stations
+that conflict with certain HBA1 core fields are excluded from the
+HBA_ONE, HBA_ONE_INNER, HBA_DUAL, and HBA_DUAL_INNER
+observations. They are taken along in all other observations.''',
+                        default='nl')
 
--g / --gap        Gap between observations in seconds. Default
-                  is 60.
+    parser.add_argument('-i', '--include', metavar='STATION_NAMES',
+                        help='Comma separated list of station names to add to station set.')
 
--c / --clocks     Comma separated list of allowed clock frequencies
-                  in MHz. Default is 200. Other example: -c 160,200.
+    parser.add_argument('-e', '--exclude', metavar='STATION_NAMES',
+                        help='Comma separated list of station names to exclude from the station set.')
 
--s / --stations   Station set. One of: superterp, core, remote, nl,
-                  europe, all, or none. Default is nl. EU stations
-                  that conflict with certain HBA1 core fields are
-                  excluded from the HBA_ONE, HBA_ONE_INNER, HBA_DUAL,
-                  and HBA_DUAL_INNER observations. They are taken
-                  along in all other observations.
+    parser.add_argument('-w', '--wait', metavar='SECONDS',
+                        help='Number of seconds to wait until the first observation must begin.',
+                        type=int, default=540)
 
--i / --include    Comma separated list of station names to add to
-                  station set.
+    parser.add_argument('-t', '--start-date', metavar='DATE_STRING',
+                        help='''Specify an exact date and time to start the first
+                        observation. Format: "yyyy/mm/dd hh:mm:ss.s''')
+    
+    parser.add_argument('-p', '--project', metavar='MOM_NAME',
+                        help='Name of the project under which the observations belong.',
+                        default='2013LOFAROBS')
 
--e / --exclude    Comma separated list of stations to exlude from
-                  station set.
+    parser.add_argument('-m', '--mode', metavar='CORRELATOR_MODE',
+                        choices=['XC', 'FE', 'CS', 'IS'], action='append',
+                        help='Correlator modes to test. Choose one of XC (crosscorrelation), FE (Fly\'s eye), IS (incoherent stokes), or CS (coherent stokes). One can specify more than one mode. If this argument is not spedified, all modes will be tested.',
+                        default=None)
+                        
 
--w / --wait       Number of seconds to wait before the first observation
-                  must begin. Default is 540 seconds.
+    parser.add_argument('source', nargs = '?', help='''
+The source name must be enclosed in single or double quotes if it contains spaces. The following sources are recommended:\n
+\n
+- \"3C 48\"  /  48: LST 22:30--04:30\n
+- \"3C 147\" / 147: LST 02:30--08:30\n
+- \"3C 196\" / 196: LST 05:00--11:00\n
+- \"3C 295\" / 295: LST 11:00--17:00\n
+- \"Cyg A\"  / cyg: LST 16:00--24:00\n
+\n
+If no source is specified, the program chooses the source that is closest to the meridian at the central LST of the observing sequence. The program has separate calibrator lists for LBA and HBA observations.
+        ''',
+                        default=None)
+    args = parser.parse_args()
+    if args.clocks is None:
+        args.clocks=[200]
 
--t / --start-date Specify an exact date and time to start the first
-                  observation. Format: "yyyy/mm/dd hh:mm:ss.s"
+    if args.mode is None:
+        args.mode=['XC', 'FE', 'CS', 'IS']
+    return  args
 
--p / --project    Name of the project under which the observations
-                  belong. Default: '2013LOFAROBS'
 
--h / --help       Display manual.
-
-""")
 
 
 
@@ -109,191 +130,78 @@ def lookup_source(source_name=None):
 
 
 
-
-
-
-
-
-#
-#  JobDescription
-#
-
-class JobDescription:
-    """
-    The JobDescription class is responsible for commandline
-    parsing. Its data members are the program settings. One can
-    specify default values when the object is constructed. Example
-    usage:
-
-    >>> job = JobDescription(sys.argv, duration=200)
-    """
-
-    def __init__(self, argv, output = 'schedule.log', wait_seconds = 540,
-                 duration_seconds = 120, gap_seconds=60, target_source = None,
-                 allowed_clocks_mhz = [200], print_help = False,
-                 station_set = 'nl', include_list = [], exclude_list = [],
-                 start_date = None, project='2013LOFAROBS'):
-        """
-        Set default values and call parse_commandline(argv)
-        """
-        self.output                = output
-        self.wait_seconds          = wait_seconds
-        self.duration_seconds      = duration_seconds
-        self.gap_seconds           = gap_seconds
-        self.target_source         = target_source
-        self.allowed_clocks_mhz    = allowed_clocks_mhz
-        self.print_help            = print_help
-        self.station_set           = station_set
-        self.exclude_list          = exclude_list
-        self.include_list          = include_list
-        self.start_date            = start_date
-        self.project               = project
-        self.parse_commandline(argv)
-        pass
-
-
-    def parse_commandline(self, argv):
-        """
-        Parse the commandline passed in *argv*. Returns reference to
-        self. May raise a GetoptError in case of commandline parsing
-        problems.
-        """
-        options, args = getopt(argv[1:], 'o:d:i:e:s:g:w:hc:vt:p:',
-                               ['output=',
-                                'duration=',
-                                'clocks=',
-                                'include=',
-                                'exclude=',
-                                'stations=',
-                                'gap=',
-                                'wait=',
-                                'start-date=',
-                                'project=',
-                                'help',
-                                'version'])
-        for (option, value) in options:
-            if option in ['-v', '--version']:
-                exit(0)
-            if option in ['-o', '--output']:
-                self.output = value
-
-            elif option in ['-w', '--wait']:
-                try:
-                    self.wait_seconds = int(value)
-                except (ValueError,):
-                    raise GetoptError('Wait time must be an integer in seconds.\nYou specified: "%s"' % (value,))
-
-
-            elif option in ['-d', '--duration']:
-                try:
-                    self.duration_seconds = int(value)
-                except (ValueError,):
-                    raise GetoptError('Duration must be an integer in seconds.\nYou specified: "%s"' % (value,))
-
-            elif option in ['-c', '--clocks']:
-                self.allowed_clocks_mhz = [int(clock) for clock in value.split(',')]
-                for clock in self.allowed_clocks_mhz:
-                    if clock not in [160, 200]:
-                        raise GetoptError('Allowed clocks are 160 and 200, not %d' % clock)
-
-
-            elif option in ['-g', '--gap']:
-                try:
-                    self.gap_seconds = int(value)
-                except (ValueError,):
-                    raise GetoptError('Gap must be an integer in seconds.\nYou specified: "%s"' % (value,))
-
-
-            elif  option in ['-s', '--stations']:
-                self.station_set = value
-
-            elif  option in ['-i', '--include']:
-                self.include_list = value.upper().split(',')
-
-            elif  option in ['-e', '--exclude']:
-                self.exclude_list = value.upper().split(',')
-
-            elif option in ['-t', '--start-date']:
-                self.start_date = ephem.Date(value)
-
-            elif option in ['-p', '--project']:
-                self.project = value
-
-            elif option in ['-h', '--help']:
-                self.print_help = True
-                return self
-            pass # end of for loop
-
-        if len(args) > 1:
-            raise GetoptError('Although you may specify at most 1 target source, you specified %d, namely %s'%(len(args), str(args)))
-        elif len(args) == 1:
-            self.target_source = lookup_source(args[0])
-        else:
-            self.target_source = None
-        return self
-
-
 def plan_observing_sequence(job_description):
     # Possible products:
     #  'XC', 'IS', 'CS', 'FE' for cross cor, incoherent stokes, coherent stokes, Fly's eye
-    full_schedule = [['LBA_OUTER'     , 'LBA_LOW' , '12..499' , 200,  8, 'XC'],
-                     ['HBA_DUAL'      , 'HBA_LOW' , '12..499' , 200,  8, 'XC'],
-                     ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, 'FE'],
-                     ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, 'FE'],
-                     ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, 'FE'],
-                     ['LBA_INNER'     , 'LBA_LOW' , '54..297' , 200, 16, 'XC'],
-                     ['LBA_OUTER'     , 'LBA_LOW' , '54..297' , 200, 16, 'XC'],
-                     ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, 'XC'],
-                     ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, 'XC'],
-                     ['HBA_ZERO'      , 'HBA_LOW' , '77..320' , 200, 16, 'XC'],
-                     ['HBA_ONE'       , 'HBA_LOW' , '77..320' , 200, 16, 'XC'],
-                     ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, 'XC'],
-                     ['HBA_DUAL_INNER', 'HBA_LOW' , '77..320' , 200, 16, 'XC'],
-                     ['HBA_JOINED'    , 'HBA_LOW' , '77..320' , 200, 16, 'XC'],
-                     ['HBA_ZERO'      , 'HBA_MID' , '66..309' , 160, 16, 'XC'],
-                     ['HBA_ONE'       , 'HBA_MID' , '66..309' , 160, 16, 'XC'],
-                     ['HBA_DUAL'      , 'HBA_MID' , '66..309' , 160, 16, 'XC'],
-                     ['HBA_DUAL_INNER', 'HBA_MID' , '66..309' , 160, 16, 'XC'],
-                     ['HBA_JOINED'    , 'HBA_MID' , '66..309' , 160, 16, 'XC'],
-                     ['HBA_ZERO'      , 'HBA_HIGH', '52..255' , 200, 16, 'XC'],
-                     ['HBA_ONE'       , 'HBA_HIGH', '52..255' , 200, 16, 'XC'],
-                     ['HBA_DUAL'      , 'HBA_HIGH', '52..255' , 200, 16, 'XC'],
-                     ['HBA_DUAL_INNER', 'HBA_HIGH', '52..255' , 200, 16, 'XC'],
-                     ['HBA_JOINED'    , 'HBA_HIGH', '52..255' , 200, 16, 'XC']
+    full_schedule = [['LBA_OUTER'     , 'LBA_LOW' , '12..499' , 200,  8, ['XC']],
+                     ['HBA_DUAL'      , 'HBA_LOW' , '12..499' , 200,  8, ['XC']],
+                     ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE']],
+                     ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE']],
+                     ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['FE']],
+                     ['LBA_INNER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC']],
+                     ['LBA_OUTER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC']],
+                     ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['XC']],
+                     ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, ['XC']],
+                     ['HBA_ZERO'      , 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
+                     ['HBA_ONE'       , 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
+                     ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
+                     ['HBA_DUAL_INNER', 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
+                     ['HBA_JOINED'    , 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
+                     ['HBA_ZERO'      , 'HBA_MID' , '66..309' , 160, 16, ['XC']],
+                     ['HBA_ONE'       , 'HBA_MID' , '66..309' , 160, 16, ['XC']],
+                     ['HBA_DUAL'      , 'HBA_MID' , '66..309' , 160, 16, ['XC']],
+                     ['HBA_DUAL_INNER', 'HBA_MID' , '66..309' , 160, 16, ['XC']],
+                     ['HBA_JOINED'    , 'HBA_MID' , '66..309' , 160, 16, ['XC']],
+                     ['HBA_ZERO'      , 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
+                     ['HBA_ONE'       , 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
+                     ['HBA_DUAL'      , 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
+                     ['HBA_DUAL_INNER', 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
+                     ['HBA_JOINED'    , 'HBA_HIGH', '52..255' , 200, 16, ['XC']]
                      ]
-    print job_description.allowed_clocks_mhz
-    print job_description.wait_seconds
+    print job_description
 
-    schedule      = [obs for obs in full_schedule if obs[3] in job_description.allowed_clocks_mhz]
+    schedule      = [obs for obs in full_schedule if obs[3] in job_description.clocks]
     now           = ephem.Observer().date
-    start_date    = ephem.Date(now + ephem.second*job_description.wait_seconds)
+    start_date    = ephem.Date(now + ephem.second*job_description.wait)
     if job_description.start_date:
         start_date = job_description.start_date
 
     print 'LST at start observation: %s' % str(lofar_sidereal_time(start_date))
 
     mean_date     = (start_date +
-                     ephem.second*len(schedule)*(job_description.duration_seconds +
-                                                 job_description.gap_seconds)*0.5)
+                     ephem.second*len(schedule)*(job_description.duration +
+                                                 job_description.gap)*0.5)
 
     mean_lst      = lofar_sidereal_time(mean_date)
     print 'Mean date: ' + repr(mean_date)
     print 'Mean LST: '+str(mean_lst)
     print 'Mean LST rad: %f' % float(mean_lst)
 
-    stations      = station_list(job_description.station_set,
-                                 include = job_description.include_list,
-                                 exclude = job_description.exclude_list)
+    include       = job_description.include
+    include       = include and include.split(',')
+    exclude       = job_description.exclude
+    exclude       = exclude and exclude.split(',')
+    stations      = station_list(job_description.stations,
+                                 include = include,
+                                 exclude = exclude,)
     observations  = []
     previous_clock=200
     for antenna_set, frequency_range, subband_spec, clock_mhz, bit_mode, data_products in schedule:
-        target_source = job_description.target_source
+        target_source = job_description.source
+        data_products = [data_product
+                         for data_product in data_products
+                         if data_product in job_description.mode]
+        if len(data_products) == 0:
+            continue # No data products to write, no point to observe.
         if target_source is None:
             if 'FE' in data_products or 'CS' in data_products or 'IS' in data_products:
                 target_source = SourceCatalogue().psr_source(mean_date, antenna_set[0:3])
             else:
                 target_source = SourceCatalogue().cal_source(mean_date, antenna_set[0:3])
-        print data_products + ' ' + antenna_set
+        else:
+            target_source = lookup_source(target_source)
+
+        print ','.join(data_products) + ' ' + antenna_set
         print target_source
         if previous_clock != clock_mhz: # If clock switches, allow for two minutes extra
             start_date = ephem.Date(start_date + 2*ephem.minute)
@@ -304,14 +212,14 @@ def plan_observing_sequence(job_description):
         channels_per_subband = 64
         coherent_stokes_data = None
         tied_array_beams     = None
-        duration_seconds     = job_description.duration_seconds
+        duration_seconds     = job_description.duration
         if 'FE' in data_products:
             channels_per_subband = 16
             coherent_stokes_data = Stokes('coherent',
-                                          stokes_downsampling_steps = 64)
-            tied_array_beams     = TiedArrayBeams(flyseye = True, beam_offsets=[(0.0, 0.0)])
+                                          stokes_downsampling_steps = 128)
+            tied_array_beams     = TiedArrayBeams(flyseye = True, beam_offsets=None)
             if 'LBA' == antenna_set[0:3]:
-                duration_seconds = 300.0
+                duration_seconds = 600.0
 
 
         backend = BackendProcessing(
@@ -320,9 +228,9 @@ def plan_observing_sequence(job_description):
             channels_per_subband     = channels_per_subband,
             coherent_stokes_data     = coherent_stokes_data,
             tied_array_beams         = tied_array_beams)
-
+        
         observations.append(Observation(
-            name                     = data_products + ' ' + antenna_set,
+            name                     = ','.join(data_products) + ' ' + antenna_set,
             antenna_set              = antenna_set,
             frequency_range          = frequency_range,
             start_date               = start_date.tuple(),
@@ -336,7 +244,7 @@ def plan_observing_sequence(job_description):
                 subband_spec             = subband_spec)]))
         start_date = ephem.Date(start_date
                                 + ephem.second*duration_seconds
-                                + ephem.second*job_description.gap_seconds)
+                                + ephem.second*job_description.gap)
         previous_clock=clock_mhz
         pass
     return observations
@@ -347,11 +255,8 @@ def plan_observing_sequence(job_description):
 
 
 def main(argv):
-
-    job_description = JobDescription(sys.argv, output='lofar-validation-%04d%02d%02d-%02d%02d%02d.xml' % ephem.Observer().date.tuple())
-    if job_description.print_help:
-        print_manual()
-        return -1
+    print parse_arguments()
+    job_description = parse_arguments()#JobDescription(sys.argv, output='lofar-validation-%04d%02d%02d-%02d%02d%02d.xml' % ephem.Observer().date.tuple())
 
     observations = plan_observing_sequence(job_description)
     folder_date  = observations[0].start_date

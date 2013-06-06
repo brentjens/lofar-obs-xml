@@ -103,7 +103,7 @@ class TiedArrayBeams(object):
                   (lower_case(self.flyseye),
                    self.nr_tab_rings,
                    self.tab_ring_size))
-        if len(self.beam_offsets) > 0:
+        if self.beam_offsets and len(self.beam_offsets) > 0:
             output += ('''
                             <tiedArrayBeamList>
                                 %s
