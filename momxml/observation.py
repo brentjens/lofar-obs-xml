@@ -96,7 +96,8 @@ class TiedArrayBeams(object):
 
 
     def xml(self):
-        output = ('''                        <tiedArrayBeams>
+        output = ('''
+                        <tiedArrayBeams>
                             <flyseye>%s</flyseye>
                             <nrTabRings>%d</nrTabRings>
                             <tabRingSize>%f</tabRingSize>''' %
@@ -194,6 +195,8 @@ class BackendProcessing(object):
         self.beamformed_data           = beamformed_data
         self.coherent_stokes_data      = coherent_stokes_data
         self.tied_array_beams          = tied_array_beams
+        if self.tied_array_beams  is None:
+            self.tied_array_beams = TiedArrayBeams()
         self.incoherent_stokes_data    = incoherent_stokes_data
         self.stokes_integrate_channels = stokes_integrate_channels
         self.coherent_dedispersed_channels = coherent_dedispersed_channels
@@ -242,23 +245,6 @@ class BackendProcessing(object):
             return 'uvMeasurementAttributes'
 
 
-    def tied_array_beam_list(self):
-        if self.need_beam_observation():
-            coherent = self.coherent_stokes_data is not None 
-            if self.tied_array_beams is not None:
-                return self.tied_array_beams.xml()
-            else:
-                return """
-                      <tiedArrayBeamList>
-                          <tiedArrayBeam>
-                              <coherent>"""+lower_case(coherent)+"""</coherent>
-                          </tiedArrayBeam>
-                      </tiedArrayBeamList>"""
-        else:
-            return "                        <tiedArrayBeamList/>"
-
-
-
     def xml(self, project_name):
         r'''
         '''
@@ -286,7 +272,7 @@ class BackendProcessing(object):
               <pencilBeams>
                 <flyseye>'''+lower_case(flyseye)+'''</flyseye>
                 <pencilBeamList/>
-              </pencilBeams>''' + self.tied_array_beam_list()+'''
+              </pencilBeams>''' + self.tied_array_beams.xml()+'''
               <stokes>
                 <integrateChannels>'''+lower_case(self.stokes_integrate_channels)+'''</integrateChannels>'''
         if self.incoherent_stokes_data:
@@ -455,7 +441,7 @@ class Observation(object):
                       <centralFrequency unit=\"MHz\">139.21875</centralFrequency>
                       <contiguous>false</contiguous>
                       <subbands>"""+beam.subband_spec+"""</subbands>
-                    </subbandsSpecification>"""+self.backend.tied_array_beam_list()+"""
+                    </subbandsSpecification>"""+self.backend.tied_array_beams.xml()+"""
                   </specification>
                 </lofar:"""+self.backend.measurement_attributes()+""">
               </lofar:measurement>

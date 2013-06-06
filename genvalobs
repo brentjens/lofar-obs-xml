@@ -224,6 +224,8 @@ def plan_observing_sequence(job_description):
             if 'LBA' == antenna_set[0:3]:
                 duration_seconds = 600.0
         if 'CS' in data_products:
+            coherent_stokes_data = Stokes('coherent',
+                                          stokes_downsampling_steps = 128)
             if tied_array_beams is None:
                 tied_array_beams = TiedArrayBeams(flyseye = False, beam_offsets=[(0.0, 0.0)])
             else:
