@@ -138,6 +138,8 @@ def plan_observing_sequence(job_description):
                      ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE']],
                      ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE']],
                      ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['FE']],
+                     ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['IS']],
+                     ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['CS']],
                      ['LBA_INNER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC']],
                      ['LBA_OUTER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC']],
                      ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['XC']],
@@ -209,10 +211,11 @@ def plan_observing_sequence(job_description):
         if antenna_set in ['HBA_ONE', 'HBA_DUAL', 'HBA_ONE_INNER', 'HBA_DUAL_INNER']:
             good_stations = exclude_conflicting_eu_stations(good_stations)
 
-        channels_per_subband = 64
-        coherent_stokes_data = None
-        tied_array_beams     = None
-        duration_seconds     = job_description.duration
+        channels_per_subband   = 64
+        coherent_stokes_data   = None
+        incoherent_stokes_data = None
+        tied_array_beams       = None
+        duration_seconds       = job_description.duration
         if 'FE' in data_products:
             channels_per_subband = 16
             coherent_stokes_data = Stokes('coherent',
@@ -220,13 +223,22 @@ def plan_observing_sequence(job_description):
             tied_array_beams     = TiedArrayBeams(flyseye = True, beam_offsets=None)
             if 'LBA' == antenna_set[0:3]:
                 duration_seconds = 600.0
-
+        if 'CS' in data_products:
+            if tied_array_beams is None:
+                tied_array_beams = TiedArrayBeams(flyseye = False, beam_offsets=[(0.0, 0.0)])
+            else:
+                tied_array_beams.beam_offsets = [(0.0, 0.0)]
+        if 'IS' in data_products:
+            incoherent_stokes_data = Stokes('incoherent',
+                                            stokes_downsampling_steps = 128)
+            
 
         backend = BackendProcessing(
             integration_time_seconds = 1,
             correlated_data          = 'XC' in data_products,
             channels_per_subband     = channels_per_subband,
             coherent_stokes_data     = coherent_stokes_data,
+            incoherent_stokes_data   = incoherent_stokes_data,
             tied_array_beams         = tied_array_beams)
         
         observations.append(Observation(
