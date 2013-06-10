@@ -41,71 +41,82 @@ def print_short_help():
 def parse_arguments():
     r'''
     '''
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='''
+The (optional) source name must be enclosed in single or double
+quotes if it contains spaces. The following sources are recommended:
+
+- \"3C 48\"  /  48: LST 22:30--04:30
+- \"3C 147\" / 147: LST 02:30--08:30
+- \"3C 196\" / 196: LST 05:00--11:00
+- \"3C 295\" / 295: LST 11:00--17:00
+- \"Cyg A\"  / cyg: LST 16:00--24:00
+
+If no source is specified, the program chooses the source that is
+closest to the meridian at the central LST of the observing
+sequence. The program has separate calibrator lists for LBA
+and HBA observations and pulsars.
+''', 
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
     #usage='%(prog)s [options] \'source name\'')
+    paa = parser.add_argument
+
+    paa('-o', '--output', metavar='FILENAME',
+        help='Name of the output file.',
+        default='lofar-validation-%04d%02d%02d-%02d%02d%02d.xml' % ephem.Observer().date.tuple())
     
+    paa('-d', '--duration', metavar='SECONDS',
+        help='Duration of individual observations in seconds.',
+        type=int, default=120)
 
-    parser.add_argument('-o', '--output', metavar='FILENAME',
-                        help='Name of the output file.',
-                        default='lofar-validation-%04d%02d%02d-%02d%02d%02d.xml' % ephem.Observer().date.tuple())
-    
-    parser.add_argument('-d', '--duration', metavar='SECONDS',
-                        help='Duration of individual observations in seconds.',
-                        type=int, default=120)
+    paa('-g', '--gap', metavar='SECONDS',
+        help='Gap between observations in seconds.',
+        type=int, default=60)
 
-    parser.add_argument('-g', '--gap', metavar='SECONDS',
-                        help='Gap between observations in seconds.',
-                        type=int, default=60)
+    paa('-c', '--clocks', metavar='CLOCK_MHZ', action='append',
+        choices = [160, 200],
+        help='''Allowed clock frequencies. Choose 160 or 200. Option can be
+provided multiple times if more than one clock frequency is
+required.''',
+        type=int, default=None)
 
-    parser.add_argument('-c', '--clocks', metavar='CLOCK_MHZ', action='append',
-                        choices = [160, 200],
-                        help='Allowed clock frequencies. Choose 160 or 200. Option can be provided multiple times if more than one clock frequency is required.',
-                        type=int, default=None)
-
-    parser.add_argument('-s', '--stations', metavar='STATION_SET',
-                        choices=['superterp', 'core', 'remote', 'nl', 'europe', 'all', 'none'],
-                        help='''One of superterp, core, remote, nl, europe, all, or none. EU stations
+    paa('-s', '--stations', metavar='STATION_SET',
+        choices=['superterp', 'core', 'remote', 'nl', 'europe', 'all', 'none'],
+        help='''One of superterp, core, remote, nl, europe, all, or none. EU stations
 that conflict with certain HBA1 core fields are excluded from the
 HBA_ONE, HBA_ONE_INNER, HBA_DUAL, and HBA_DUAL_INNER
 observations. They are taken along in all other observations.''',
-                        default='nl')
+        default='nl')
 
-    parser.add_argument('-i', '--include', metavar='STATION_NAMES',
-                        help='Comma separated list of station names to add to station set.')
-
-    parser.add_argument('-e', '--exclude', metavar='STATION_NAMES',
-                        help='Comma separated list of station names to exclude from the station set.')
-
-    parser.add_argument('-w', '--wait', metavar='SECONDS',
-                        help='Number of seconds to wait until the first observation must begin.',
-                        type=int, default=540)
-
-    parser.add_argument('-t', '--start-date', metavar='DATE_STRING',
-                        help='''Specify an exact date and time to start the first
-                        observation. Format: "yyyy/mm/dd hh:mm:ss.s''')
+    paa('-i', '--include', metavar='STATION_NAMES',
+        help='Comma separated list of station names to add to station set.')
     
-    parser.add_argument('-p', '--project', metavar='MOM_NAME',
-                        help='Name of the project under which the observations belong.',
-                        default='2013LOFAROBS')
+    paa('-e', '--exclude', metavar='STATION_NAMES',
+        help='Comma separated list of station names to exclude from the station set.')
+    
+    paa('-w', '--wait', metavar='SECONDS',
+        help='Number of seconds to wait until the first observation must begin.',
+        type=int, default=540)
 
-    parser.add_argument('-m', '--mode', metavar='CORRELATOR_MODE',
-                        choices=['XC', 'FE', 'CS', 'IS'], action='append',
-                        help='Correlator modes to test. Choose one of XC (crosscorrelation), FE (Fly\'s eye), IS (incoherent stokes), or CS (coherent stokes). One can specify more than one mode. If this argument is not spedified, all modes will be tested.',
-                        default=None)
-                        
+    paa('-t', '--start-date', metavar='DATE_STRING',
+        help='''Specify an exact date and time to start the first
+        observation. Format: "yyyy/mm/dd hh:mm:ss.s''')
+    
+    paa('-p', '--project', metavar='MOM_NAME',
+        help='Name of the project under which the observations belong.',
+        default='2013LOFAROBS')
 
-    parser.add_argument('source', nargs = '?', help='''
-The source name must be enclosed in single or double quotes if it contains spaces. The following sources are recommended:\n
-\n
-- \"3C 48\"  /  48: LST 22:30--04:30\n
-- \"3C 147\" / 147: LST 02:30--08:30\n
-- \"3C 196\" / 196: LST 05:00--11:00\n
-- \"3C 295\" / 295: LST 11:00--17:00\n
-- \"Cyg A\"  / cyg: LST 16:00--24:00\n
-\n
-If no source is specified, the program chooses the source that is closest to the meridian at the central LST of the observing sequence. The program has separate calibrator lists for LBA and HBA observations.
-        ''',
-                        default=None)
+    paa('-m', '--mode', metavar='CORRELATOR_MODE',
+        choices=['XC', 'FE', 'CS', 'IS'], action='append',
+        help='''Correlator modes to test. Choose one of XC (crosscorrelation), FE
+(Fly\'s eye), IS (incoherent stokes), or CS (coherent stokes). One can
+specify more than one mode. If this argument is not spedified, all
+modes will be tested.''',
+        default=None)
+    
+    
+    paa('source', nargs = '?', help='[optional] Force a source, bypassing genvalobs\' own heuristics.',
+        default=None)
+
     args = parser.parse_args()
     if args.clocks is None:
         args.clocks=[200]
