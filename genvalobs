@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- python -*-
 
-import os, sys
+import os, sys, copy
 from getopt import gnu_getopt as getopt
 from getopt import GetoptError
 import ephem
@@ -200,6 +200,7 @@ def plan_observing_sequence(job_description):
     observations  = []
     previous_clock=200
     for antenna_set, frequency_range, subband_spec, clock_mhz, bit_mode, data_products in schedule:
+        station_set   = copy.deepcopy(stations)
         target_source = job_description.source
         data_products = [data_product
                          for data_product in data_products
@@ -218,9 +219,6 @@ def plan_observing_sequence(job_description):
         print target_source
         if previous_clock != clock_mhz: # If clock switches, allow for two minutes extra
             start_date = ephem.Date(start_date + 2*ephem.minute)
-        good_stations = stations
-        if antenna_set in ['HBA_ONE', 'HBA_DUAL', 'HBA_ONE_INNER', 'HBA_DUAL_INNER']:
-            good_stations = exclude_conflicting_eu_stations(good_stations)
 
         channels_per_subband   = 64
         coherent_stokes_data   = None
@@ -241,10 +239,14 @@ def plan_observing_sequence(job_description):
                 tied_array_beams = TiedArrayBeams(flyseye = False, beam_offsets=[(0.0, 0.0)])
             else:
                 tied_array_beams.beam_offsets = [(0.0, 0.0)]
+            station_set = set(station_set).intersection(set(station_list('core')))
         if 'IS' in data_products:
             incoherent_stokes_data = Stokes('incoherent',
                                             stokes_downsampling_steps = 128)
             
+        good_stations = sorted(list(station_set))
+        if antenna_set in ['HBA_ONE', 'HBA_DUAL', 'HBA_ONE_INNER', 'HBA_DUAL_INNER']:
+            good_stations = exclude_conflicting_eu_stations(good_stations)
 
         backend = BackendProcessing(
             integration_time_seconds = 1,
