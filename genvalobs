@@ -61,61 +61,61 @@ and HBA observations and pulsars.
     paa = parser.add_argument
 
     paa('-o', '--output', metavar='FILENAME',
-        help='Name of the output file.',
-        default='lofar-validation-%04d%02d%02d-%02d%02d%02d.xml' % ephem.Observer().date.tuple())
+        help    = 'Name of the output file.',
+        default = 'lofar-validation-%04d%02d%02d-%02d%02d%02d.xml' % ephem.Observer().date.tuple())
     
     paa('-d', '--duration', metavar='SECONDS',
-        help='Duration of individual observations in seconds.',
-        type=int, default=120)
+        help = 'Duration of individual observations in seconds.',
+        type = int, default=120)
 
     paa('-g', '--gap', metavar='SECONDS',
-        help='Gap between observations in seconds.',
-        type=int, default=60)
+        help = 'Gap between observations in seconds.',
+        type = int, default=60)
 
     paa('-c', '--clocks', metavar='CLOCK_MHZ', action='append',
         choices = [160, 200],
-        help='''Allowed clock frequencies. Choose 160 or 200. Option can be
+        help    = '''Allowed clock frequencies. Choose 160 or 200. Option can be
 provided multiple times if more than one clock frequency is
 required.''',
         type=int, default=None)
 
     paa('-s', '--stations', metavar='STATION_SET',
-        choices=['superterp', 'core', 'remote', 'nl', 'europe', 'all', 'none'],
-        help='''One of superterp, core, remote, nl, europe, all, or none. EU stations
+        choices = ['superterp', 'core', 'remote', 'nl', 'europe', 'all', 'none'],
+        help    = '''One of superterp, core, remote, nl, europe, all, or none. EU stations
 that conflict with certain HBA1 core fields are excluded from the
 HBA_ONE, HBA_ONE_INNER, HBA_DUAL, and HBA_DUAL_INNER
 observations. They are taken along in all other observations.''',
-        default='nl')
+        default = 'nl')
 
     paa('-i', '--include', metavar='STATION_NAMES',
-        help='Comma separated list of station names to add to station set.')
+        help = 'Comma separated list of station names to add to station set.')
     
     paa('-e', '--exclude', metavar='STATION_NAMES',
-        help='Comma separated list of station names to exclude from the station set.')
+        help = 'Comma separated list of station names to exclude from the station set.')
     
     paa('-w', '--wait', metavar='SECONDS',
-        help='Number of seconds to wait until the first observation must begin.',
-        type=int, default=540)
+        help = 'Number of seconds to wait until the first observation must begin.',
+        type = int, default=540)
 
     paa('-t', '--start-date', metavar='DATE_STRING',
-        help='''Specify an exact date and time to start the first
+        help = '''Specify an exact date and time to start the first
         observation. Format: "yyyy/mm/dd hh:mm:ss.s''')
     
     paa('-p', '--project', metavar='MOM_NAME',
-        help='Name of the project under which the observations belong.',
-        default='2013LOFAROBS')
+        help    = 'Name of the project under which the observations belong.',
+        default = '2013LOFAROBS')
 
     paa('-m', '--mode', metavar='CORRELATOR_MODE',
-        choices=['XC', 'FE', 'CS', 'IS'], action='append',
-        help='''Correlator modes to test. Choose one of XC (crosscorrelation), FE
+        choices = ['XC', 'FE', 'CS', 'IS'], action='append',
+        help    = '''Correlator modes to test. Choose one of XC (crosscorrelation), FE
 (Fly\'s eye), IS (incoherent stokes), or CS (coherent stokes). One can
 specify more than one mode. If this argument is not spedified, all
 modes will be tested.''',
-        default=None)
+        default = None)
     
-    
+
     paa('source', nargs = '?', help='[optional] Force a source, bypassing genvalobs\' own heuristics.',
-        default=None)
+        default = None)
 
     args = parser.parse_args()
     if args.clocks is None:
