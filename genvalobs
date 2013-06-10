@@ -1,27 +1,20 @@
 #!/usr/bin/env python2
 # -*- python -*-
 
-import os, sys, copy
-from getopt import gnu_getopt as getopt
-from getopt import GetoptError
+import sys, copy
 import ephem
 import argparse
-from math import pi
-from momxml import *
+from momxml import Folder, SourceCatalogue, lofar_sidereal_time
+from momxml import Stokes, TiedArrayBeams, BackendProcessing, Beam, Observation
+from momxml import exclude_conflicting_eu_stations, station_list
+from momxml import as_xml_mom_project
+from momxml import SourceSpecificationError, InvalidStationSetError
 from momxml import __version__
 
 
 #
 # Various messages
 #
-
-
-def print_version():
-    """
-    Print version info to standard output
-    """
-    return sys.stdout.write('genvalobs version %s (c) 2010-2012 Michiel Brentjens <brentjens@astron.nl>\n' % __version__)
-
 
 def prerror(message):
     """
@@ -41,7 +34,8 @@ def print_short_help():
 def parse_arguments():
     r'''
     '''
-    parser = argparse.ArgumentParser(description='''
+    parser = argparse.ArgumentParser(
+        description = '''
 The (optional) source name must be enclosed in single or double
 quotes if it contains spaces. The following sources are recommended:
 
@@ -56,13 +50,15 @@ closest to the meridian at the central LST of the observing
 sequence. The program has separate calibrator lists for LBA
 and HBA observations and pulsars.
 ''', 
-                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+        formatter_class = argparse.RawDescriptionHelpFormatter)
+
     #usage='%(prog)s [options] \'source name\'')
     paa = parser.add_argument
 
     paa('-o', '--output', metavar='FILENAME',
         help    = 'Name of the output file.',
-        default = 'lofar-validation-%04d%02d%02d-%02d%02d%02d.xml' % ephem.Observer().date.tuple())
+        default = ('lofar-validation-%04d%02d%02d-%02d%02d%02d.xml' %
+                   ephem.Observer().date.tuple()))
     
     paa('-d', '--duration', metavar='SECONDS',
         help = 'Duration of individual observations in seconds.',
@@ -81,20 +77,21 @@ required.''',
 
     paa('-s', '--stations', metavar='STATION_SET',
         choices = ['superterp', 'core', 'remote', 'nl', 'europe', 'all', 'none'],
-        help    = '''One of superterp, core, remote, nl, europe, all, or none. EU stations
+        help    = '''
+One of superterp, core, remote, nl, europe, all, or none. EU stations
 that conflict with certain HBA1 core fields are excluded from the
 HBA_ONE, HBA_ONE_INNER, HBA_DUAL, and HBA_DUAL_INNER
 observations. They are taken along in all other observations.''',
         default = 'nl')
 
     paa('-i', '--include', metavar='STATION_NAMES',
-        help = 'Comma separated list of station names to add to station set.')
+        help = 'Comma separated list of station names to include.')
     
     paa('-e', '--exclude', metavar='STATION_NAMES',
-        help = 'Comma separated list of station names to exclude from the station set.')
+        help = 'Comma separated list of station names to exclude.')
     
     paa('-w', '--wait', metavar='SECONDS',
-        help = 'Number of seconds to wait until the first observation must begin.',
+        help = 'Number of seconds to wait until the first observation.',
         type = int, default=540)
 
     paa('-t', '--start-date', metavar='DATE_STRING',
@@ -107,22 +104,30 @@ observations. They are taken along in all other observations.''',
 
     paa('-m', '--mode', metavar='CORRELATOR_MODE',
         choices = ['XC', 'FE', 'CS', 'IS'], action='append',
-        help    = '''Correlator modes to test. Choose one of XC (crosscorrelation), FE
+        help    = '''
+Correlator modes to test. Choose one of XC (crosscorrelation), FE
 (Fly\'s eye), IS (incoherent stokes), or CS (coherent stokes). One can
 specify more than one mode. If this argument is not spedified, all
 modes will be tested.''',
         default = None)
-    
 
-    paa('source', nargs = '?', help='[optional] Force a source, bypassing genvalobs\' own heuristics.',
+    paa('-v', '--version', action='version',
+        version = '%(prog)s ' +__version__+
+        ' (c) 2010-2013 M.A. Brentjens <brentjens@astron.nl>')
+    
+    paa('source', nargs = '?',
+        help = '''
+Force a source to be used for all observations, bypassing genvalobs\'
+own heuristics.''',
         default = None)
 
     args = parser.parse_args()
     if args.clocks is None:
-        args.clocks=[200]
+        args.clocks = [200]
 
     if args.mode is None:
-        args.mode=['XC', 'FE', 'CS', 'IS']
+        args.mode = ['XC', 'FE', 'CS', 'IS']
+    args.mode = [mode.upper() for mode in args.mode]
     return  args
 
 
@@ -198,7 +203,7 @@ def plan_observing_sequence(job_description):
                                  include = include,
                                  exclude = exclude,)
     observations  = []
-    previous_clock=200
+    previous_clock = 200
     for antenna_set, frequency_range, subband_spec, clock_mhz, bit_mode, data_products in schedule:
         station_set   = copy.deepcopy(stations)
         target_source = job_description.source
@@ -272,8 +277,7 @@ def plan_observing_sequence(job_description):
         start_date = ephem.Date(start_date
                                 + ephem.second*duration_seconds
                                 + ephem.second*job_description.gap)
-        previous_clock=clock_mhz
-        pass
+        previous_clock = clock_mhz
     return observations
 
 
@@ -281,20 +285,24 @@ def plan_observing_sequence(job_description):
 
 
 
-def main(argv):
+def main():
     print parse_arguments()
-    job_description = parse_arguments()#JobDescription(sys.argv, output='lofar-validation-%04d%02d%02d-%02d%02d%02d.xml' % ephem.Observer().date.tuple())
+    job_description = parse_arguments()
 
     observations = plan_observing_sequence(job_description)
     folder_date  = observations[0].start_date
     
-    sub_folder     = Folder(name =  '%04d-%02d-%02d %02d:%02d' % folder_date[:-1],
-                            description = 'Validation observations %04d-%02d-%02d %02d:%02d' % folder_date[:-1],
-                            children    = observations)
-    val_obs_folder = Folder(name = 'Validation Obs', mom_id=192732,
+    sub_folder     = Folder(
+        name        =  '%04d-%02d-%02d %02d:%02d' % folder_date[:-1],
+        description = ('Validation observations %04d-%02d-%02d %02d:%02d' %
+                       folder_date[:-1]),
+        children    = observations)
+    val_obs_folder = Folder(name     = 'Validation Obs',
+                            mom_id   = 192732,
                             children = [sub_folder])
-    out=open(job_description.output, 'w')
-    out.write(as_xml_mom_project([val_obs_folder], project=job_description.project))
+    out = open(job_description.output, 'w')
+    out.write(as_xml_mom_project([val_obs_folder],
+                                 project = job_description.project))
     out.close()
 
     return 0
@@ -305,10 +313,9 @@ def main(argv):
 
 if __name__ == '__main__':
     try:
-        print_version()
         print 'Current LST: '+str(lofar_sidereal_time(ephem.Observer().date))
-        exit(main(sys.argv))
-    except (OSError, IOError, GetoptError, SourceSpecificationError, InvalidStationSetError):
+        exit(main())
+    except (OSError, IOError, SourceSpecificationError, InvalidStationSetError):
         prerror(sys.exc_info()[1].args[0])
         print_short_help()
         exit(-1)
