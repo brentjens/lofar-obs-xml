@@ -7,11 +7,75 @@ import ephem
 
 
 class Folder(object):
-    def __init__(self, name, children=None, description=None, mom_id=None):
+    r'''
+    Translates to a MoM folder. It can contain several children, such
+    as other Folders, or Observations. 
+
+    **Parameters**
+
+    name : string
+        Name of the folder.
+
+    children : list
+        List of items in the folder. These can be Observations or
+        Folders.
+
+    description : string
+        If provided, sets the description of the MoM folder.
+
+    mom_id : int
+        If mom_id is specified, it will add its children to this
+        specific MoM folder. If not, a new folder is created in MoM.
+
+    **Examples**
+
+    >>> folder = Folder(name     = 'root',
+    ...                 children =  [Folder(name='child')],
+    ...                 description = 'Main folder',
+    ...                 mom_id      = 12345)
+    >>> print folder
+    Folder(name     = 'root',
+           children = [Folder(name     = 'child',
+           children = None,
+           description = None,
+           mom_id      = None)],
+           description = 'Main folder',
+           mom_id      = 12345)
+    >>> print folder.xml('test_project')
+    <BLANKLINE>
+    <lofar:folder mom2Id="12345">
+        <name>root</name>
+        <description>Main folder</description>
+        <children>
+    <item>
+    <BLANKLINE>
+    <lofar:folder>
+        <name>child</name>
+        <children>
+    <BLANKLINE>
+        </children>
+        </lofar:folder>
+            </item>
+        </children>
+        </lofar:folder>
+    <BLANKLINE>
+    '''
+    def __init__(self, name,
+                 children    = None,
+                 description = None,
+                 mom_id      = None):
         self.name        = name
         self.children    = children
         self.description = description
         self.mom_id      = mom_id
+
+
+    def __repr__(self):
+        return ('''Folder(name     = %r,
+       children = %r,
+       description = %r,
+       mom_id      = %r)''' %
+                (self.name, self.children, self.description, self.mom_id))
 
 
     def xml(self, project_name):
@@ -30,7 +94,8 @@ class Folder(object):
     <name>'''+self.name+'''</name>'''
 
         if self.description:
-            preamble += '''<description>'''+self.description+'''</description>'''
+            preamble += '''
+    <description>'''+self.description+'''</description>'''
         preamble += '''
     <children>
 '''
@@ -51,6 +116,10 @@ class Folder(object):
 
 def lower_case(boolean):
     return repr(boolean).lower()
+
+
+
+
 
 
 

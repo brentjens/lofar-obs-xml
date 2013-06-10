@@ -33,6 +33,7 @@ def print_short_help():
 
 def parse_arguments():
     r'''
+    Parse all command line arguments. Uses Python 2.7's argparse module.
     '''
     parser = argparse.ArgumentParser(
         description = '''
@@ -148,37 +149,39 @@ def lookup_source(source_name=None):
 
 def plan_observing_sequence(job_description):
     # Possible products:
-    #  'XC', 'IS', 'CS', 'FE' for cross cor, incoherent stokes, coherent stokes, Fly's eye
-    full_schedule = [['LBA_OUTER'     , 'LBA_LOW' , '12..499' , 200,  8, ['XC']],
-                     ['HBA_DUAL'      , 'HBA_LOW' , '12..499' , 200,  8, ['XC']],
-                     ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE']],
-                     ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE']],
-                     ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['FE']],
-                     ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['IS']],
-                     ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['CS']],
-                     ['LBA_INNER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC']],
-                     ['LBA_OUTER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC']],
-                     ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['XC']],
-                     ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, ['XC']],
-                     ['HBA_ZERO'      , 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
-                     ['HBA_ONE'       , 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
-                     ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
-                     ['HBA_DUAL_INNER', 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
-                     ['HBA_JOINED'    , 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
-                     ['HBA_ZERO'      , 'HBA_MID' , '66..309' , 160, 16, ['XC']],
-                     ['HBA_ONE'       , 'HBA_MID' , '66..309' , 160, 16, ['XC']],
-                     ['HBA_DUAL'      , 'HBA_MID' , '66..309' , 160, 16, ['XC']],
-                     ['HBA_DUAL_INNER', 'HBA_MID' , '66..309' , 160, 16, ['XC']],
-                     ['HBA_JOINED'    , 'HBA_MID' , '66..309' , 160, 16, ['XC']],
-                     ['HBA_ZERO'      , 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
-                     ['HBA_ONE'       , 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
-                     ['HBA_DUAL'      , 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
-                     ['HBA_DUAL_INNER', 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
-                     ['HBA_JOINED'    , 'HBA_HIGH', '52..255' , 200, 16, ['XC']]
-                     ]
+    #  'XC'             , 'IS'             , 'CS'           , 'FE' for
+    #  cross correlation, incoherent stokes, coherent stokes, Fly's eye
+    full_schedule = [
+        ['LBA_OUTER'     , 'LBA_LOW' , '12..499' , 200,  8, ['XC']],
+        ['HBA_DUAL'      , 'HBA_LOW' , '12..499' , 200,  8, ['XC']],
+        ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE']],
+        ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE']],
+        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['FE']],
+        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['IS']],
+        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['CS']],
+        ['LBA_INNER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC']],
+        ['LBA_OUTER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC']],
+        ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['XC']],
+        ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, ['XC']],
+        ['HBA_ZERO'      , 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
+        ['HBA_ONE'       , 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
+        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
+        ['HBA_DUAL_INNER', 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
+        ['HBA_JOINED'    , 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
+        ['HBA_ZERO'      , 'HBA_MID' , '66..309' , 160, 16, ['XC']],
+        ['HBA_ONE'       , 'HBA_MID' , '66..309' , 160, 16, ['XC']],
+        ['HBA_DUAL'      , 'HBA_MID' , '66..309' , 160, 16, ['XC']],
+        ['HBA_DUAL_INNER', 'HBA_MID' , '66..309' , 160, 16, ['XC']],
+        ['HBA_JOINED'    , 'HBA_MID' , '66..309' , 160, 16, ['XC']],
+        ['HBA_ZERO'      , 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
+        ['HBA_ONE'       , 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
+        ['HBA_DUAL'      , 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
+        ['HBA_DUAL_INNER', 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
+        ['HBA_JOINED'    , 'HBA_HIGH', '52..255' , 200, 16, ['XC']]]
     print job_description
 
-    schedule      = [obs for obs in full_schedule if obs[3] in job_description.clocks]
+    schedule      = [obs for obs in full_schedule
+                     if obs[3] in job_description.clocks]
     now           = ephem.Observer().date
     start_date    = ephem.Date(now + ephem.second*job_description.wait)
     if job_description.start_date:
@@ -204,7 +207,12 @@ def plan_observing_sequence(job_description):
                                  exclude = exclude,)
     observations  = []
     previous_clock = 200
-    for antenna_set, frequency_range, subband_spec, clock_mhz, bit_mode, data_products in schedule:
+    for (antenna_set,
+         frequency_range,
+         subband_spec,
+         clock_mhz,
+         bit_mode,
+         data_products) in schedule:
         station_set   = copy.deepcopy(stations)
         target_source = job_description.source
         data_products = [data_product
@@ -213,16 +221,21 @@ def plan_observing_sequence(job_description):
         if len(data_products) == 0:
             continue # No data products to write, no point to observe.
         if target_source is None:
-            if 'FE' in data_products or 'CS' in data_products or 'IS' in data_products:
-                target_source = SourceCatalogue().psr_source(mean_date, antenna_set[0:3])
+            if ('FE' in data_products 
+                or 'CS' in data_products 
+                or 'IS' in data_products):
+                target_source = SourceCatalogue().psr_source(
+                    mean_date, antenna_set[0:3])
             else:
-                target_source = SourceCatalogue().cal_source(mean_date, antenna_set[0:3])
+                target_source = SourceCatalogue().cal_source(
+                    mean_date, antenna_set[0:3])
         else:
             target_source = lookup_source(target_source)
 
         print ','.join(data_products) + ' ' + antenna_set
         print target_source
-        if previous_clock != clock_mhz: # If clock switches, allow for two minutes extra
+        # If clock switches, allow for two minutes extra
+        if previous_clock != clock_mhz: 
             start_date = ephem.Date(start_date + 2*ephem.minute)
 
         channels_per_subband   = 64
@@ -234,23 +247,28 @@ def plan_observing_sequence(job_description):
             channels_per_subband = 16
             coherent_stokes_data = Stokes('coherent',
                                           stokes_downsampling_steps = 128)
-            tied_array_beams     = TiedArrayBeams(flyseye = True, beam_offsets=None)
+            tied_array_beams     = TiedArrayBeams(flyseye      = True,
+                                                  beam_offsets = None)
             if 'LBA' == antenna_set[0:3]:
                 duration_seconds = 600.0
         if 'CS' in data_products:
             coherent_stokes_data = Stokes('coherent',
                                           stokes_downsampling_steps = 128)
             if tied_array_beams is None:
-                tied_array_beams = TiedArrayBeams(flyseye = False, beam_offsets=[(0.0, 0.0)])
+                tied_array_beams = TiedArrayBeams(flyseye      = False,
+                                                  beam_offsets = [(0.0, 0.0)])
             else:
                 tied_array_beams.beam_offsets = [(0.0, 0.0)]
-            station_set = set(station_set).intersection(set(station_list('core')))
+            core = set(station_list('core'))
+            station_set = set(station_set).intersection(core)
         if 'IS' in data_products:
             incoherent_stokes_data = Stokes('incoherent',
                                             stokes_downsampling_steps = 128)
             
         good_stations = sorted(list(station_set))
-        if antenna_set in ['HBA_ONE', 'HBA_DUAL', 'HBA_ONE_INNER', 'HBA_DUAL_INNER']:
+        antenna_sets_with_conflicts = [
+            'HBA_ONE', 'HBA_DUAL', 'HBA_ONE_INNER', 'HBA_DUAL_INNER']
+        if antenna_set in antenna_sets_with_conflicts:
             good_stations = exclude_conflicting_eu_stations(good_stations)
 
         backend = BackendProcessing(
@@ -262,7 +280,7 @@ def plan_observing_sequence(job_description):
             tied_array_beams         = tied_array_beams)
         
         observations.append(Observation(
-            name                     = ','.join(data_products) + ' ' + antenna_set,
+            name                     = ','.join(data_products)+' '+antenna_set,
             antenna_set              = antenna_set,
             frequency_range          = frequency_range,
             start_date               = start_date.tuple(),
