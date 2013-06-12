@@ -256,7 +256,7 @@ def station_list(station_set, include = None, exclude = None):
         if include is None:
             include_list = []
         else:
-            include_list = include
+            include_list = [station.upper() for station in include]
         superset = unique(lookup_table[station_set] + include_list)
     except (KeyError,):
         raise InvalidStationSetError('%s is not a valid station set.' %
@@ -264,7 +264,7 @@ def station_list(station_set, include = None, exclude = None):
     if exclude is None:
         exclude_list = []
     else:
-        exclude_list = exclude
+        exclude_list = [station.upper() for station in exclude]
     return sorted([s for s in superset if s not in exclude_list])
 
 
