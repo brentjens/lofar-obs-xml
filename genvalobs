@@ -36,47 +36,94 @@ def parse_arguments():
     Parse all command line arguments. Uses Python 2.7's argparse module.
     '''
     parser = argparse.ArgumentParser(
-        description = '''
+        description = r'''
 The (optional) source name must be enclosed in single or double
 quotes if it contains spaces. The following sources are recommended:
 
-- \"3C 48\"  /  48: LST 22:30--04:30
-- \"3C 147\" / 147: LST 02:30--08:30
-- \"3C 196\" / 196: LST 05:00--11:00
-- \"3C 295\" / 295: LST 11:00--17:00
-- \"Cyg A\"  / cyg: LST 16:00--24:00
+- "3C 48"  /  48: LST 22:30--04:30
+- "3C 147" / 147: LST 02:30--08:30
+- "3C 196" / 196: LST 05:00--11:00
+- "3C 295" / 295: LST 11:00--17:00
+- "Cyg A"  / cyg: LST 16:00--24:00
 
 If no source is specified, the program chooses the source that is
 closest to the meridian at the central LST of the observing
 sequence. The program has separate calibrator lists for LBA
 and HBA observations and pulsars.
+
+Although genvalobs has its own default sequence of observations, it is
+possible to read a custom set from an ASCII file with a fairly simple
+format. The specification consists of newline-separated observations
+where each observation is specified in a white-space separated line
+with format:
+
+    <ANTENNA_SET> <BAND> <SUBBANDS> <CLOCK> <BIT_MODE> <DATA_PRODUCTS>
+
+    - ANTENNA_SET: one of LBA_INNER, LBA_OUTER, HBA_ZERO, HBA_ONE,
+                    HBA_DUAL, HBA_JOINED, HBA_ZERO_INNER,
+                    HBA_ONE_INNER, HBA_DUAL_INNER
+
+    - FREQUENCY_BAND: LBA_LOW, LBA_HIGH, HBA_LOW, HBA_MID, HBA_HIGH
+
+    - SUBBAND_LIST: comma-separated list of sub band ranges. Note: NO
+                    SPACES ALLOWED! Examples:
+                      - 12..499
+                      - 12..22,112..122,212..222
+    - CLOCK_MHZ: either 200 or 160
+
+    - BIT_MODE: either 4, 8, or 16
+
+    - DATA_PRODUCTS: white-space separated list of products. Allowed:
+                     - XC (cross-correlation)
+                     - FE (fly's eye)
+                     - CS (coherent stokes)
+                     - IS (incoherent stokes)
+    
+    Empty lines are ignored, comments start with # end run until the
+    end of the line.
+    
+    Example file:
+
+        # Antennaset    Band      Subbands   Clock  Bits   Products
+        LBA_OUTER       LBA_LOW   12..499    200     8     XC
+        HBA_DUAL        HBA_LOW   12..499    200     8     XC
+        LBA_INNER       LBA_HIGH  156..399   200    16     FE
+        HBA_DUAL        HBA_LOW   77..320    200    16     IS
+        HBA_DUAL        HBA_LOW   77..320    200    16     CS
+        HBA_DUAL_INNER  HBA_MID   66..309    160    16     XC IS
+ 
+Note that the custom sequence is subject to the same filtering by
+options -m, -c, etc. as the default observing sequence.
+
+
+_
 ''', 
         formatter_class = argparse.RawDescriptionHelpFormatter)
 
     #usage='%(prog)s [options] \'source name\'')
-    paa = parser.add_argument
+    arg = parser.add_argument
 
-    paa('-o', '--output', metavar='FILENAME',
+    arg('-o', '--output', metavar='FILENAME',
         help    = 'Name of the output file.',
         default = ('lofar-validation-%04d%02d%02d-%02d%02d%02d.xml' %
                    ephem.Observer().date.tuple()))
     
-    paa('-d', '--duration', metavar='SECONDS',
+    arg('-d', '--duration', metavar='SECONDS',
         help = 'Duration of individual observations in seconds.',
         type = int, default=120)
 
-    paa('-g', '--gap', metavar='SECONDS',
+    arg('-g', '--gap', metavar='SECONDS',
         help = 'Gap between observations in seconds.',
         type = int, default=60)
 
-    paa('-c', '--clocks', metavar='CLOCK_MHZ', action='append',
+    arg('-c', '--clocks', metavar='CLOCK_MHZ', action='append',
         choices = [160, 200],
         help    = '''Allowed clock frequencies. Choose 160 or 200. Option can be
 provided multiple times if more than one clock frequency is
 required.''',
         type=int, default=None)
 
-    paa('-s', '--stations', metavar='STATION_SET',
+    arg('-s', '--stations', metavar='STATION_SET',
         choices = ['superterp', 'core', 'remote', 'nl', 'europe', 'all', 'none'],
         help    = '''
 One of superterp, core, remote, nl, europe, all, or none. EU stations
@@ -85,25 +132,25 @@ HBA_ONE, HBA_ONE_INNER, HBA_DUAL, and HBA_DUAL_INNER
 observations. They are taken along in all other observations.''',
         default = 'nl')
 
-    paa('-i', '--include', metavar='STATION_NAMES',
+    arg('-i', '--include', metavar='STATION_NAMES',
         help = 'Comma separated list of station names to include.')
     
-    paa('-e', '--exclude', metavar='STATION_NAMES',
+    arg('-e', '--exclude', metavar='STATION_NAMES',
         help = 'Comma separated list of station names to exclude.')
     
-    paa('-w', '--wait', metavar='SECONDS',
+    arg('-w', '--wait', metavar='SECONDS',
         help = 'Number of seconds to wait until the first observation.',
         type = int, default=540)
 
-    paa('-t', '--start-date', metavar='DATE_STRING',
+    arg('-t', '--start-date', metavar='DATE_STRING',
         help = '''Specify an exact date and time to start the first
         observation. Format: "yyyy/mm/dd hh:mm:ss.s''')
     
-    paa('-p', '--project', metavar='MOM_NAME',
+    arg('-p', '--project', metavar='MOM_NAME',
         help    = 'Name of the project under which the observations belong.',
         default = '2013LOFAROBS')
 
-    paa('-m', '--mode', metavar='CORRELATOR_MODE',
+    arg('-m', '--mode', metavar='CORRELATOR_MODE',
         choices = ['XC', 'FE', 'CS', 'IS'], action='append',
         help    = '''
 Correlator modes to test. Choose one of XC (crosscorrelation), FE
@@ -112,11 +159,15 @@ specify more than one mode. If this argument is not spedified, all
 modes will be tested.''',
         default = None)
 
-    paa('-v', '--version', action='version',
+    arg('-f', '--from-file', metavar='FILE_NAME',
+        help='Read a custom observing sequence from FILE_NAME.',
+        default = None)
+
+    arg('-v', '--version', action='version',
         version = '%(prog)s ' +__version__+
         ' (c) 2010-2013 M.A. Brentjens <brentjens@astron.nl>')
     
-    paa('source', nargs = '?',
+    arg('source', nargs = '?',
         help = '''
 Force a source to be used for all observations, bypassing genvalobs\'
 own heuristics.''',
@@ -144,6 +195,105 @@ def lookup_source(source_name=None):
     return SourceCatalogue().find_source(source_name)
 
 
+def read_custom_observation_sequence(file_contents):
+    r'''
+    Read a custom scheduled from string ``file_contents``. The
+    specification consists of newline-separated observationsm where
+    each observation is specified in a white-space separated line with format:
+
+        <ANTENNA_SET>  <FREQUENCY_BAND>  <SUBBAND_LIST>  <CLOCK_MHZ>  <BIT_MODE>  <DATA_PRODUCTS>
+
+    - ANTENNA_SET: one of LBA_INNER, LBA_OUTER, HBA_ZERO, HBA_ONE,
+                    HBA_DUAL, HBA_JOINED, HBA_ZERO_INNER,
+                    HBA_ONE_INNER, HBA_DUAL_INNER
+
+    - FREQUENCY_BAND: LBA_LOW, LBA_HIGH, HBA_LOW, HBA_MID, HBA_HIGH
+
+    - SUBBAND_LIST: comma-separated list of sub band ranges. Note: NO
+                    SPACES ALLOWED! Examples:
+                      - 12..499
+                      - 12..22,112..122,212..222
+    - CLOCK_MHZ: either 200 or 160
+
+    - BIT_MODE: either 4, 8, or 16
+
+    - DATA_PRODUCTS: white-space separated list of products. Allowed:
+                     - XC (cross-correlation)
+                     - FE (fly's eye)
+                     - CS (coherent stokes)
+                     - IS (incoherent stokes)
+    
+    Empty lines are ignored, comments start with # end run until the
+    end of the line.
+    
+    Example file:
+
+        # Antennaset    Band      Subbands   Clock  Bits   Products
+        LBA_OUTER       LBA_LOW   12..499    200     8     XC
+        HBA_DUAL        HBA_LOW   12..499    200     8     XC
+        LBA_INNER       LBA_HIGH  156..399   200    16     FE
+        HBA_DUAL        HBA_LOW   77..320    200    16     IS
+        HBA_DUAL        HBA_LOW   77..320    200    16     CS
+        HBA_DUAL_INNER  HBA_MID   66..309    160    16     XC IS
+    
+
+
+    **Parameters**
+    
+    file_contents : string
+        Contents of the specification file.
+
+    **Raises**
+
+    ValueError:
+        If an error occurs while reading the file.
+    
+    '''
+    lines          = [line.strip() for line in file_contents.split('\n')]
+    no_comments    = [line.split('#')[0].strip() for line in lines]
+    no_empty_lines = [line.strip() for line in no_comments if line.strip() != '']
+    
+    valid_antenna_sets = ['LBA_INNER', 'LBA_OUTER',
+                          'HBA_ZERO', 'HBA_ONE', 'HBA_DUAL', 'HBA_JOINED',
+                          'HBA_ZERO_INNER', 'HBA_ONE_INNER',
+                          'HBA_DUAL_INNER']
+    valid_bands        = ['LBA_LOW', 'LBA_HIGH', 'HBA_LOW', 'HBA_MID', 'HBA_HIGH']
+    valid_clocks       = [160, 200]
+    valid_bits         = [4, 8, 16]
+    valid_products     = ['XC', 'FE', 'IS', 'CS']
+
+    def record_from_line(line):
+        fields = line.split()
+
+        if len(fields) < 6 or len(fields) > 9:
+            raise ValueError('Line %r is malformed' % line)
+
+        if fields[0].upper() not in valid_antenna_sets:
+            raise ValueError('Antenna set %s not in %r' % (fields[0], valid_antenna_sets))
+
+        if fields[1].upper() not in valid_bands:
+            raise ValueError('Band %s not in %r' % (fields[1], valid_bands))
+
+        if int(fields[3]) not in valid_clocks:
+            raise ValueError('Clock frequency %r not in %r' % (int(fields[3]), valid_clocks))
+
+        if int(fields[4]) not in valid_bits:
+            raise ValueError('Bit mode %r not in %r' % (int(fields[4]), valid_bits))
+
+        for data_product in fields[5:]:
+            if data_product.upper() not in valid_products:
+                raise ValueError('Data product %r not in %r' %
+                                 (data_product, valid_products))
+
+        return [fields[0].upper(),
+                fields[1].upper(),
+                fields[2],
+                int(fields[3]),
+                int(fields[4]),
+                [field.upper() for field in fields[5:]]]
+        
+    return [record_from_line(line) for line in no_empty_lines]
+    
 
 
 
@@ -179,13 +329,24 @@ def plan_observing_sequence(job_description):
         ['HBA_DUAL_INNER', 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
         ['HBA_JOINED'    , 'HBA_HIGH', '52..255' , 200, 16, ['XC']]]
     print job_description
+    if job_description.from_file is not None:
+        full_schedule = read_custom_observation_sequence(
+            open(job_description.from_file).read())
+        print('='*60)
+        print('Using custom sequence (%s)' %  job_description.from_file)
+        for observation in full_schedule:
+            print(observation)
+        print('='*60)
+    else:
+        print('using default sequence')
+        
 
     schedule      = [obs for obs in full_schedule
                      if obs[3] in job_description.clocks]
     now           = ephem.Observer().date
     start_date    = ephem.Date(now + ephem.second*job_description.wait)
     if job_description.start_date:
-        start_date = job_description.start_date
+        start_date = ephem.Date(job_description.start_date)
 
     print 'LST at start observation: %s' % str(lofar_sidereal_time(start_date))
 
