@@ -348,6 +348,24 @@ class Angle(object):
         '''
         return self.rad*180.0/pi
 
+
+    def as_hours(self):
+        r'''
+        Get angle in hours.
+
+        **Returns**
+
+        A float containing the angle in hours.
+
+        **Examples**           
+
+        >>> a = Angle (rad = 3.0)
+        >>> str(a.as_hours())
+        '11.4591559026'
+        '''
+        return self.rad*12.0/pi
+
+
     
     def as_shms(self):
         r'''
