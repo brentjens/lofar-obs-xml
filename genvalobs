@@ -9,6 +9,7 @@ from momxml import Stokes, TiedArrayBeams, BackendProcessing, Beam, Observation
 from momxml import exclude_conflicting_eu_stations, station_list
 from momxml import as_xml_mom_project
 from momxml import SourceSpecificationError, InvalidStationSetError
+from momxml import NoSuitableSourceError
 from momxml import __version__
 
 
@@ -104,24 +105,26 @@ _
     arg = parser.add_argument
 
     arg('-o', '--output', metavar='FILENAME',
-        help    = 'Name of the output file.',
+        help    = 'Name of the output file [%(default)s].',
         default = ('lofar-validation-%04d%02d%02d-%02d%02d%02d.xml' %
                    ephem.Observer().date.tuple()))
     
+    arg('-m', '--mode', metavar='CORRELATOR_MODE',
+        choices = ['XC', 'FE', 'CS', 'IS'], action='append',
+        help    = '''
+Correlator modes to test. Choose one of XC (crosscorrelation), FE
+(Fly\'s eye), IS (incoherent stokes), or CS (coherent stokes). One can
+specify more than one mode. If this argument is not spedified, all
+modes will be tested [XC,FE,CS,IS].''',
+        default = None)
+
     arg('-d', '--duration', metavar='SECONDS',
-        help = 'Duration of individual observations in seconds.',
+        help = 'Duration of individual observations in seconds [%(default)r].',
         type = int, default=120)
 
     arg('-g', '--gap', metavar='SECONDS',
-        help = 'Gap between observations in seconds.',
+        help = 'Gap between observations in seconds [%(default)r].',
         type = int, default=60)
-
-    arg('-c', '--clocks', metavar='CLOCK_MHZ', action='append',
-        choices = [160, 200],
-        help    = '''Allowed clock frequencies. Choose 160 or 200. Option can be
-provided multiple times if more than one clock frequency is
-required.''',
-        type=int, default=None)
 
     arg('-s', '--stations', metavar='STATION_SET',
         choices = ['superterp', 'core', 'remote', 'nl', 'europe', 'all', 'none'],
@@ -129,7 +132,7 @@ required.''',
 One of superterp, core, remote, nl, europe, all, or none. EU stations
 that conflict with certain HBA1 core fields are excluded from the
 HBA_ONE, HBA_ONE_INNER, HBA_DUAL, and HBA_DUAL_INNER
-observations. They are taken along in all other observations.''',
+observations. They are taken along in all other observations [%(default)s].''',
         default = 'nl')
 
     arg('-i', '--include', metavar='STATION_NAMES',
@@ -137,9 +140,25 @@ observations. They are taken along in all other observations.''',
     
     arg('-e', '--exclude', metavar='STATION_NAMES',
         help = 'Comma separated list of station names to exclude.')
+
+
+    arg('--min-alt', metavar='DEGREES',
+        help = 'Minimum elevation for target sources [%(default)5.2f].',
+        type = float, default = 45.0)
     
+    arg('--max-alt', metavar='DEGREES',
+        help = 'Maximum elevation for target sources [%(default)5.2f].',
+        type = float, default = 70.0)
+    
+    arg('-c', '--clocks', metavar='CLOCK_MHZ', action='append',
+        choices = [160, 200],
+        help    = '''Allowed clock frequencies. Choose 160 or 200. Option can be
+provided multiple times if more than one clock frequency is
+required.''',
+        type=int, default=None)
+
     arg('-w', '--wait', metavar='SECONDS',
-        help = 'Number of seconds to wait until the first observation.',
+        help = 'Number of seconds to wait until the first observation [%(default)r].',
         type = int, default=540)
 
     arg('-t', '--start-date', metavar='DATE_STRING',
@@ -147,17 +166,9 @@ observations. They are taken along in all other observations.''',
         observation. Format: "yyyy/mm/dd hh:mm:ss.s''')
     
     arg('-p', '--project', metavar='MOM_NAME',
-        help    = 'Name of the project under which the observations belong.',
+        help    = 'Name of the project under which the observations belong  [%(default)r].',
         default = '2013LOFAROBS')
 
-    arg('-m', '--mode', metavar='CORRELATOR_MODE',
-        choices = ['XC', 'FE', 'CS', 'IS'], action='append',
-        help    = '''
-Correlator modes to test. Choose one of XC (crosscorrelation), FE
-(Fly\'s eye), IS (incoherent stokes), or CS (coherent stokes). One can
-specify more than one mode. If this argument is not spedified, all
-modes will be tested.''',
-        default = None)
 
     arg('-f', '--from-file', metavar='FILE_NAME',
         help='Read a custom observing sequence from FILE_NAME.',
@@ -340,6 +351,8 @@ def plan_observing_sequence(job_description):
     else:
         print('using default sequence')
         
+    max_el_deg = job_description.max_alt
+    min_el_deg = job_description.min_alt
 
     schedule      = [obs for obs in full_schedule
                      if obs[3] in job_description.clocks]
@@ -379,6 +392,8 @@ def plan_observing_sequence(job_description):
         data_products = [data_product
                          for data_product in data_products
                          if data_product in job_description.mode]
+
+
         if len(data_products) == 0:
             continue # No data products to write, no point to observe.
         if target_source is None:
@@ -386,10 +401,18 @@ def plan_observing_sequence(job_description):
                 or 'CS' in data_products 
                 or 'IS' in data_products):
                 target_source = SourceCatalogue().psr_source(
-                    mean_date, antenna_set[0:3])
+                    mean_date, antenna_set[0:3],
+                    min_elevation_deg = min_el_deg,
+                    max_elevation_deg = max_el_deg)
             else:
-                target_source = SourceCatalogue().cal_source(
-                    mean_date, antenna_set[0:3])
+                if frequency_range[0:3] == 'LBA':
+                    target_source = SourceCatalogue().cal_source(
+                        mean_date, antenna_set[0:3])
+                else:
+                    target_source = SourceCatalogue().cal_source(
+                        mean_date, antenna_set[0:3],
+                        min_elevation_deg = min_el_deg,
+                        max_elevation_deg = max_el_deg)
         else:
             target_source = lookup_source(target_source)
 
@@ -494,7 +517,7 @@ if __name__ == '__main__':
     try:
         print 'Current LST: '+str(lofar_sidereal_time(ephem.Observer().date))
         exit(main())
-    except (OSError, IOError, SourceSpecificationError, InvalidStationSetError):
+    except (OSError, IOError, SourceSpecificationError, InvalidStationSetError, NoSuitableSourceError):
         prerror(sys.exc_info()[1].args[0])
         print_short_help()
         exit(-1)
