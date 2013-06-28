@@ -214,7 +214,7 @@ def station_list(station_set, include = None, exclude = None):
     >>> len(station_list('core'))
     24
     >>> station_list('remote')
-    ['RS106', 'RS205', 'RS208', 'RS305', 'RS306', 'RS307', 'RS310', 'RS406', 'RS407', 'RS409', 'RS503', 'RS508', 'RS509']
+    ['RS106', 'RS205', 'RS208', 'RS210', 'RS305', 'RS306', 'RS307', 'RS310', 'RS406', 'RS407', 'RS409', 'RS503', 'RS508', 'RS509']
     >>> len(station_list('nl'))
     37
     >>> (station_list('nl', exclude = station_list('remote')) ==
@@ -238,8 +238,8 @@ def station_list(station_set, include = None, exclude = None):
                                          'CS031', 'CS032', 'CS101', 'CS103',
                                          'CS201', 'CS301', 'CS302', 'CS401',
                                          'CS501']
-    remote    = ['RS106', 'RS205', 'RS208', 'RS305', 'RS306', 'RS307', 'RS310',
-                 'RS406', 'RS407', 'RS409', 'RS503','RS508', 'RS509']
+    remote    = ['RS106', 'RS205', 'RS208', 'RS210', 'RS305', 'RS306', 'RS307',
+                 'RS310', 'RS406', 'RS407', 'RS409', 'RS503', 'RS508', 'RS509']
     netherlands = core + remote
     europe    = ['DE601', 'DE602', 'DE603', 'DE604', 'DE605', 'FR606', 'SE607',
                    'UK608']
