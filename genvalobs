@@ -163,7 +163,7 @@ required.''',
 
     arg('-t', '--start-date', metavar='DATE_STRING',
         help = '''Specify an exact date and time to start the first
-        observation. Format: "yyyy/mm/dd hh:mm:ss.s''')
+        observation. Format: "yyyy/mm/dd hh:mm:ss.s"''')
     
     arg('-p', '--project', metavar='MOM_NAME',
         help    = 'Name of the project under which the observations belong  [%(default)r].',
