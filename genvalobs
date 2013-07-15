@@ -169,6 +169,10 @@ required.''',
         help    = 'Name of the project under which the observations belong  [%(default)r].',
         default = '2013LOFAROBS')
 
+    arg('-k', '--keep', metavar='CORE_OR_EU',
+        help = 'In case of HBA_DUAL or HBA_ONE network conflicts, keep either "core" or "eu" stations [core].',
+        default='core', choices=['core', 'eu'])
+
 
     arg('-f', '--from-file', metavar='FILE_NAME',
         help='Read a custom observing sequence from FILE_NAME.',
@@ -454,7 +458,12 @@ def plan_observing_sequence(job_description):
         antenna_sets_with_conflicts = [
             'HBA_ONE', 'HBA_DUAL', 'HBA_ONE_INNER', 'HBA_DUAL_INNER']
         if antenna_set in antenna_sets_with_conflicts:
-            good_stations = exclude_conflicting_eu_stations(good_stations)
+            if 'core' == job_description.keep:
+                good_stations = exclude_conflicting_eu_stations(good_stations)
+            elif 'eu' == job_description.keep:
+                good_stations = exclude_conflicting_nl_stations(good_stations)
+            else:
+                raise RuntimeError('%s stations are not known to conflict. Use either core or eu' %  job_description.keep)
 
         backend = BackendProcessing(
             integration_time_seconds = 1,
