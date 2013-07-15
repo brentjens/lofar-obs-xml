@@ -6,7 +6,9 @@ import ephem
 import argparse
 from momxml import Folder, SourceCatalogue, lofar_sidereal_time
 from momxml import Stokes, TiedArrayBeams, BackendProcessing, Beam, Observation
-from momxml import exclude_conflicting_eu_stations, station_list
+from momxml import exclude_conflicting_eu_stations
+from momxml import exclude_conflicting_nl_stations
+from momxml import station_list
 from momxml import as_xml_mom_project
 from momxml import SourceSpecificationError, InvalidStationSetError
 from momxml import NoSuitableSourceError
@@ -127,9 +129,9 @@ modes will be tested [XC,FE,CS,IS].''',
         type = int, default=60)
 
     arg('-s', '--stations', metavar='STATION_SET',
-        choices = ['superterp', 'core', 'remote', 'nl', 'europe', 'all', 'none'],
+        choices = ['superterp', 'core', 'remote', 'nl', 'eu', 'all', 'none'],
         help    = '''
-One of superterp, core, remote, nl, europe, all, or none. EU stations
+One of superterp, core, remote, nl, eu, all, or none. EU stations
 that conflict with certain HBA1 core fields are excluded from the
 HBA_ONE, HBA_ONE_INNER, HBA_DUAL, and HBA_DUAL_INNER
 observations. They are taken along in all other observations [%(default)s].''',

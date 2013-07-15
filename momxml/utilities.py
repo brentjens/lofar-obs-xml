@@ -195,7 +195,7 @@ def station_list(station_set, include = None, exclude = None):
     station_set : string
         One of 'superterp', 'core', 'remote', 'nl', 'all', or 'none', where
         'nl' is the concatenation of the 'core' and 'remote' sets, and
-        all is 'nl' plus 'europe'.
+        all is 'nl' plus 'eu'.
 
     include : None or list of strings
         List of station names to append to the station set.
@@ -220,7 +220,7 @@ def station_list(station_set, include = None, exclude = None):
     >>> (station_list('nl', exclude = station_list('remote')) ==
     ...  station_list('core'))
     True
-    >>> station_list('europe')
+    >>> station_list('eu')
     ['DE601', 'DE602', 'DE603', 'DE604', 'DE605', 'FR606', 'SE607', 'UK608']
     >>> station_list('all')==station_list('nl', include=station_list('europe'))
     True
@@ -249,7 +249,7 @@ def station_list(station_set, include = None, exclude = None):
                     'core'     : core,
                     'remote'   : remote,
                     'nl'       : netherlands,
-                    'europe'   : europe,
+                    'eu'       : europe,
                     'all'      : all_stations,
                     'none'     : []}
     try:
