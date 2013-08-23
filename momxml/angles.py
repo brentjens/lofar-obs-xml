@@ -113,6 +113,9 @@ class Angle(object):
 
     **Parameters**
 
+    rad : None or float
+        An angle in radians.
+
     hms : None or tuple
         An angle in hours, minutes, and seconds,
         e.g. (13, 59, 12.4).
@@ -124,9 +127,6 @@ class Angle(object):
     sdms : None or tuple
         An angle in degrees, minutes, and seconds, e.g. ('-', 359, 59,
         12.4). The sign is required.
-
-    rad : None or float
-        An angle in radians.
 
     deg : None or float
         An angle in degrees.
@@ -167,8 +167,8 @@ class Angle(object):
     ValueError: Specify exactly one of hms, shms, sdms, rad, or deg.
 
     '''
-    def __init__(self, hms = None, shms = None, sdms = None,
-                 rad = None, deg = None):
+    def __init__(self, rad = None, hms = None, shms = None, sdms = None,
+                 deg = None):
         none_count = [hms, shms, sdms, rad, deg].count(None)
         if none_count != 4:
             raise ValueError('Specify exactly one of hms, shms, sdms, rad, or deg.')
