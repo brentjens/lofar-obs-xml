@@ -7,6 +7,7 @@ from momxml.utilities import station_list, validate_enumeration, next_date_with_
 from momxml.utilities import lofar_observer, next_sunrise, next_sunset
 from momxml.utilities import exclude_conflicting_eu_stations, exclude_conflicting_nl_stations
 from momxml.utilities import InvalidStationSetError
+from momxml.utilities import lm_from_radec, radec_from_lm, rotate_lm_CCW
 
 from momxml.targetsource    import SourceSpecificationError, NoSimbadCoordinatesError
 from momxml.targetsource    import TargetSource, simbad

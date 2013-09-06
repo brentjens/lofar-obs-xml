@@ -409,3 +409,28 @@ def validate_enumeration(name, value, allowed):
         raise ValueError('%r is not a valid %s; choose one of %s' %
                          (value, name, '\''+'\', \''.join(allowed)+'\''))
     return True
+
+
+
+
+def lm_from_radec(ra_angle, dec_angle, ra0_angle, dec0_angle):
+    l_rad = cos(float(dec_angle))*sin(float(ra_angle - ra0_angle))
+    m_rad = sin(float(dec_angle))*cos(float(dec0_angle)) - cos(float(dec_angle))*sin(float(dec0_angle))*cos(float(ra_angle - ra0_angle))
+    return (l_rad, m_rad)
+
+
+def radec_from_lm(l_rad, m_rad, ra0_angle, dec0_angle):
+    n_rad  = sqrt(1.0 - l_rad*l_rad - m_rad*m_rad)
+    ra_rad = float(ra0_angle) + arctan2(l_rad,
+                                        cos(float(dec0_angle))*n_rad - m_rad*sin(float(dec0_angle)))
+    dec_rad = arcsin(m*cos(float(dec0_angle)) + sin(float(dec0_angle))*n_rad)
+    return (momxml.Angle(rad=ra_rad), momxml.Angle(rad=dec_rad))
+
+
+def rotate_lm_CCW(l_rad, m_rad, ccw_angle):
+    cs = cos(float(ccw_angle))
+    ss = sin(float(ccw_angle))
+
+    l_new =  l_rad*cs + m_rad*ss
+    m_new = -l_rad*ss + m_rad*cs
+    return l_new, m_new
