@@ -96,8 +96,9 @@ with format:
         HBA_DUAL_INNER  HBA_MID   66..309    160    16     XC IS
  
 Note that the custom sequence is subject to the same filtering by
-options -m, -c, etc. as the default observing sequence.
-
+options -m, -c, etc. as the default observing sequence. The last entry
+is using the 160 MHz clock. It will only be used in the observation
+sequence if the 160 MHz is selected using the -c / --clock option.
 
 _
 ''', 
@@ -254,7 +255,9 @@ def read_custom_observation_sequence(file_contents):
         HBA_DUAL        HBA_LOW   77..320    200    16     CS
         HBA_DUAL_INNER  HBA_MID   66..309    160    16     XC IS
     
-
+    Note that the last entry is using the 160 MHz clock. It will only be
+    used in the observation sequence if the 160 MHz is selected using
+    the -c / --clock option. See the genvalobs --help for details.
 
     **Parameters**
     
@@ -399,7 +402,6 @@ def plan_observing_sequence(job_description):
         data_products = [data_product
                          for data_product in data_products
                          if data_product in job_description.mode]
-
 
         if len(data_products) == 0:
             continue # No data products to write, no point to observe.
