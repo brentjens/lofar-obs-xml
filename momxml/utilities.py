@@ -3,7 +3,8 @@ Various support functions that did not fit anywhere else.
 '''
 
 import ephem
-from math import pi
+from numpy import pi, cos, sin, arcsin, sqrt, arctan2
+from momxml import Angle
 import sys
 
 class InvalidStationSetError(ValueError):
@@ -423,8 +424,8 @@ def radec_from_lm(l_rad, m_rad, ra0_angle, dec0_angle):
     n_rad  = sqrt(1.0 - l_rad*l_rad - m_rad*m_rad)
     ra_rad = float(ra0_angle) + arctan2(l_rad,
                                         cos(float(dec0_angle))*n_rad - m_rad*sin(float(dec0_angle)))
-    dec_rad = arcsin(m*cos(float(dec0_angle)) + sin(float(dec0_angle))*n_rad)
-    return (momxml.Angle(rad=ra_rad), momxml.Angle(rad=dec_rad))
+    dec_rad = arcsin(m_rad*cos(float(dec0_angle)) + sin(float(dec0_angle))*n_rad)
+    return (Angle(rad=ra_rad), Angle(rad=dec_rad))
 
 
 def rotate_lm_CCW(l_rad, m_rad, ccw_angle):
