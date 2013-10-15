@@ -58,6 +58,60 @@ def flatten_list(list_of_lists):
     return [element for sub_list in list_of_lists for element in sub_list]
 
 
+
+
+def parse_subband_list(parset_subband_list):
+    r'''
+    Parse a subband list from a parset or SAS/MAC / MoM spec.
+
+    **Parameters**
+
+    parset_subband_list : string
+        Value of Observation.Beam[0].subbandList
+
+    **Returns**
+
+    A list of integers containing the subband numbers.
+
+    **Raises**
+
+    ValueError
+        If a syntax problem is encountered.
+
+    **Examples**
+
+    >>> parse_subband_list('[154..163,185..194,215..224,245..254,275..284,305..314,335..344,10*374]')
+    [154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374]
+    >>> parse_subband_list('[77..87,116..127,155..166,194..205,233..243,272..282,311..321]')
+    [77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321]
+    >>> parse_subband_list('[]')
+    []
+    >>> parse_subband_list('1,2,10..15,200..202,400')
+    [1, 2, 10, 11, 12, 13, 14, 15, 200, 201, 202, 400]
+    '''
+    stripped_subband_list = parset_subband_list.strip('[] \n\t')
+    if stripped_subband_list == '':
+        return []
+    sub_lists = [word.strip().split('..')
+                 for word in stripped_subband_list.split(',')]
+    subbands = []
+    for sub_list in sub_lists:
+        if len(sub_list) == 1:
+            multiplication = sub_list[0].split('*')
+            if len(multiplication) == 2:
+                subbands += [int(multiplication[1])]*int(multiplication[0])
+            else:
+                subbands.append(int(sub_list[0]))
+        elif len(sub_list) == 2:
+            subbands += range(int(sub_list[0]), int(sub_list[1])+1)
+        else:
+            raise ValueError('%r is not a valid sub_range in a subband list' % sub_list)
+            return []
+    return subbands
+
+
+
+
 def lofar_observer(date = None):
     r'''
     **Parameters**
@@ -217,16 +271,16 @@ def station_list(station_set, include = None, exclude = None):
     >>> station_list('remote')
     ['RS106', 'RS205', 'RS208', 'RS210', 'RS305', 'RS306', 'RS307', 'RS310', 'RS406', 'RS407', 'RS409', 'RS503', 'RS508', 'RS509']
     >>> len(station_list('nl'))
-    37
+    38
     >>> (station_list('nl', exclude = station_list('remote')) ==
     ...  station_list('core'))
     True
     >>> station_list('eu')
     ['DE601', 'DE602', 'DE603', 'DE604', 'DE605', 'FR606', 'SE607', 'UK608']
-    >>> station_list('all')==station_list('nl', include=station_list('europe'))
+    >>> station_list('all')==station_list('nl', include=station_list('eu'))
     True
     >>> len(unique(station_list('all')))
-    45
+    46
     >>> station_list('wsrt')
     Traceback (most recent call last):
     ...
