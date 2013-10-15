@@ -125,17 +125,19 @@ def lower_case(boolean):
 
 
 class Beam(object):
-    def __init__(self, target_source, subband_spec, measurement_type = 'Target'):
+    def __init__(self, target_source, subband_spec, duration_s = None, measurement_type = 'Target'):
         """
         *target_source*        : Instance of class TargetSource
         *subband_spec*         : Either a string with a MoM compatible subband specification,
                                  for example '77..324', or a list of integers, for example
                                  [77, 79, 81]
+        *duration_s*           : duration in seconds, or None if duration must be same as observation.
         *measurement_type*     : 'Target' or 'Calibration'
         """
-        self.target_source = target_source
-        self.subband_spec  = subband_spec
+        self.target_source    = target_source
+        self.subband_spec     = subband_spec
         self.measurement_type = measurement_type
+        self.duration_s       = duration_s
 
         if type(subband_spec) == type(''):
             self.subband_spec     = subband_spec
@@ -478,6 +480,9 @@ class Observation(object):
         """
 
         for id,beam in enumerate(self.beam_list):
+            duration_s = 0
+            if beam.duration_s is not None:
+                duration_s = beam.duration_s
             observation_str +="""
             <item index=\""""+str(id)+"""\">
               <lofar:measurement xsi:type=\""""+self.backend.measurement_type()+"""\">
@@ -504,7 +509,7 @@ class Observation(object):
                     <ra>"""+repr(beam.target_source.ra_deg())+"""</ra>
                     <dec>"""+repr(beam.target_source.dec_deg())+"""</dec>
                     <equinox>J2000</equinox>
-                    <duration>"""+mom_duration(seconds=self.duration_seconds)+"""</duration>
+                    <duration>"""+mom_duration(seconds=duration_s)+"""</duration>
                     <subbandsSpecification>
                       <bandWidth unit=\"MHz\">48.4375</bandWidth>
                       <centralFrequency unit=\"MHz\">139.21875</centralFrequency>
