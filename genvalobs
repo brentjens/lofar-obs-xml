@@ -512,7 +512,9 @@ def main():
         name        =  '%04d-%02d-%02d %02d:%02d' % folder_date[:-1],
         description = ('Validation observations %04d-%02d-%02d %02d:%02d' %
                        folder_date[:-1]),
-        children    = observations)
+        children    = observations,
+        grouping_parent = True,
+        label           = '0')
     val_obs_folder = Folder(name     = 'Validation Obs',
                             mom_id   = 192732,
                             children = [sub_folder])

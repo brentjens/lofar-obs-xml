@@ -27,29 +27,43 @@ class Folder(object):
         If mom_id is specified, it will add its children to this
         specific MoM folder. If not, a new folder is created in MoM.
 
+    grouping_parent : bool
+        Set to True if the folders' children must all share the same
+        group ID.
+
+    label : string or None
+        Topology label of the folder.
+
     **Examples**
 
     >>> folder = Folder(name     = 'root',
     ...                 children =  [Folder(name='child')],
     ...                 description = 'Main folder',
-    ...                 mom_id      = 12345)
+    ...                 mom_id      = 12345,
+    ...                 grouping_parent = True,
+    ...                 label       = '1')
     >>> print folder
-    Folder(name     = 'root',
-           children = [Folder(name     = 'child',
-           children = None,
-           description = None,
-           mom_id      = None)],
-           description = 'Main folder',
-           mom_id      = 12345)
+    Folder(name            = 'root',
+           children        = [Folder(name            = 'child',
+           children        = None,
+           description     = None,
+           mom_id          = None,
+           grouping_parent = False,
+           label           = None)],
+           description     = 'Main folder',
+           mom_id          = 12345,
+           grouping_parent = True,
+           label           = '1')
     >>> print folder.xml('test_project')
     <BLANKLINE>
-    <lofar:folder mom2Id="12345">
+    <lofar:folder mom2Id="12345" topology_parent="true">
+        <topology>1</topology>
         <name>root</name>
         <description>Main folder</description>
         <children>
     <item>
     <BLANKLINE>
-    <lofar:folder>
+    <lofar:folder topology_parent="false">
         <name>child</name>
         <children>
     <BLANKLINE>
@@ -63,19 +77,27 @@ class Folder(object):
     def __init__(self, name,
                  children    = None,
                  description = None,
-                 mom_id      = None):
-        self.name        = name
-        self.children    = children
-        self.description = description
-        self.mom_id      = mom_id
+                 mom_id      = None,
+                 grouping_parent = False,
+                 label       = None):
+        self.name            = name
+        self.children        = children
+        self.description     = description
+        self.mom_id          = mom_id
+        self.grouping_parent = grouping_parent
+        self.label           = label
 
 
     def __repr__(self):
-        return ('''Folder(name     = %r,
-       children = %r,
-       description = %r,
-       mom_id      = %r)''' %
-                (self.name, self.children, self.description, self.mom_id))
+        return ('''Folder(name            = %r,
+       children        = %r,
+       description     = %r,
+       mom_id          = %r,
+       grouping_parent = %r,
+       label           = %r)''' %
+                (self.name, self.children, self.description,
+                 self.mom_id, self.grouping_parent,
+                 self.label))
 
 
     def xml(self, project_name):
@@ -85,17 +107,23 @@ class Folder(object):
         
         if self.mom_id:
             preamble = '''
-<lofar:folder mom2Id="%s">''' % self.mom_id
+<lofar:folder mom2Id="%s" topology_parent="%s">''' % (self.mom_id,
+                                                      lower_case(self.grouping_parent))
         else:
             preamble = '''
-<lofar:folder>'''
+<lofar:folder topology_parent="%s">''' % lower_case(self.grouping_parent)
         
+        if self.label:
+            preamble +='''
+    <topology>%s</topology>''' % self.label
+
         preamble += '''
     <name>'''+self.name+'''</name>'''
 
         if self.description:
             preamble += '''
     <description>'''+self.description+'''</description>'''
+
         preamble += '''
     <children>
 '''
