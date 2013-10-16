@@ -20,10 +20,17 @@
 
 PYTHONPATH="`pwd`:$PYTHONPATH"
 NOSETESTS=`which nosetests`
+PYLINT=`which pylint`
+MODULE="momxml ./genvalobs"
 
 if [[ ! -f "$NOSETESTS" ]] ; then
     NOSETESTS=`which nosetests2`
 fi
+
+if [[ ! -f "$PYLINT" ]] ; then
+    PYLINT=`which pylint2`
+fi
+
 
 
 if [[ ! -f "$NOSETESTS" ]] ; then
@@ -38,3 +45,14 @@ else
                --cover-erase \
                -x $@
 fi
+echo ''
+echo '  *** Pylint output ***'
+echo ''
+
+if [[ ! -f "$PYLINT" ]] ; then
+    echo 'Cannot find pylint';
+else
+    $PYLINT --output-format=colorized --reports=n  --disable=C0103 $MODULE;
+fi
+
+echo ''
