@@ -1,6 +1,4 @@
-import copy, sys
-from momxml.angles     import Angle
-from momxml.utilities  import InvalidStationSetError, unique, station_list
+import copy
 from momxml.utilities  import parse_subband_list
 from momxml.momformats import mom_antenna_name_from_mac_name as mom_antenna_name
 from momxml.momformats import mom_frequency_range
@@ -13,9 +11,9 @@ class Preprocessing(object):
     Preprocessing pipeline options. This handles averaging and demixing.
 
     **Parameters**
-    
+
     freq_avg_factor: int
-        
+
 
     **Examples**
 
@@ -94,12 +92,12 @@ class Preprocessing(object):
             line += ';'
         else:
             line += '['+','.join(self.demix_if_needed)+'];'
-            
+
         if self.ignore_target is not None:
             line += repr(self.ignore_target)[0]
 
         return line
-        
+
 
 
 
@@ -169,7 +167,7 @@ class Pipeline(object):
         return ('''Pipeline(
     preprocessing = %r,
     calibration   = %r,
-    duration_s    = %r)''' % 
+    duration_s    = %r)''' %
                 (self.preprocessing, self.calibration, self.duration_s))
 
 
@@ -192,6 +190,7 @@ class Beam(object):
     r'''
     **Examples**
 
+    >>> from momxml.angles import Angle
     >>> beam = Beam(name = '3Cwhatever',
     ...             ra  = Angle(rad = 3.6),
     ...             dec = Angle(rad = 1.2),
@@ -239,7 +238,7 @@ class Beam(object):
     pipeline     = %r)''' % args
 
 
-    
+
     def __str__(self):
         args = (self.ra.as_deg(), self.dec.as_deg(), self.name,
                 self.subband_spec, self.number_of_subbands,
@@ -257,7 +256,7 @@ class Beam(object):
 
 class ObservationPackage(object):
     r'''
-    
+
     '''
     def __init__(self, project_name, package_name, description, setup_mode):
         self.project_name = project_name
@@ -273,7 +272,7 @@ class ObservationPackage(object):
 
 def xml_generator_input_single_set(**kwargs):
     r'''
-    
+
     **Parameters**
 
     setup_mode : string
@@ -302,7 +301,7 @@ def xml_generator_input_single_set(**kwargs):
 
     clock_mhz : int
         Clock frequency. Either 200 or 160.
-        
+
     instrument_filter : string
         Instrument filter name. One of 'LBA_LOW', 'LBA_HIGH',
         'HBA_LOW', 'HBA_MID', 'HBA_HIGH'
@@ -317,7 +316,7 @@ def xml_generator_input_single_set(**kwargs):
         Number of channels per subband at the correlator. Must be a
         power of two. Most common for standard interferometry is 64
         channels per subband.
-    
+
     stations : list of strings
         The stations to use in the observation. Use the station_list
         function to gnerate this list.
@@ -351,6 +350,7 @@ def xml_generator_input_single_set(**kwargs):
 
     **Examples**
 
+    >>> from momxml.angles import Angle
     >>> calibrator_beam = Beam('3C whatever',
     ...                        ra  = Angle(rad = 3.6),
     ...                        dec = Angle(rad = 1.2),
@@ -455,7 +455,7 @@ def xml_generator_input_single_set(**kwargs):
     <BLANKLINE>
 
     '''
-    
+
     args                      = copy.deepcopy(kwargs)
     args['create_calibrator_observations'] = \
         str(kwargs['create_calibrator_observations']).lower()
@@ -533,9 +533,9 @@ def xml_generator_input(project_name,
                         main_folder_name, main_folder_description,
                         xml_input_sets):
     r'''
-    
+
     **Parameters**
-    
+
     project_name : string
         Name of the MoM project into which the observations must be
         imported.
@@ -554,7 +554,7 @@ def xml_generator_input(project_name,
     input_list = xml_input_sets
     if type(input_list) == type(''):
         input_list = [input_list]
-        
+
     return r'''
 projectName=%(project_name)s
 mainFolderName=%(main_folder_name)s

@@ -17,9 +17,9 @@ class InvalidStationSetError(ValueError):
 def with_auto_repr(cls):
     r'''
     Class decorator that adds a nicer default __repr__ method to a class.
-    
+
     **Examples**
-    
+
     >>> class Elements(object):
     ...     def __init__(self, a, b):
     ...         self.a = a
@@ -40,15 +40,17 @@ def with_auto_repr(cls):
         which the arguments are set in bthe constructor body.
 
         '''
+
         def __repr__(self):
             name    = cls.__name__
             as_dict = self.__dict__
             members = as_dict.keys()
             longest_member = sorted([len(s) for s in members])[-1]
-            member_strings = [member.ljust(longest_member)+' = '+repr(as_dict[member])
-                              for member in members]
+            member_strings = [mem.ljust(longest_member)+' = '+repr(as_dict[mem])
+                              for mem in members]
             sep = '\n'+' '*(len(name)+1)
-            indented_member_strings = [('\n'+ ' '*(longest_member+3)).join(member.split('\n'))
+            indented_member_strings = [('\n'+ ' '*(longest_member+3)).join(
+                member.split('\n'))
                                        for member in member_strings]
             unadjusted =  ',\n'.join(indented_member_strings)
             return name+'('+sep.join(unadjusted.split('\n'))+')'
@@ -146,10 +148,12 @@ def parse_subband_list(parset_subband_list):
 
     **Examples**
 
-    >>> parse_subband_list('[154..163,185..194,215..224,245..254,275..284,305..314,335..344,10*374]')
-    [154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374]
-    >>> parse_subband_list('[77..87,116..127,155..166,194..205,233..243,272..282,311..321]')
-    [77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321]
+    >>> sb_spec = '[154..163,185..194,215..224,245..254,275..284,10*374]'
+    >>> parse_subband_list(sb_spec)
+    [154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374]
+    >>> sb_spec = '[77..87,116..127,155..166,194..205,233..243,272..282]'
+    >>> parse_subband_list(sb_spec)
+    [77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282]
     >>> parse_subband_list('[]')
     []
     >>> parse_subband_list('1,2,10..15,200..202,400')
@@ -171,8 +175,8 @@ def parse_subband_list(parset_subband_list):
         elif len(sub_list) == 2:
             subbands += range(int(sub_list[0]), int(sub_list[1])+1)
         else:
-            raise ValueError('%r is not a valid sub_range in a subband list' % sub_list)
-            return []
+            raise ValueError('%r is not a valid sub_range in a subband list' %
+                             sub_list)
     return subbands
 
 
@@ -184,13 +188,13 @@ def lofar_observer(date = None):
 
     date : ephem.Date
         The date to set for the ephem.Observer() instance
-    
+
     **Returns**
-    
+
     An ephem.Observer() instance for the LOFAR core.
 
     **Examples**
-    
+
     >>> lofar_observer('2013/04/15 12:34:56')
     <ephem.Observer date='2013/4/15 12:34:56' epoch='2000/1/1 12:00:00' lon=6:52:11.4 lat=52:54:54.4 elevation=49.344m horizon=0:00:00.0 temp=15.0C pressure=1010.0mBar>
 
@@ -203,7 +207,7 @@ def lofar_observer(date = None):
         lofar.date = date
     return lofar
 
-    
+
 
 def lofar_sidereal_time(date):
     r'''
@@ -250,7 +254,7 @@ def next_sunrise(date, observer = None):
     any other ephem.Observer, if provided.
 
     **Parameters**
-    
+
     date : ephem.Date
         Date from which to look for sunrise.
 
@@ -259,11 +263,11 @@ def next_sunrise(date, observer = None):
         if None is provided.
 
     **Returns**
-    
+
     An ephem.Date instance.
 
     **Examples**
-    
+
     >>> print(next_sunrise('2013/04/03 12:00:00'))
     2013/4/4 04:58:56
     '''
@@ -281,7 +285,7 @@ def next_sunset(date, observer = None):
     any other ephem.Observer, if provided.
 
     **Parameters**
-    
+
     date : ephem.Date
         Date from which to look for sunrise.
 
@@ -290,11 +294,11 @@ def next_sunset(date, observer = None):
         if None is provided.
 
     **Returns**
-    
+
     An ephem.Date instance.
 
     **Examples**
-    
+
     >>> print(next_sunset('2013/04/03 12:00:00'))
     2013/4/3 18:11:17
     '''
@@ -392,7 +396,7 @@ def station_list(station_set, include = None, exclude = None):
 
 def exclude_conflicting_eu_stations(stations):
     r'''
-    
+
     The international stations are connected to the same BlueGene
     IONodes as the HBA1 ear in some core stations. For HBA_ONE,
     HBA_DUAL_INNER, and HBA_DUAL mode, we need to remove either the
@@ -415,7 +419,8 @@ def exclude_conflicting_eu_stations(stations):
     ['CS001', 'CS002', 'RS407']
     >>> exclude_conflicting_eu_stations(['CS001', 'CS002', 'RS407', 'DE605'])
     ['CS001', 'CS002', 'RS407', 'DE605']
-    >>> exclude_conflicting_eu_stations(['CS001', 'CS002', 'CS028', 'RS407', 'DE601', 'DE605', 'UK608'])
+    >>> exclude_conflicting_eu_stations(['CS001', 'CS002', 'CS028', 'RS407',
+    ...                                  'DE601', 'DE605', 'UK608'])
     ['CS001', 'CS002', 'CS028', 'RS407', 'DE605', 'UK608']
 
     '''
@@ -428,7 +433,7 @@ def exclude_conflicting_eu_stations(stations):
                     'SE607': 'CS301',
                     'UK608': 'CS013'}
     good_stations = []
-    
+
     for station in stations:
         try:
             if exclude_dict[station] not in stations:
@@ -440,7 +445,7 @@ def exclude_conflicting_eu_stations(stations):
 
 def exclude_conflicting_nl_stations(stations):
     r'''
-    
+
     The international stations are connected to the same BlueGene
     IONodes as the HBA1 ear in some core stations. For HBA_ONE,
     HBA_DUAL_INNER, and HBA_DUAL mode, we need to remove either the
@@ -463,7 +468,8 @@ def exclude_conflicting_nl_stations(stations):
     ['CS001', 'CS002', 'RS407']
     >>> exclude_conflicting_nl_stations(['CS001', 'CS002', 'RS407', 'DE605'])
     ['CS001', 'CS002', 'RS407', 'DE605']
-    >>> exclude_conflicting_nl_stations(['CS001', 'CS002', 'CS028', 'RS407', 'DE601', 'DE605', 'UK608'])
+    >>> exclude_conflicting_nl_stations(['CS001', 'CS002', 'CS028',
+    ...                                  'RS407', 'DE601', 'DE605', 'UK608'])
     ['CS002', 'CS028', 'RS407', 'DE601', 'DE605', 'UK608']
 
     '''
@@ -476,7 +482,7 @@ def exclude_conflicting_nl_stations(stations):
                     'CS301': 'SE607',
                     'CS013': 'UK608'}
     good_stations = []
-    
+
     for station in stations:
         try:
             if exclude_dict[station] not in stations:
@@ -516,14 +522,14 @@ def validate_enumeration(name, value, allowed):
 
     **Example**
 
-    >>> validate_enumeration('observation antenna set', 'core',
+    >>> validate_enumeration('station set', 'core',
     ...                      allowed = ['core', 'remote', 'nl', 'all'])
     True
-    >>> validate_enumeration('observation antenna set', 'wsrt',
+    >>> validate_enumeration('station set', 'wsrt',
     ...                      allowed = ['core', 'remote', 'nl', 'all'])
     Traceback (most recent call last):
     ...
-    ValueError: 'wsrt' is not a valid observation antenna set; choose one of 'core', 'remote', 'nl', 'all'
+    ValueError: 'wsrt' is not a valid station set; choose one of 'core', 'remote', 'nl', 'all'
 
     '''
     if value not in allowed:
@@ -535,17 +541,26 @@ def validate_enumeration(name, value, allowed):
 
 
 def lm_from_radec(ra_angle, dec_angle, ra0_angle, dec0_angle):
-    l_rad = cos(float(dec_angle))*sin(float(ra_angle - ra0_angle))
-    m_rad = sin(float(dec_angle))*cos(float(dec0_angle)) - cos(float(dec_angle))*sin(float(dec0_angle))*cos(float(ra_angle - ra0_angle))
+    cos_dec  = cos(float(dec_angle))
+    sin_dec  = sin(float(dec_angle))
+    cos_dec0 = cos(float(dec0_angle))
+    sin_dec0 = sin(float(dec0_angle))
+    sin_dra  = sin(float(ra_angle - ra0_angle))
+    cos_dra  = cos(float(ra_angle - ra0_angle))
+
+    l_rad = cos_dec*sin_dra
+    m_rad = sin_dec*cos_dec0 - cos_dec*sin_dec0*cos_dra
     return (l_rad, m_rad)
 
 
 def radec_from_lm(l_rad, m_rad, ra0_angle, dec0_angle):
     n_rad  = sqrt(1.0 - l_rad*l_rad - m_rad*m_rad)
+    cos_dec0 = cos(float(dec0_angle))
+    sin_dec0 = sin(float(dec0_angle))
     ra_rad = float(ra0_angle) + arctan2(l_rad,
-                                        cos(float(dec0_angle))*n_rad - m_rad*sin(float(dec0_angle)))
-    dec_rad = arcsin(m_rad*cos(float(dec0_angle)) + sin(float(dec0_angle))*n_rad)
-    return (Angle(rad=ra_rad), Angle(rad=dec_rad))
+                                        cos_dec0*n_rad - m_rad*sin_dec0)
+    dec_rad = arcsin(m_rad*cos_dec0 + sin_dec0*n_rad)
+    return (Angle(rad = ra_rad), Angle(rad = dec_rad))
 
 
 def rotate_lm_CCW(l_rad, m_rad, ccw_angle):

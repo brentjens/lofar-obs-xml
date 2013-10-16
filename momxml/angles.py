@@ -93,7 +93,7 @@ def int_from_sign_char(char):
     Traceback (most recent call last):
     ...
     ValueError: char must be either '+' or '-', not 'f'
-    
+
     '''
     if char == '+':
         return +1
@@ -101,7 +101,7 @@ def int_from_sign_char(char):
         return -1
     else:
         raise ValueError('char must be either \'+\' or \'-\', not %r' % char)
-    
+
 
 
 
@@ -123,7 +123,7 @@ class Angle(object):
     shms : None or tuple
         A signed  angle in hours, minutes, and seconds, e.g. ('+', 13, 59,
         12.4). The sign is required.
-    
+
     sdms : None or tuple
         An angle in degrees, minutes, and seconds, e.g. ('-', 359, 59,
         12.4). The sign is required.
@@ -164,16 +164,16 @@ class Angle(object):
     >>> Angle(rad = -0.0568696144215, deg = 12)
     Traceback (most recent call last):
     ...
-    ValueError: Specify exactly one of hms, shms, sdms, rad, or deg.
+    ValueError: Specify *one* of hms, shms, sdms, rad, or deg.
 
     '''
     def __init__(self, rad = None, hms = None, shms = None, sdms = None,
                  deg = None):
         none_count = [hms, shms, sdms, rad, deg].count(None)
         if none_count != 4:
-            raise ValueError('Specify exactly one of hms, shms, sdms, rad, or deg.')
+            raise ValueError('Specify *one* of hms, shms, sdms, rad, or deg.')
         self.rad = 0.0
-        
+
         if hms is not None:
             self.set_shms('+', *hms)
         if shms is not None:
@@ -189,7 +189,7 @@ class Angle(object):
     def __repr__(self):
         return 'Angle(rad = %s)' % str(self.rad)
 
-    
+
     def set_shms(self, sign, hours, minutes, seconds):
         r'''
         Explicitly set angle with sign, hours, minutes, and seconds.
@@ -206,7 +206,7 @@ class Angle(object):
         minutes : positive number
             Number of minutes. Does not need to be restricted to
             [0..60]. May also be floating point.
- 
+
         seconds : positive number
             Number of seconds. Does not need to be restricted to
             [0..60]. May also be floating point.
@@ -215,18 +215,18 @@ class Angle(object):
 
         A float containing the angle in radians.
 
-        **Examples**        
+        **Examples**
 
         >>> a = Angle(rad = 2.0)
         >>> rad = a.set_shms('-', 2, 30, 45.2)
         >>> str(a.as_rad())
         '-0.657785506256'
         '''
-        sgn      = int_from_sign_char(sign) 
+        sgn      = int_from_sign_char(sign)
         self.rad = sgn*pi*(hours + minutes/60.0 + seconds/3600.0)/12.0
         return self.rad
 
-    
+
     def set_sdms(self, sign, degrees, minutes, seconds):
         r'''
         Explicitly set angle with sign, degrees, minutes, and seconds.
@@ -243,7 +243,7 @@ class Angle(object):
         minutes : positive number
             Number of minutes. Does not need to be restricted to
             [0..60]. May also be floating point.
- 
+
         seconds : positive number
             Number of seconds. Does not need to be restricted to
             [0..60]. May also be floating point.
@@ -252,19 +252,19 @@ class Angle(object):
 
         A float containing the angle in radians.
 
-        **Examples**        
+        **Examples**
 
         >>> a = Angle(rad = 2.0)
         >>> rad = a.set_sdms('-', 2, 30, 45.2)
         >>> str(a.as_rad())
         '-0.0438523670837'
-        
+
         '''
-        sgn      = int_from_sign_char(sign) 
+        sgn      = int_from_sign_char(sign)
         self.rad = sgn*pi*(degrees + minutes/60.0 + seconds/3600.0)/180.0
         return self.rad
 
-    
+
     def set_deg(self, deg):
         r'''
         Set the angle in degrees.
@@ -289,7 +289,7 @@ class Angle(object):
         self.rad = deg*pi/180.0
         return self.rad
 
-    
+
     def set_rad(self, rad):
         r'''
         Set the angle in radians.
@@ -323,7 +323,7 @@ class Angle(object):
 
         A float containing the angle in radians.
 
-        **Examples**           
+        **Examples**
 
         >>> a = Angle (rad = 3.0)
         >>> a.as_rad()
@@ -331,7 +331,7 @@ class Angle(object):
         '''
         return self.rad
 
-    
+
     def as_deg(self):
         r'''
         Get angle in degrees.
@@ -340,7 +340,7 @@ class Angle(object):
 
         A float containing the angle in degrees.
 
-        **Examples**           
+        **Examples**
 
         >>> a = Angle (rad = 3.0)
         >>> str(a.as_deg())
@@ -357,7 +357,7 @@ class Angle(object):
 
         A float containing the angle in hours.
 
-        **Examples**           
+        **Examples**
 
         >>> a = Angle (rad = 3.0)
         >>> str(a.as_hours())
@@ -366,7 +366,7 @@ class Angle(object):
         return self.rad*12.0/pi
 
 
-    
+
     def as_shms(self):
         r'''
         Get the angle in hours, minutes, and seconds. It does not
@@ -378,13 +378,14 @@ class Angle(object):
 
         **Examples**
 
-        >>> '%s%02dh %02dm %06.3fs' % Angle(shms = ('+', 3, 10, 59.99999)).as_shms()
+        >>> fmt = '%s%02dh %02dm %06.3fs'
+        >>> fmt % Angle(shms = ('+', 3, 10, 59.99999)).as_shms()
         '+03h 10m 60.000s'
-        >>> '%s%02dh %02dm %06.3fs' % Angle(shms = ('+', 3, 11, 0.0)).as_shms()
+        >>> fmt % Angle(shms = ('+', 3, 11, 0.0)).as_shms()
         '+03h 10m 60.000s'
-        >>> '%s%02dh %02dm %06.3fs' % Angle(shms = ('-', 3, 11, 0.1)).as_shms()
+        >>> fmt % Angle(shms = ('-', 3, 11, 0.1)).as_shms()
         '-03h 11m 00.100s'
-        
+
         '''
         sgn      = sign_char(self.rad)
         abs_rad  = abs(self.rad)
@@ -406,13 +407,14 @@ class Angle(object):
 
         **Examples**
 
-        >>> '%s%02dd %02dm %06.3fs' % Angle(sdms = ('+', 3, 10, 59.99999)).as_sdms()
+        >>> fmt = '%s%02dd %02dm %06.3fs'
+        >>> fmt % Angle(sdms = ('+', 3, 10, 59.99999)).as_sdms()
         '+03d 10m 60.000s'
-        >>> '%s%02dd %02dm %06.3fs' % Angle(sdms = ('+', 3, 11, 0.0)).as_sdms()
+        >>> fmt % Angle(sdms = ('+', 3, 11, 0.0)).as_sdms()
         '+03d 10m 60.000s'
-        >>> '%s%02dd %02dm %06.3fs' % Angle(sdms = ('-', 3, 11, 0.1)).as_sdms()
+        >>> fmt % Angle(sdms = ('-', 3, 11, 0.1)).as_sdms()
         '-03d 11m 00.100s'
-        
+
         '''
         sgn      = sign_char(self.rad)
         abs_rad  = abs(self.rad)
@@ -442,7 +444,7 @@ class Angle(object):
         '''
         return self.rad
 
-    
+
     def __add__(self, angle):
         r'''
         Implement Angle() + something, where float(something) is in
@@ -451,7 +453,7 @@ class Angle(object):
         **Returns**
 
         An Angle instance.
-        
+
         **Examples**
 
         >>> (Angle(deg = 90) + Angle(deg = 45)).as_deg()
@@ -461,7 +463,7 @@ class Angle(object):
         '''
         return Angle(rad = self.as_rad() + float(angle))
 
-    
+
     def __sub__(self, angle):
         r'''
         Implement Angle() - something, where float(something) is in
@@ -470,17 +472,17 @@ class Angle(object):
         **Returns**
 
         An Angle instance.
-        
+
         **Examples**
 
         >>> (Angle(deg = 90) - Angle(deg = 45)).as_deg()
         45.0
         >>> Angle(rad = 2.0) - 0.5
         Angle(rad = 1.5)
-        '''        
+        '''
         return Angle(rad = self.as_rad() - float(angle))
 
-    
+
     def __mul__(self, factor):
         r'''
         Implement Angle() * factor
@@ -488,12 +490,12 @@ class Angle(object):
         **Parameters**
 
         factor : number
-            The factor to multiply the angle by.      
+            The factor to multiply the angle by.
 
         **Returns**
 
         An Angle instance.
-        
+
         **Examples**
 
         >>> (Angle(deg = 90)*3).as_deg()
@@ -503,7 +505,7 @@ class Angle(object):
         '''
         return Angle(rad = self.as_rad() * float(factor))
 
-    
+
     def __div__(self, divisor):
         r'''
         Implement Angle()/divisor
@@ -511,12 +513,12 @@ class Angle(object):
         **Parameters**
 
         divisor : number
-            The factor to devide the angle by.      
+            The factor to devide the angle by.
 
         **Returns**
 
         An Angle instance.
-        
+
         **Examples**
 
         >>> (Angle(deg = -90)/2).as_deg()

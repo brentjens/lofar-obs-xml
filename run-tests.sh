@@ -52,7 +52,7 @@ echo ''
 if [[ ! -f "$PYLINT" ]] ; then
     echo 'Cannot find pylint';
 else
-    $PYLINT --output-format=colorized --reports=n  --disable=C0103 $MODULE;
+    echo "$0: pylint temporarily disabled" #    $PYLINT --output-format=colorized --reports=n  --disable=C0103 $MODULE;
 fi
 
 echo ''
