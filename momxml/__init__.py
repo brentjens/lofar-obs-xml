@@ -14,6 +14,6 @@ from momxml.targetsource    import SourceSpecificationError, NoSimbadCoordinates
 from momxml.targetsource    import TargetSource, simbad
 from momxml.sourcecatalogue import SourceCatalogue, NoSuitableSourceError
 from momxml.observation     import Folder, Beam, Stokes, BackendProcessing, TiedArrayBeams
-from momxml.observation     import Observation, as_xml_mom_project
+from momxml.observation     import Observation, xml
 
 import ephem

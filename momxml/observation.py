@@ -551,9 +551,9 @@ class Observation(object):
 
 
 
-def as_xml_mom_project(observations, project='2013LOFAROBS'):
+def xml(items, project='2013LOFAROBS'):
     """
-    Format a list of *observations* as an XML string that can be
+    Format a list of *items* as an XML string that can be
     uploaded to a MoM project with name *project*.
     """
     return """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
@@ -564,7 +564,7 @@ def as_xml_mom_project(observations, project='2013LOFAROBS'):
     <name>"""+project+"""</name>
     <description>"""+project+"""</description>
     <children>
-      <item>"""+'      </item>\n      <item>'.join([obs.xml(project) for obs in observations])+"""
+      <item>"""+'      </item>\n      <item>'.join([item.xml(project) for item in items])+"""
       </item>
     </children>
 </lofar:project>

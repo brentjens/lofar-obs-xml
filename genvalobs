@@ -519,8 +519,8 @@ def main():
                             mom_id   = 192732,
                             children = [sub_folder])
     out = open(job_description.output, 'w')
-    out.write(as_xml_mom_project([val_obs_folder],
-                                 project = job_description.project))
+    out.write(xml([val_obs_folder],
+                  project = job_description.project))
     out.close()
 
     return 0
