@@ -216,6 +216,7 @@ class TiedArrayBeams(object):
         return output
 
 
+TiedArrayBeams = with_auto_repr(TiedArrayBeams)
 
 
 
@@ -257,7 +258,7 @@ class Stokes(object):
                'stokes_downsampling_steps': self.stokes_downsampling_steps,
                'polarizations': self.polarizations}
                
-
+Stokes = with_auto_repr(Stokes)
 
 
 
@@ -385,6 +386,10 @@ class BackendProcessing(object):
               <enableSuperterp>'''+lower_case(self.enable_superterp)+'''</enableSuperterp>
         '''
         return output
+
+
+BackendProcessing = with_auto_repr(BackendProcessing)
+
 
 
 
@@ -552,6 +557,8 @@ class Observation(object):
 """
         return observation_str
 
+
+Observation = with_auto_repr(Observation)
 
 
 
