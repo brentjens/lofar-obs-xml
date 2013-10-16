@@ -370,7 +370,7 @@ def plan_observing_sequence(job_description):
         ['HBA_DUAL'      , 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
         ['HBA_DUAL_INNER', 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
         ['HBA_JOINED'    , 'HBA_HIGH', '52..255' , 200, 16, ['XC']]]
-    print job_description
+
     if job_description.from_file is not None:
         full_schedule = read_custom_observation_sequence(
             open(job_description.from_file).read())

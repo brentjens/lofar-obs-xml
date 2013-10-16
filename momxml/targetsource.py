@@ -17,7 +17,7 @@ class SourceSpecificationError (ValueError):
     '''
 
 
-class TargetSource:
+class TargetSource(object):
     r'''
     A target source to be used when specifying a Beam within an
     Observation.
@@ -40,14 +40,16 @@ class TargetSource:
 
     **Examples**
 
-    >>> TargetSource('Cyg A', ra_angle = Angle(shms = ('+', 19, 59, 28.3565)), dec_angle = Angle(sdms = ('+', 40, 44, 2.099)) )
+    >>> TargetSource('Cyg A',
+    ...              ra_angle  = Angle(shms = ('+', 19, 59, 28.3565)),
+    ...              dec_angle = Angle(sdms = ('+', 40, 44, 2.099)) )
     TargetSource(name      = 'Cyg A',
                  ra_angle  = Angle(shms = ('+', 19, 59, 28.3565)),
                  dec_angle = Angle(sdms = ('+', 40, 44, 2.099)))
 
 
     '''
-    
+
     def __init__(self, name = '', ra_angle = None, dec_angle = None):
         self.name      = name
         self.ra_angle  = ra_angle
@@ -71,20 +73,28 @@ class TargetSource:
 
         **Examples**
 
-        >>> TargetSource('Cyg A', ra_angle = Angle(shms = ('+', 19, 59, 28.3565)), dec_angle = Angle(sdms = ('+', 40, 44, 2.099)) )
+        >>> TargetSource('Cyg A',
+        ...              ra_angle = Angle(shms = ('+', 19, 59, 28.3565)),
+        ...              dec_angle = Angle(sdms = ('+', 40, 44, 2.099)) )
         TargetSource(name      = 'Cyg A',
                      ra_angle  = Angle(shms = ('+', 19, 59, 28.3565)),
                      dec_angle = Angle(sdms = ('+', 40, 44, 2.099)))
-        >>> TargetSource(u'Cyg A', ra_angle = Angle(shms = ('+', 19, 59, 28.3565)), dec_angle = Angle(sdms = ('+', 40, 44, 2.099)) )
+        >>> TargetSource(u'Cyg A',
+        ...              ra_angle = Angle(shms = ('+', 19, 59, 28.3565)),
+        ...              dec_angle = Angle(sdms = ('+', 40, 44, 2.099)) )
         Traceback (most recent call last):
         ...
         SourceSpecificationError: Source name may not be a unicode string.
-        >>> TargetSource('Cyg A', ra_angle = 3.0, dec_angle = Angle(sdms = ('+', 40, 44, 2.099)) )
+        >>> TargetSource('Cyg A',
+        ...              ra_angle = 3.0,
+        ...              dec_angle = Angle(sdms = ('+', 40, 44, 2.099)) )
         Traceback (most recent call last):
         ...
         SourceSpecificationError: ra_angle must be a momxml.Angle, not 3.0
 
-        >>> TargetSource('Cyg A', ra_angle = Angle(shms = ('+', 19, 59, 28.3565)), dec_angle = -2)
+        >>> TargetSource('Cyg A',
+        ...              ra_angle = Angle(shms = ('+', 19, 59, 28.3565)),
+        ...              dec_angle = -2)
         Traceback (most recent call last):
         ...
         SourceSpecificationError: dec_angle must be a momxml.Angle, not -2
@@ -95,7 +105,7 @@ class TargetSource:
                 'Source name may not be a unicode string.')
         if type(self.name) != type(''):
             raise SourceSpecificationError(
-                'Source name must be a string. You specified %s' % 
+                'Source name must be a string. You specified %s' %
                 (str(self.name),))
         if self.ra_angle.__class__.__name__ != 'Angle':
             raise SourceSpecificationError(
@@ -119,7 +129,9 @@ class TargetSource:
 
         **Examples**
 
-        >>> TargetSource('Cyg A', ra_angle = Angle(deg = 299.868152), dec_angle = Angle(deg = 40.733916) ).ra_deg()
+        >>> TargetSource('Cyg A',
+        ...              ra_angle = Angle(deg = 299.868152),
+        ...              dec_angle = Angle(deg = 40.733916) ).ra_deg()
         299.868152
 
         '''
@@ -136,21 +148,23 @@ class TargetSource:
 
         **Examples**
 
-        >>> TargetSource('Cyg A', ra_angle = Angle(deg = 299.868152), dec_angle = Angle(deg = 40.733916) ).dec_deg()
+        >>> TargetSource('Cyg A',
+        ...              ra_angle = Angle(deg = 299.868152),
+        ...              dec_angle = Angle(deg = 40.733916) ).dec_deg()
         40.733916
 
         '''
         return self.dec_angle.as_deg()
 
-    
+
     def __repr__(self):
         return ('''TargetSource(name      = %r,
              ra_angle  = Angle(shms = %r),
-             dec_angle = Angle(sdms = %r))''' % 
+             dec_angle = Angle(sdms = %r))''' %
              (self.name,
-              self.ra_angle.as_shms()[0:3]  + 
+              self.ra_angle.as_shms()[0:3]  +
               (float('%7.4f' % self.ra_angle.as_shms()[-1]),),
-              self.dec_angle.as_sdms()[0:3] + 
+              self.dec_angle.as_sdms()[0:3] +
               (float('%7.4f' % self.dec_angle.as_sdms()[-1]),)))
 
 
@@ -158,7 +172,7 @@ class TargetSource:
 
 def target_source_from_simbad_response(source_name, simbad_response):
     r'''
-    
+
     **Examples**
 
     >>> simbad_response = open('examples/simbad-ngc891.txt').read()
@@ -184,15 +198,16 @@ def target_source_from_simbad_response(source_name, simbad_response):
                          if 'Coordinates(ICRS,ep=J2000,eq=2000)' in line]
     if len(coordinate_lines) > 0:
         words    = coordinate_lines[0].split()
-        ra_angle = Angle(shms =
-                         ('+', float(words[1]), float(words[2]), float(words[3])))
+        ra_hms   = [float(number) for number in words[1:4]]
+        ra_angle = Angle(hms = ra_hms)
+
         if words[6][0] in '0123456789':
-            dec_angle = Angle(sdms =
-                              (words[4][0], float (words[4][1:]), float(words[5]), float(words[6])))
+            dec_sdms = (words[4][0],
+                        float(words[4][1:]), float(words[5]), float(words[6]))
         else:
-            dec_angle = Angle(sdms =
-                              (words[4][0], float (words[4][1:]), float(words[5]), 0.0))
-            
+            dec_sdms = (words[4][0],
+                        float(words[4][1:]), float(words[5]), 0.0)
+        dec_angle = Angle(sdms = dec_sdms)
         return TargetSource(name      = source_name,
                             ra_angle  = ra_angle,
                             dec_angle = dec_angle)
@@ -204,27 +219,36 @@ def target_source_from_simbad_response(source_name, simbad_response):
 
 def simbad(source_name, debug = False):
     r'''
+    Lookup ``source_name`` on simbad and return a TargetSource instance.
+
+    **Examples**
+
+    >>> simbad('3C 196')
+    TargetSource(name      = '3C 196',
+                 ra_angle  = Angle(shms = ('+', 8, 13, 36.0678)),
+                 dec_angle = Angle(sdms = ('+', 48, 13, 2.581)))
     '''
-    query = '&'.join(['http://simbad.u-strasbg.fr/simbad/sim-id?output.format=ASCII',
-                      'obj.coo1=on',
-                      'obj.coo2=off',
-                      'obj.coo3=off',
-                      'obj.coo4=off',
-                      'frame1=ICRS',
-                      'epoch1=J2000',
-                      'equi1=2000',
-                      'obj.pmsel=off',
-                      'obj.plxsel=off',
-                      'obj.rvsel=off',
-                      'obj.spsel=off',
-                      'obj.mtsel=off',
-                      'obj.sizesel=off',
-                      'obj.fluxsel=off',
-                      'obj.bibsel=off',
-                      'obj.messel=off',
-                      'obj.notesel=off',
-                      'Ident=%s'])
-    
+    query = '&'.join([
+        'http://simbad.u-strasbg.fr/simbad/sim-id?output.format=ASCII',
+        'obj.coo1=on',
+        'obj.coo2=off',
+        'obj.coo3=off',
+        'obj.coo4=off',
+        'frame1=ICRS',
+        'epoch1=J2000',
+        'equi1=2000',
+        'obj.pmsel=off',
+        'obj.plxsel=off',
+        'obj.rvsel=off',
+        'obj.spsel=off',
+        'obj.mtsel=off',
+        'obj.sizesel=off',
+        'obj.fluxsel=off',
+        'obj.bibsel=off',
+        'obj.messel=off',
+        'obj.notesel=off',
+        'Ident=%s'])
+
     result = urllib.urlopen(query % urllib.quote(source_name),
                             proxies = {}).read()
     if debug:
