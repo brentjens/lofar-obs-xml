@@ -114,13 +114,6 @@ class Folder(object):
         return preamble + children_string + appendix
 
 
-def lower_case(boolean):
-    return repr(boolean).lower()
-
-
-
-
-
 
 
 

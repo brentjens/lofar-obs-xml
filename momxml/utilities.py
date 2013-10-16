@@ -60,6 +60,26 @@ def flatten_list(list_of_lists):
 
 
 
+def lower_case(boolean):
+    r'''
+    Return lower case string representation of a boolean value.
+
+    **Parameters**
+
+    boolean : bool
+        The value to convert to a string.
+
+    **Examples**
+    >>> lower_case(True)
+    'true'
+    >>> lower_case(False)
+    'false'
+    '''
+    return repr(boolean).lower()
+
+
+
+
 def parse_subband_list(parset_subband_list):
     r'''
     Parse a subband list from a parset or SAS/MAC / MoM spec.
