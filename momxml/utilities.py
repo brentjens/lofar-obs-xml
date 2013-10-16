@@ -13,6 +13,50 @@ class InvalidStationSetError(ValueError):
     '''
 
 
+
+def with_auto_repr(cls):
+    r'''
+    Class decorator that adds a nicer default __repr__ method to a class.
+    
+    **Examples**
+    
+    >>> class Elements(object):
+    ...     def __init__(self, a, b):
+    ...         self.a = a
+    ...         self.b = b
+    >>> aa = Elements(1, '3')
+    >>> print repr(aa)[0:-11]
+    <momxml.utilities.Elements object at
+    >>> Elements = with_auto_repr(Elements)
+    >>> bb = Elements (1, 'v')
+    >>> print repr(bb)
+    Elements(a = 1,
+             b = 'v')
+    '''
+    class AutoReprClass(cls):
+        r'''
+        Base class that implements a simplistic __repr__ function. The
+        order in which the members are printed is the same as that in
+        which the arguments are set in bthe constructor body.
+
+        '''
+        def __repr__(self):
+            name    = cls.__name__
+            as_dict = self.__dict__
+            members = as_dict.keys()
+            longest_member = sorted([len(s) for s in members])[-1]
+            member_strings = [member.ljust(longest_member)+' = '+repr(as_dict[member])
+                              for member in members]
+            sep = '\n'+' '*(len(name)+1)
+            indented_member_strings = [('\n'+ ' '*(longest_member+3)).join(member.split('\n'))
+                                       for member in member_strings]
+            unadjusted =  ',\n'.join(indented_member_strings)
+            return name+'('+sep.join(unadjusted.split('\n'))+')'
+
+    return AutoReprClass
+
+
+
 def unique(sequence):
     r'''
     Return a list containing all unique elements of a sequence.
