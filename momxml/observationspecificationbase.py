@@ -3,7 +3,7 @@ A base class for classes that generate (part of) the xml needed to
 enter information into MoM.
 '''
 
-def indent(self, string, amount):
+def indent(string, amount):
     r'''
     Indent a multi-line string by the given amount.
     
@@ -61,7 +61,10 @@ class ObservationSpecificationBase(object):
     def __init__(self, name, parent, children = None):
         self.name     = name
         self.parent   = parent
-        self.children = children
+        self.children = None
+        if children is not None:
+            for child in children:
+                self.append_child(child)
 
 
     def __repr__(self):
@@ -73,9 +76,13 @@ class ObservationSpecificationBase(object):
         member_strings = [mem.ljust(longest_member)+' = '+repr(as_dict[mem])
                           for mem in members
                           if mem != 'parent']
-        member_strings += ['parent'.ljust(longest_member) + ' = ' +
-                           self.parent.__class__.__name__+
-                           '('+str(self.parent.name)+')']
+        
+        parent_string = 'parent'.ljust(longest_member) + ' = '
+        parent_string += self.parent.__class__.__name__
+        if self.parent:
+            parent_string += '(\''+str(self.parent.name)+'\')'
+        member_strings = [parent_string] + member_strings
+
         sep = '\n'+' '*(len(name)+1)
         indented_member_strings = [('\n'+ ' '*(longest_member+3)).join(
             member.split('\n'))
@@ -123,7 +130,7 @@ class ObservationSpecificationBase(object):
             children = [child_format % (index, child.xml(project_name))
                         for index, child in enumerate(self.children)]
             xml_string += childlist_format % '\n'.join(children)
-        xml_string += self.xml_prefix(project_name)
+        xml_string += self.xml_suffix(project_name)
         return indent(xml_string, 2*self.tree_depth())
         
 
@@ -134,12 +141,16 @@ class ObservationSpecificationBase(object):
         Returns an ascii label that reflects the full path of the
         current instance in the observation set specification.
         '''
+        
+        string = str(self.name)
         if self.parent:
             str_format = '%s.%d.%s' 
-            return str_format % (self.parent.label(),
-                                 self.parent.child_id(self),
-                                 str(self.name))
-        return str(self.name)
+            string = str_format % (self.parent.label(),
+                                   self.parent.child_id(self),
+                                   str(self.name))
+        forbidden ='\'\";:?,\\<>$@#%^&*!()'
+        string = ''.join([ch for ch in string if ch not in forbidden])
+        return string.replace(' ', '_')
 
 
         
@@ -158,7 +169,7 @@ class ObservationSpecificationBase(object):
             raise ValueError(
                 'ObservationSpecificationBase{%s}.child_id(): %r is not in list' % 
                 (self.__class__.__name__, instance))
-        return [id[child] for child in self.children].index(instance)
+        return [id(child) for child in self.children].index(id(instance))
 
 
 
