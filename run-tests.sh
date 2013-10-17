@@ -31,7 +31,19 @@ if [[ ! -f "$PYLINT" ]] ; then
     PYLINT=`which pylint2`
 fi
 
+echo ''
+echo '  *** Pylint output ***'
+echo ''
 
+if [[ ! -f "$PYLINT" ]] ; then
+    echo 'Cannot find pylint';
+else
+    if [[ "$1" != "--no-pylint" ]]; then
+        $PYLINT --output-format=colorized --reports=n  --disable=C0103 $MODULE;
+    fi
+fi
+
+echo ''
 
 if [[ ! -f "$NOSETESTS" ]] ; then
     echo 'Cannot find nosetests or nosetests2';
@@ -43,16 +55,6 @@ else
                --cover-html \
                --cover-html-dir=coverage \
                --cover-erase \
-               -x $@
-fi
-echo ''
-echo '  *** Pylint output ***'
-echo ''
-
-if [[ ! -f "$PYLINT" ]] ; then
-    echo 'Cannot find pylint';
-else
-    echo "$0: pylint temporarily disabled" #    $PYLINT --output-format=colorized --reports=n  --disable=C0103 $MODULE;
+               -x # $@
 fi
 
-echo ''

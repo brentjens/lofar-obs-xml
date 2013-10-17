@@ -69,6 +69,7 @@ class Folder(object):
     <item>
     <BLANKLINE>
     <lofar:folder topology_parent="false">
+        <topology>1.0</topology>
         <name>child</name>
         <children>
     <BLANKLINE>
@@ -105,7 +106,7 @@ class Folder(object):
                  self.label))
 
 
-    def xml(self, project_name):
+    def xml(self, project_name, child_id=None, parent_label=None):
         preamble        = ''
         children_string = ''
         appendix        = ''
@@ -118,9 +119,17 @@ class Folder(object):
             preamble = '''
 <lofar:folder topology_parent="%s">''' % lower_case(self.grouping_parent)
         
+        label = ''
+        if parent_label is not None:
+            label += parent_label
+        if child_id is not None:
+            label += '.%d' % child_id
         if self.label:
-            preamble +='''
-    <topology>%s</topology>''' % self.label
+            if label != '':
+                label += '.'
+            label += self.label
+        preamble +='''
+    <topology>%s</topology>''' % label
 
         preamble += '''
     <name>'''+self.name+'''</name>'''
@@ -132,11 +141,13 @@ class Folder(object):
         preamble += '''
     <children>
 '''
+        
         if self.children:
             preamble += '<item>\n'
 
             children_string = '''</item>
-<item>'''.join([child.xml(project_name) for child in self.children])
+<item>'''.join([child.xml(project_name, child_id, label)
+                for child_id, child in enumerate(self.children)])
 
             appendix += '</item>'
 
@@ -149,7 +160,7 @@ class Folder(object):
 
 
 
-
+@with_auto_repr
 class Beam(object):
     def __init__(self, target_source, subband_spec, duration_s = None, measurement_type = 'Target'):
         """
@@ -180,7 +191,7 @@ class Beam(object):
 
 
 
-
+@with_auto_repr
 class TiedArrayBeams(object):
     def __init__(self, flyseye    = False,
                  beam_offsets     = None,
@@ -192,7 +203,7 @@ class TiedArrayBeams(object):
         self.tab_ring_size    = tab_ring_size
 
 
-    def xml(self):
+    def xml(self, project_name=None, child_id=None, parent_label=None):
         output = ('''
                         <tiedArrayBeams>
                             <flyseye>%s</flyseye>
@@ -216,11 +227,10 @@ class TiedArrayBeams(object):
         return output
 
 
-TiedArrayBeams = with_auto_repr(TiedArrayBeams)
 
 
 
-
+@with_auto_repr
 class Stokes(object):
     r'''
     '''
@@ -244,7 +254,7 @@ class Stokes(object):
         return self.mode[0].upper()+'S'
 
 
-    def xml(self, project_name):
+    def xml(self, project_name, child_id = None, parent_label = None):
         r'''
         '''
         return '''
@@ -258,7 +268,6 @@ class Stokes(object):
                'stokes_downsampling_steps': self.stokes_downsampling_steps,
                'polarizations': self.polarizations}
                
-Stokes = with_auto_repr(Stokes)
 
 
 
@@ -268,7 +277,7 @@ Stokes = with_auto_repr(Stokes)
 
 
 
-
+@with_auto_repr
 class BackendProcessing(object):
     def __init__(self,
                  channels_per_subband     = 64,
@@ -343,7 +352,7 @@ class BackendProcessing(object):
             return 'uvMeasurementAttributes'
 
 
-    def xml(self, project_name):
+    def xml(self, project_name, child_id=None, parent_label=None):
         r'''
         '''
         def lower_case(bool):
@@ -370,7 +379,7 @@ class BackendProcessing(object):
               <pencilBeams>
                 <flyseye>'''+lower_case(flyseye)+'''</flyseye>
                 <pencilBeamList/>
-              </pencilBeams>''' + self.tied_array_beams.xml()+'''
+              </pencilBeams>''' + self.tied_array_beams.xml(project_name)+'''
               <stokes>
                 <integrateChannels>'''+lower_case(self.stokes_integrate_channels)+'''</integrateChannels>'''
         if self.incoherent_stokes_data:
@@ -388,14 +397,12 @@ class BackendProcessing(object):
         return output
 
 
-BackendProcessing = with_auto_repr(BackendProcessing)
 
 
 
 
 
-
-
+@with_auto_repr
 class Observation(object):
     def __init__(self, antenna_set, frequency_range, start_date, duration_seconds,
                  stations, clock_mhz, beam_list, backend, name=None, bit_mode=16):
@@ -454,7 +461,7 @@ class Observation(object):
 
 
 
-    def xml(self, project_name):
+    def xml(self, project_name, child_id, parent_label):
         obs_name=self.beam_list[0].target_source.name+' '+self.antenna_set
         if self.name:
             obs_name = self.name
@@ -467,10 +474,13 @@ class Observation(object):
         rounded_end_date   = end_date[:-1]+(int(round(end_date[-1])),)
         now = now.tuple()[:-1] + (int(round(now.tuple()[-1])),)
 
+        label = parent_label+'.'+str(child_id)+'.'+obs_name.replace(' ', '_')
+
         observation_str="""
         <lofar:observation>
           <name>"""+obs_name+"""</name>
           <description>"""+obs_name+"""</description>
+          <topology>"""+label+"""</topology>
           <statusHistory>
             <item index=\"0\">
               <mom2ObjectStatus>
@@ -510,12 +520,12 @@ class Observation(object):
           <children>
         """
 
-        for id,beam in enumerate(self.beam_list):
+        for beam_id, beam in enumerate(self.beam_list):
             duration_s = 0
             if beam.duration_s is not None:
                 duration_s = beam.duration_s
             observation_str +="""
-            <item index=\""""+str(id)+"""\">
+            <item index=\""""+str(beam_id)+"""\">
               <lofar:measurement xsi:type=\""""+self.backend.measurement_type()+"""\">
                 <name>"""+beam.target_source.name+"""</name>
                 <description>"""+obs_name+"""</description>
@@ -548,7 +558,21 @@ class Observation(object):
                       <subbands>"""+beam.subband_spec+"""</subbands>
                     </subbandsSpecification>"""+self.backend.tied_array_beams.xml()+"""
                   </specification>
-                </lofar:"""+self.backend.measurement_attributes()+""">
+                </lofar:"""+self.backend.measurement_attributes()+""">"""
+            if not self.backend.need_beam_observation():
+                data_product_label  = label+'.'+str(beam_id)
+                data_product_label += '.'+beam.target_source.name.replace(' ','_')+'.dps'
+                observation_str += """
+                <resultDataProducts>
+                <item>
+                    <lofar:uvDataProduct>
+                        <name>"""+data_product_label+"""</name>
+                        <topology>"""+data_product_label+"""</topology>
+                        <status>no_data</status>
+                    </lofar:uvDataProduct>
+                </item>
+                </resultDataProducts>"""
+            observation_str += """
               </lofar:measurement>
             </item>"""
         observation_str+="""
@@ -558,16 +582,13 @@ class Observation(object):
         return observation_str
 
 
-Observation = with_auto_repr(Observation)
-
-
-
 
 def xml(items, project='2013LOFAROBS'):
     """
     Format a list of *items* as an XML string that can be
     uploaded to a MoM project with name *project*.
     """
+    parent_label = '0'
     return """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <lofar:project xmlns:lofar=\"http://www.astron.nl/MoM2-Lofar\"
     xmlns:mom2=\"http://www.astron.nl/MoM2\"
@@ -576,7 +597,10 @@ def xml(items, project='2013LOFAROBS'):
     <name>"""+project+"""</name>
     <description>"""+project+"""</description>
     <children>
-      <item>"""+'      </item>\n      <item>'.join([item.xml(project) for item in items])+"""
+      <item>"""+'      </item>\n      <item>'.join([item.xml(project,
+                                                             child_id,
+                                                             parent_label)
+                                                    for child_id, item in enumerate(items)])+"""
       </item>
     </children>
 </lofar:project>
