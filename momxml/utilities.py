@@ -14,6 +14,29 @@ class InvalidStationSetError(ValueError):
 
 
 
+class AutoReprBaseClass(object):
+    r'''
+    Base class that implements a simplistic __repr__ function. The
+    order in which the members are printed is the same as that in
+    which the arguments are set in bthe constructor body.
+    '''
+    def __repr__(self):
+        name    = self.__class__.__name__
+        as_dict = self.__dict__
+        members = as_dict.keys()
+        longest_member = sorted([len(s) for s in members])[-1]
+        member_strings = [mem.ljust(longest_member)+' = '+repr(as_dict[mem])
+                          for mem in members]
+        sep = '\n'+' '*(len(name)+1)
+        indented_member_strings = [('\n'+ ' '*(longest_member+3)).join(
+            member.split('\n'))
+                                   for member in member_strings]
+        unadjusted =  ',\n'.join(indented_member_strings)
+        return name+'('+sep.join(unadjusted.split('\n'))+')'
+
+
+
+
 def with_auto_repr(cls):
     r'''
     Class decorator that adds a nicer default __repr__ method to a class.
