@@ -6,10 +6,10 @@ enter information into MoM.
 def indent(string, amount):
     r'''
     Indent a multi-line string by the given amount.
-    
+
     string : string
         The string to indent.
-    
+
     amount : int
         The direction and amount to indent.
 
@@ -31,7 +31,7 @@ def indent(string, amount):
     if amount < 0:
         lines = [line[-amount:] for line in lines]
     return '\n'.join(lines)
-    
+
 
 
 
@@ -41,14 +41,14 @@ class ObservationSpecificationBase(object):
     A base class from which to derive instances which can generate
     specifications for observations and pipelines in formats that MoM,
     the XML Generator by Alwin de Jong, or users can read.
-    
+
     **Parameters**
-    
+
     name : string
         A free form string labelling the instance.
-    
+
     parent : ObservationSpecificationBase instance
-        The parent of the curent instance. 
+        The parent of the curent instance.
 
     children : None or a list of ObservationSpecificationBase
         The children of the current instance.
@@ -57,7 +57,7 @@ class ObservationSpecificationBase(object):
 
     >>> OSB = ObservationSpecificationBase
     '''
-    
+
     def __init__(self, name, parent, children = None):
         self.name     = name
         self.parent   = parent
@@ -72,11 +72,11 @@ class ObservationSpecificationBase(object):
         as_dict = self.__dict__
         members = as_dict.keys()
         longest_member = sorted([len(s) for s in members])[-1]
-        
+
         member_strings = [mem.ljust(longest_member)+' = '+repr(as_dict[mem])
                           for mem in members
                           if mem != 'parent']
-        
+
         parent_string = 'parent'.ljust(longest_member) + ' = '
         parent_string += self.parent.__class__.__name__
         if self.parent:
@@ -104,7 +104,7 @@ class ObservationSpecificationBase(object):
             self.__class__.__name__)
 
 
-        
+
     def xml_suffix(self, project_name):
         r'''
         Generate the XML content that goes after the child
@@ -125,14 +125,14 @@ class ObservationSpecificationBase(object):
         '''
         xml_string = self.xml_prefix(project_name)
         if self.children:
-            childlist_format ='\n<children>%s\n</children>'
+            childlist_format = '\n<children>%s\n</children>'
             child_format     = '\n<item index="%d">\n%s\n</item>'
             children = [child_format % (index, child.xml(project_name))
                         for index, child in enumerate(self.children)]
             xml_string += childlist_format % '\n'.join(children)
         xml_string += self.xml_suffix(project_name)
         return indent(xml_string, 2*self.tree_depth())
-        
+
 
 
 
@@ -141,33 +141,33 @@ class ObservationSpecificationBase(object):
         Returns an ascii label that reflects the full path of the
         current instance in the observation set specification.
         '''
-        
+
         string = str(self.name)
         if self.parent:
-            str_format = '%s.%d.%s' 
+            str_format = '%s.%d.%s'
             string = str_format % (self.parent.label(),
                                    self.parent.child_id(self),
                                    str(self.name))
-        forbidden ='\'\";:?,\\<>$@#%^&*!()'
+        forbidden = '\'\";:?,\\<>$@#%^&*!()'
         string = ''.join([ch for ch in string if ch not in forbidden])
         return string.replace(' ', '_')
 
 
-        
+
     def child_id(self, instance):
         r'''
-        Return the child ID of object ``instance`` if it is in 
+        Return the child ID of object ``instance`` if it is in
         ``self.children``
 
         **Parameters**
-        
+
         instance : ObservationSpecificationBase
             The instance for which one wants the position in the
             ``self.children`` list.
         '''
         if self.children is None or len(self.children) == 0:
             raise ValueError(
-                'ObservationSpecificationBase{%s}.child_id(): %r is not in list' % 
+                'ObservationSpecificationBase{%s}.child_id(): %r is not in list' %
                 (self.__class__.__name__, instance))
         return [id(child) for child in self.children].index(id(instance))
 
@@ -180,7 +180,7 @@ class ObservationSpecificationBase(object):
         set correctly.
 
         **Parameters**
-        
+
         instance : ObservationSpecificationBase
             The object to add to self.children.
         '''
@@ -188,15 +188,15 @@ class ObservationSpecificationBase(object):
             self.children = []
         self.children.append(instance)
         return instance.set_parent(self)
-        
-        
+
+
 
     def set_parent(self, instance):
         r'''
         Set self.parent to ``instance``.
-        
+
         **Parameters**
-        
+
         instance : ObservationSpecificationBase
             The instance of the parent node.
         '''
@@ -217,6 +217,6 @@ class ObservationSpecificationBase(object):
 
 
 
-        
-            
-        
+
+
+
