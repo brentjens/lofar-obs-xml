@@ -58,7 +58,7 @@ class ObservationSpecificationBase(object):
     >>> OSB = ObservationSpecificationBase
     '''
 
-    def __init__(self, name, parent, children = None):
+    def __init__(self, name, parent = None, children = None):
         self.name     = name
         self.parent   = parent
         self.children = None
@@ -186,8 +186,8 @@ class ObservationSpecificationBase(object):
         '''
         if self.children is None:
             self.children = []
+        instance.set_parent(self)
         self.children.append(instance)
-        return instance.set_parent(self)
 
 
 

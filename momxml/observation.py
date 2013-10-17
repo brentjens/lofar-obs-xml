@@ -402,7 +402,6 @@ class BackendProcessing(object):
 
 
 
-@with_auto_repr
 class Observation(object):
     def __init__(self, antenna_set, frequency_range, start_date, duration_seconds,
                  stations, clock_mhz, beam_list, backend, name=None, bit_mode=16):
