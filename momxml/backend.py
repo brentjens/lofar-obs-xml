@@ -1,6 +1,13 @@
 from momxml.observationspecificationbase import ObservationSpecificationBase
 from momxml.utilities import lower_case, AutoReprBaseClass
 
+r'''
+This module contains the helper classes that contain the miriad
+different setting of the correlator. The main class here is
+BackendProcessing, which contains pointers to the other classes:
+TiedArrayBeams and Stokes, when needed.
+'''
+
 
 class TiedArrayBeams(AutoReprBaseClass):
     r'''
@@ -321,7 +328,128 @@ class BackendProcessing(AutoReprBaseClass):
     <bypassPff>false</bypassPff>
     <enableSuperterp>false</enableSuperterp>
     <BLANKLINE>
-    
+
+    Here is a Fly's eye example:
+    >>> channels_per_subband = 16
+    >>> coherent_stokes_data = Stokes('coherent',
+    ...                               stokes_downsampling_steps = 128)
+    >>> tied_array_beams     = TiedArrayBeams(flyseye      = True,
+    ...                                       beam_offsets = None)
+
+    >>> bp_fe = BackendProcessing(
+    ...        correlated_data          = False,
+    ...        channels_per_subband     = channels_per_subband,
+    ...        coherent_stokes_data     = coherent_stokes_data,
+    ...        tied_array_beams         = tied_array_beams)
+    >>> bp_fe
+    BackendProcessing(incoherent_stokes_data        = None,
+                      stokes_integrate_channels     = False,
+                      integration_time_seconds      = 2,
+                      filtered_data                 = False,
+                      beamformed_data               = False,
+                      coherent_stokes_data          = Stokes(stokes_downsampling_steps = 128,
+                                                             subbands_per_file         = 512,
+                                                             polarizations             = 'I',
+                                                             mode                      = 'coherent',
+                                                             number_collapsed_channels = 0),
+                      channels_per_subband          = 16,
+                      correlated_data               = False,
+                      tied_array_beams              = TiedArrayBeams(nr_tab_rings  = 0,
+                                                                     flyseye       = True,
+                                                                     beam_offsets  = None,
+                                                                     tab_ring_size = 0),
+                      coherent_dedispersed_channels = False,
+                      enable_superterp              = False,
+                      bypass_pff                    = False)
+    >>> print(bp_fe.xml())
+    <BLANKLINE>
+    <correlatedData>false</correlatedData>
+    <filteredData>false</filteredData>
+    <beamformedData>false</beamformedData>
+    <coherentStokesData>true</coherentStokesData>
+    <incoherentStokesData>false</incoherentStokesData>
+    <channelsPerSubband>16</channelsPerSubband>
+    <pencilBeams>
+      <flyseye>true</flyseye>
+      <pencilBeamList/>
+    </pencilBeams>
+    <tiedArrayBeams>
+      <flyseye>true</flyseye>
+      <nrTabRings>0</nrTabRings>
+      <tabRingSize>0.000000</tabRingSize>
+      <tiedArrayBeamList/>
+    </tiedArrayBeams>
+    <stokes>
+      <integrateChannels>false</integrateChannels>
+    <BLANKLINE>
+    <subbandsPerFileCS>512</subbandsPerFileCS>
+    <numberCollapsedChannelsCS>0</numberCollapsedChannelsCS>
+    <stokesDownsamplingStepsCS>128</stokesDownsamplingStepsCS>
+    <whichCS>I</whichCS>
+    <BLANKLINE>
+    </stokes>
+    <bypassPff>false</bypassPff>
+    <enableSuperterp>false</enableSuperterp>
+    <BLANKLINE>
+
+    And here for coherent stokes beam forming:
+    >>> tied_array_beams     = TiedArrayBeams(flyseye      = False,
+    ...                                       beam_offsets = None)
+    >>> bp_cs = BackendProcessing(
+    ...        correlated_data          = False,
+    ...        channels_per_subband     = channels_per_subband,
+    ...        coherent_stokes_data     = coherent_stokes_data,
+    ...        tied_array_beams         = tied_array_beams)
+    >>> bp_cs
+    BackendProcessing(incoherent_stokes_data        = None,
+                      stokes_integrate_channels     = False,
+                      integration_time_seconds      = 2,
+                      filtered_data                 = False,
+                      beamformed_data               = False,
+                      coherent_stokes_data          = Stokes(stokes_downsampling_steps = 128,
+                                                             subbands_per_file         = 512,
+                                                             polarizations             = 'I',
+                                                             mode                      = 'coherent',
+                                                             number_collapsed_channels = 0),
+                      channels_per_subband          = 16,
+                      correlated_data               = False,
+                      tied_array_beams              = TiedArrayBeams(nr_tab_rings  = 0,
+                                                                     flyseye       = False,
+                                                                     beam_offsets  = None,
+                                                                     tab_ring_size = 0),
+                      coherent_dedispersed_channels = False,
+                      enable_superterp              = False,
+                      bypass_pff                    = False)
+    >>> print(bp_cs.xml())
+    <BLANKLINE>
+    <correlatedData>false</correlatedData>
+    <filteredData>false</filteredData>
+    <beamformedData>false</beamformedData>
+    <coherentStokesData>true</coherentStokesData>
+    <incoherentStokesData>false</incoherentStokesData>
+    <channelsPerSubband>16</channelsPerSubband>
+    <pencilBeams>
+      <flyseye>false</flyseye>
+      <pencilBeamList/>
+    </pencilBeams>
+    <tiedArrayBeams>
+      <flyseye>false</flyseye>
+      <nrTabRings>0</nrTabRings>
+      <tabRingSize>0.000000</tabRingSize>
+      <tiedArrayBeamList/>
+    </tiedArrayBeams>
+    <stokes>
+      <integrateChannels>false</integrateChannels>
+    <BLANKLINE>
+    <subbandsPerFileCS>512</subbandsPerFileCS>
+    <numberCollapsedChannelsCS>0</numberCollapsedChannelsCS>
+    <stokesDownsamplingStepsCS>128</stokesDownsamplingStepsCS>
+    <whichCS>I</whichCS>
+    <BLANKLINE>
+    </stokes>
+    <bypassPff>false</bypassPff>
+    <enableSuperterp>false</enableSuperterp>
+    <BLANKLINE>
     '''
     def __init__(self,
                  channels_per_subband     = 64,
