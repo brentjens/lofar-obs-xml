@@ -1,4 +1,5 @@
 from momxml.observationspecificationbase import ObservationSpecificationBase
+from momxml.observationspecificationbase import indent
 from momxml.utilities import lower_case, AutoReprBaseClass
 
 r'''
@@ -153,12 +154,10 @@ class Stokes(AutoReprBaseClass):
            mode                      = 'coherent',
            number_collapsed_channels = 0)
     >>> print(stk.xml())
-    <BLANKLINE>
     <subbandsPerFileCS>512</subbandsPerFileCS>
     <numberCollapsedChannelsCS>0</numberCollapsedChannelsCS>
     <stokesDownsamplingStepsCS>64</stokesDownsamplingStepsCS>
     <whichCS>IQUV</whichCS>
-    <BLANKLINE>
     '''
 
     def __init__(self, mode, subbands_per_file = 512,
@@ -214,16 +213,15 @@ class Stokes(AutoReprBaseClass):
         Produce the xml for the coherent stokes  or incoherent stokes
         settings of the backend.
         '''
-        return '''
-<subbandsPerFile%(suffix)s>%(subbands_per_file)d</subbandsPerFile%(suffix)s>
+        return ('''<subbandsPerFile%(suffix)s>%(subbands_per_file)d</subbandsPerFile%(suffix)s>
 <numberCollapsedChannels%(suffix)s>%(number_collapsed_channels)d</numberCollapsedChannels%(suffix)s>
 <stokesDownsamplingSteps%(suffix)s>%(stokes_downsampling_steps)d</stokesDownsamplingSteps%(suffix)s>
-<which%(suffix)s>%(polarizations)s</which%(suffix)s>
-        ''' % {'suffix'                   : self.stokes_suffix(),
-               'subbands_per_file'        : self.subbands_per_file,
-               'number_collapsed_channels': self.number_collapsed_channels,
-               'stokes_downsampling_steps': self.stokes_downsampling_steps,
-               'polarizations'            : self.polarizations}
+<which%(suffix)s>%(polarizations)s</which%(suffix)s>''' % 
+                {'suffix'                   : self.stokes_suffix(),
+                 'subbands_per_file'        : self.subbands_per_file,
+                 'number_collapsed_channels': self.number_collapsed_channels,
+                 'stokes_downsampling_steps': self.stokes_downsampling_steps,
+                 'polarizations'            : self.polarizations})
                
 
 
@@ -379,12 +377,10 @@ class BackendProcessing(AutoReprBaseClass):
     </tiedArrayBeams>
     <stokes>
       <integrateChannels>false</integrateChannels>
-    <BLANKLINE>
-    <subbandsPerFileCS>512</subbandsPerFileCS>
-    <numberCollapsedChannelsCS>0</numberCollapsedChannelsCS>
-    <stokesDownsamplingStepsCS>128</stokesDownsamplingStepsCS>
-    <whichCS>I</whichCS>
-    <BLANKLINE>
+      <subbandsPerFileCS>512</subbandsPerFileCS>
+      <numberCollapsedChannelsCS>0</numberCollapsedChannelsCS>
+      <stokesDownsamplingStepsCS>128</stokesDownsamplingStepsCS>
+      <whichCS>I</whichCS>
     </stokes>
     <bypassPff>false</bypassPff>
     <enableSuperterp>false</enableSuperterp>
@@ -437,12 +433,10 @@ class BackendProcessing(AutoReprBaseClass):
     </tiedArrayBeams>
     <stokes>
       <integrateChannels>false</integrateChannels>
-    <BLANKLINE>
-    <subbandsPerFileCS>512</subbandsPerFileCS>
-    <numberCollapsedChannelsCS>0</numberCollapsedChannelsCS>
-    <stokesDownsamplingStepsCS>128</stokesDownsamplingStepsCS>
-    <whichCS>I</whichCS>
-    <BLANKLINE>
+      <subbandsPerFileCS>512</subbandsPerFileCS>
+      <numberCollapsedChannelsCS>0</numberCollapsedChannelsCS>
+      <stokesDownsamplingStepsCS>128</stokesDownsamplingStepsCS>
+      <whichCS>I</whichCS>
     </stokes>
     <bypassPff>false</bypassPff>
     <enableSuperterp>false</enableSuperterp>
@@ -549,9 +543,9 @@ class BackendProcessing(AutoReprBaseClass):
 <stokes>
   <integrateChannels>'''+lower_case(self.stokes_integrate_channels)+'''</integrateChannels>'''
         if self.incoherent_stokes_data:
-            output += '\n'+self.incoherent_stokes_data.xml()
+            output += '\n'+indent(self.incoherent_stokes_data.xml(), 2)
         if self.coherent_stokes_data:
-            output += '\n'+self.coherent_stokes_data.xml()
+            output += '\n'+indent(self.coherent_stokes_data.xml(), 2)
 
         output += '''
 </stokes>

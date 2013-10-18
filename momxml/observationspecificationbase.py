@@ -27,7 +27,7 @@ def indent(string, amount):
     '''
     lines = string.split('\n')
     if amount > 0:
-        lines = [' '*amount + line for line in lines]
+        lines = [line if '' == line else ' '*amount + line for line in lines]
     if amount < 0:
         lines = [line[-amount:] for line in lines]
     return '\n'.join(lines)
@@ -127,11 +127,11 @@ class ObservationSpecificationBase(object):
         if self.children:
             childlist_format = '\n<children>%s\n</children>'
             child_format     = '\n  <item index="%d">\n%s\n  </item>'
-            children = [child_format % (index, child.xml(project_name))
+            children = [child_format % (index, indent(child.xml(project_name), 4))
                         for index, child in enumerate(self.children)]
-            xml_string += childlist_format % '\n'.join(children)
+            xml_string += indent(childlist_format % '\n'.join(children), 2)
         xml_string += self.xml_suffix(project_name)
-        return indent(xml_string, 2*self.tree_depth())
+        return xml_string
 
 
 

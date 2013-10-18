@@ -48,17 +48,17 @@ class Folder(ObservationSpecificationBase):
            description     = 'Main folder')
     >>> print folder.xml('test_project')
     <lofar:folder mom2Id="12345" topology_parent="true">
-    <topology>root_folder</topology>
-    <name>root folder</name>
-    <description>Main folder</description>
-    <children>
-    <item index="0">
-      <lofar:folder topology_parent="false">
-      <topology>root_folder.0.child</topology>
-      <name>child</name>
-      </lofar:folder>
-    </item>
-    </children>
+      <topology>root_folder</topology>
+      <name>root folder</name>
+      <description>Main folder</description>
+      <children>
+        <item index="0">
+          <lofar:folder topology_parent="false">
+            <topology>root_folder.0.child</topology>
+            <name>child</name>
+          </lofar:folder>
+        </item>
+      </children>
     </lofar:folder>
     '''
     def __init__(self, name,
@@ -79,11 +79,11 @@ class Folder(ObservationSpecificationBase):
                         (self.mom_id, lower_case(self.grouping_parent)))
         else:
             preamble = '<lofar:folder topology_parent="%s">' % lower_case(self.grouping_parent)
-        preamble +='\n<topology>%s</topology>' % self.label()
-        preamble += '\n<name>'+self.name+'</name>'
+        preamble += '\n  <topology>%s</topology>' % self.label()
+        preamble += '\n  <name>'+self.name+'</name>'
 
         if self.description:
-            preamble += '\n<description>'+self.description+'</description>'''
+            preamble += '\n  <description>'+self.description+'</description>'''
         return preamble
 
     def xml_suffix(self, project_name):

@@ -53,39 +53,39 @@ class Beam(ObservationSpecificationBase):
     >>> observation_stub.frequency_range = 'HBA_LOW'
     >>> observation_stub.append_child(bm)
     >>> print bm.xml('Project name')
-      <lofar:measurement xsi:type="lofar:UVMeasurementType">
-      <name>Cyg A</name>
-      <description>Observation</description>
-      <topology>Observation.0.Cyg_A</topology>
-      <currentStatus>
-        <mom2:openedStatus/>
-      </currentStatus>
-      <lofar:uvMeasurementAttributes>
-        <measurementType>Target</measurementType>
-        <specification>
-          <targetName>Cyg A</targetName>
-          <ra>299.8681525</ra>
-          <dec>40.733915833333334</dec>
-          <equinox>J2000</equinox>
-          <duration>PT00S</duration>
-          <subbandsSpecification>
-            <bandWidth unit="MHz">48.4375</bandWidth>
-            <centralFrequency unit="MHz">139.1602</centralFrequency>
-            <contiguous>false</contiguous>
-            <subbands>77..324</subbands>
-          </subbandsSpecification>
-        </specification>
-      </lofar:uvMeasurementAttributes>
-      <resultDataProducts>
-        <item>
-          <lofar:uvDataProduct>
-            <name>Observation.0.Cyg_A.dps</name>
-            <topology>Observation.0.Cyg_A.dps</topology>
-            <status>no_data</status>
-          </lofar:uvDataProduct>
-        </item>
-      </resultDataProducts>
-      </lofar:measurement>
+    <lofar:measurement xsi:type="lofar:UVMeasurementType">
+    <name>Cyg A</name>
+    <description>Observation</description>
+    <topology>Observation.0.Cyg_A</topology>
+    <currentStatus>
+      <mom2:openedStatus/>
+    </currentStatus>
+    <lofar:uvMeasurementAttributes>
+      <measurementType>Target</measurementType>
+      <specification>
+        <targetName>Cyg A</targetName>
+        <ra>299.8681525</ra>
+        <dec>40.733915833333334</dec>
+        <equinox>J2000</equinox>
+        <duration>PT00S</duration>
+        <subbandsSpecification>
+          <bandWidth unit="MHz">48.4375</bandWidth>
+          <centralFrequency unit="MHz">139.1602</centralFrequency>
+          <contiguous>false</contiguous>
+          <subbands>77..324</subbands>
+        </subbandsSpecification>
+      </specification>
+    </lofar:uvMeasurementAttributes>
+    <resultDataProducts>
+      <item>
+        <lofar:uvDataProduct>
+          <name>Observation.0.Cyg_A.dps</name>
+          <topology>Observation.0.Cyg_A.dps</topology>
+          <status>no_data</status>
+        </lofar:uvDataProduct>
+      </item>
+    </resultDataProducts>
+    </lofar:measurement>
     '''
 
     def __init__(self, target_source, subband_spec,
