@@ -1,8 +1,8 @@
 from momxml.observationspecificationbase import ObservationSpecificationBase
-from momxml.utilities import lower_case
+from momxml.utilities import lower_case, AutoReprBaseClass
 
 
-class TiedArrayBeams(ObservationSpecificationBase):
+class TiedArrayBeams(AutoReprBaseClass):
     r'''
     Description of Tied Array Beam (TAB) settings.
 
@@ -27,14 +27,11 @@ class TiedArrayBeams(ObservationSpecificationBase):
     
     >>> tab = TiedArrayBeams()
     >>> tab
-    TiedArrayBeams(parent        = NoneType,
-                   nr_tab_rings  = 0,
-                   name          = 'TAB',
+    TiedArrayBeams(nr_tab_rings  = 0,
                    flyseye       = False,
                    beam_offsets  = None,
-                   tab_ring_size = 0,
-                   children      = None)
-    >>> print(tab.xml('Project Name'))
+                   tab_ring_size = 0)
+    >>> print(tab.xml())
     <BLANKLINE>
     <tiedArrayBeams>
       <flyseye>false</flyseye>
@@ -46,14 +43,11 @@ class TiedArrayBeams(ObservationSpecificationBase):
     >>> tab_fe = TiedArrayBeams(flyseye      = True,
     ...                         beam_offsets = [(0.0, 0.0), (0.1, -0.05)])
     >>> tab_fe
-    TiedArrayBeams(parent        = NoneType,
-                   nr_tab_rings  = 0,
-                   name          = 'TAB',
+    TiedArrayBeams(nr_tab_rings  = 0,
                    flyseye       = True,
                    beam_offsets  = [(0.0, 0.0), (0.1, -0.05)],
-                   tab_ring_size = 0,
-                   children      = None)
-    >>> print(tab_fe.xml('Project Name'))
+                   tab_ring_size = 0)
+    >>> print(tab_fe.xml())
     <BLANKLINE>
     <tiedArrayBeams>
       <flyseye>true</flyseye>
@@ -69,15 +63,15 @@ class TiedArrayBeams(ObservationSpecificationBase):
                  beam_offsets     = None,
                  nr_tab_rings     = 0,
                  tab_ring_size    = 0):
-        super(TiedArrayBeams, self).__init__(name   = 'TAB',
-                                             parent = None, children = None)
+        #super(TiedArrayBeams, self).__init__(name   = 'TAB',
+        #                                     parent = None, children = None)
         self.flyseye          = flyseye
         self.beam_offsets     = beam_offsets
         self.nr_tab_rings     = nr_tab_rings
         self.tab_ring_size    = tab_ring_size
 
 
-    def xml_prefix(self, project_name = None):
+    def xml(self, project_name = None):
         output = ('''
 <tiedArrayBeams>
   <flyseye>%s</flyseye>
@@ -98,11 +92,7 @@ class TiedArrayBeams(ObservationSpecificationBase):
         else:
             output += '''
   <tiedArrayBeamList/>'''
-        return output
-
-
-    def xml_suffix(self, project_name = None):
-        return '\n</tiedArrayBeams>'
+        return output+'\n</tiedArrayBeams>'
 
 
 
@@ -112,42 +102,121 @@ class TiedArrayBeams(ObservationSpecificationBase):
 
 
 
-class Stokes(object):
+class Stokes(AutoReprBaseClass):
     r'''
+    Describes averaging and storage parameters for beam formed
+    observations. This class is not derived from
+    ObservationSpecificationBase because it is really only a helper to
+    BackendProcessing. Use instances of this class as parameters to
+    BackendProcessing for ``coherent_stokes_data`` and
+    ``incoherent_stokes_data``.
+
+    **Parameters**
+    
+    mode : string
+        Either 'coherent' or 'incoherent'.
+
+    subbands_per_file : int
+        Number of sub bands per output file / storage machine. Use 512
+        for low data rates, but decrease as necessary to keep the data
+        rate per file (locus node / storage machine) below about 300 MB /
+        s.
+
+    number_collapsed_channels : int
+        Frequency averaging parameter. Not sure if this is the number
+        of output channels, or the number of channels to be
+        averaged. If someone knows, let me know. 0 implies no
+        averaging.
+
+    stokes_downsampling_steps : int
+        Number of time samples to average before writing to
+        disk. Default is 1 (no averaging).
+
+    polarizations : string
+       Either 'I' or 'IQUV'.
+
+    **Examples**
+    
+    >>> stk = Stokes(mode = 'coherent', polarizations = 'IQUV',
+    ...              stokes_downsampling_steps = 64)
+    >>> stk
+    Stokes(stokes_downsampling_steps = 64,
+           subbands_per_file         = 512,
+           polarizations             = 'IQUV',
+           mode                      = 'coherent',
+           number_collapsed_channels = 0)
+    >>> print(stk.xml())
+    <BLANKLINE>
+    <subbandsPerFileCS>512</subbandsPerFileCS>
+    <numberCollapsedChannelsCS>0</numberCollapsedChannelsCS>
+    <stokesDownsamplingStepsCS>64</stokesDownsamplingStepsCS>
+    <whichCS>IQUV</whichCS>
+    <BLANKLINE>
     '''
 
-    def __init__(self, mode, subbands_per_file = 512, number_collapsed_channels = 0, stokes_downsampling_steps = 1, polarizations = 'I'):
-        r'''
-        pol is either 'I' or 'IQUV'; mode is 'coherent' or 'incoherent'.
-        '''
+    def __init__(self, mode, subbands_per_file = 512,
+                 number_collapsed_channels = 0,
+                 stokes_downsampling_steps = 1,
+                 polarizations = 'I'):
         self.mode                      = mode
         self.subbands_per_file         = subbands_per_file
         self.number_collapsed_channels = number_collapsed_channels
         self.stokes_downsampling_steps = stokes_downsampling_steps
         self.polarizations             = polarizations
+        self.validate()
+
+
+    def validate(self):
+        r'''
+        Raises a ValueError for every problem found in the settings.
+        '''
+        valid_modes         = ['coherent', 'incoherent']
+        valid_polarizations = ['I', 'IQUV']
+        if self.mode not in valid_modes:
+            raise ValueError('mode(%r) not one of %r.' % 
+                             (self.mode, valid_modes))
+        if self.polarizations not in valid_polarizations:
+            raise ValueError('polarizations(%r) not one of %r.' %
+                             (self.polarizations, valid_polarizations))
+        if type(self.subbands_per_file) != int:
+            raise ValueError('subbands_per_file(%r) must be an integer.' %
+                             self.subbands_per_file)
+        if self.subbands_per_file <= 0 or self.subbands_per_file > 1024:
+            raise ValueError('subbands_per_file(%r) not in <0, 1024]' %
+                             self.subbands_per_file)
+        if type(self.stokes_downsampling_steps) != int:
+            raise ValueError('stokes_downsampling_steps(%r) must be an integer.'
+                             % self.stokes_downsampling_steps)
+        if self.stokes_downsampling_steps <= 0:
+            raise ValueError('stokes_downsampling_steps(%r) must be > 0.' %
+                             self.stokes_downsampling_steps)
+        
 
 
     def stokes_suffix(self):
         r'''
-        return CS or IS, depending on whether these are coherent or incoherent stokes settings.
-        coherent stokes settings also need tied array beams / fly's eye stuff specified.
+        return CS or IS, depending on whether these are coherent or
+        incoherent stokes settings.  coherent stokes settings also
+        need tied array beams / fly's eye stuff specified. 
         '''
         return self.mode[0].upper()+'S'
 
 
-    def xml(self, project_name, child_id = None, parent_label = None):
+    def xml(self, project_name = None):
         r'''
+        Produce the xml for the coherent stokes  or incoherent stokes
+        settings of the backend.
         '''
         return '''
-                <subbandsPerFile%(suffix)s>%(subbands_per_file)d</subbandsPerFile%(suffix)s>
-                <numberCollapsedChannels%(suffix)s>%(number_collapsed_channels)d</numberCollapsedChannels%(suffix)s>
-                <stokesDownsamplingSteps%(suffix)s>%(stokes_downsampling_steps)d</stokesDownsamplingSteps%(suffix)s>
-                <which%(suffix)s>%(polarizations)s</which%(suffix)s>
-        ''' % {'suffix': self.stokes_suffix(),
-               'subbands_per_file': self.subbands_per_file,
+<subbandsPerFile%(suffix)s>%(subbands_per_file)d</subbandsPerFile%(suffix)s>
+<numberCollapsedChannels%(suffix)s>%(number_collapsed_channels)d</numberCollapsedChannels%(suffix)s>
+<stokesDownsamplingSteps%(suffix)s>%(stokes_downsampling_steps)d</stokesDownsamplingSteps%(suffix)s>
+<which%(suffix)s>%(polarizations)s</which%(suffix)s>
+        ''' % {'suffix'                   : self.stokes_suffix(),
+               'subbands_per_file'        : self.subbands_per_file,
                'number_collapsed_channels': self.number_collapsed_channels,
                'stokes_downsampling_steps': self.stokes_downsampling_steps,
-               'polarizations': self.polarizations}
+               'polarizations'            : self.polarizations}
                
 
 
@@ -157,8 +226,103 @@ class Stokes(object):
 
 
 
+class BackendProcessing(AutoReprBaseClass):
+    r'''
+    BackendProcessing contains all the settings for the correlator and
+    beamformer hardware.
 
-class BackendProcessing(object):
+    **Parameters**
+    
+    channels_per_subband : int
+        Number of channels per sub band. Default is 64.
+
+    integration_time_seconds : number
+        Integration time for correlator observations. Typically 1 or 2
+        seconds, but anything from 0.2 to 99 seconds should be
+        possible.
+
+    correlated_data : bool
+        True if cross-correlation visibilities should be produced.
+
+    filtered_data : bool
+        No idea what this means. Default is False.
+
+    beamformed_data : bool
+        True if beamformed data is to be produced, such as complex
+        voltage, coherent stokes, or incoherent stokes data. If True
+        and neither coherent_stokes_data, nor incoherent_stokes_data
+        are specified, complex voltages are produced.
+
+    coherent_stokes_data : None or Stokes instance
+        Coherent stokes settings.
+
+    incoherent_stokes_data : None or Stokes instance
+        Incoherent stokes settings.
+
+    stokes_integrate_channels : bool
+        Apply frequency averaging. Default False.
+
+    coherent_dedispersed_channels : bool
+        Apply coherent dedispersion? Default False.
+
+    tied_array_beams : None or TiedArrayBeams instance
+        Tied array beam settings.
+
+    bypass_pff : bool
+        If True, skip the correlator's / beamformer's polyphase filter
+        entirely. Useful for high time resolution beamformed
+        data. Default: False.
+
+    enable_superterp: bool
+        If True, also beamform the superterp stations and treat them
+        as a separate large station.
+
+    **Examples**
+
+    >>> bp = BackendProcessing()
+    >>> bp
+    BackendProcessing(incoherent_stokes_data        = None,
+                      stokes_integrate_channels     = False,
+                      integration_time_seconds      = 2,
+                      filtered_data                 = False,
+                      beamformed_data               = False,
+                      coherent_stokes_data          = None,
+                      channels_per_subband          = 64,
+                      correlated_data               = True,
+                      tied_array_beams              = TiedArrayBeams(nr_tab_rings  = 0,
+                                                                     flyseye       = False,
+                                                                     beam_offsets  = None,
+                                                                     tab_ring_size = 0),
+                      coherent_dedispersed_channels = False,
+                      enable_superterp              = False,
+                      bypass_pff                    = False)
+    >>> print(bp.xml())
+    <BLANKLINE>
+    <correlatedData>true</correlatedData>
+    <filteredData>false</filteredData>
+    <beamformedData>false</beamformedData>
+    <coherentStokesData>false</coherentStokesData>
+    <incoherentStokesData>false</incoherentStokesData>
+    <integrationInterval>2</integrationInterval>
+    <channelsPerSubband>64</channelsPerSubband>
+    <pencilBeams>
+      <flyseye>false</flyseye>
+      <pencilBeamList/>
+    </pencilBeams>
+    <tiedArrayBeams>
+      <flyseye>false</flyseye>
+      <nrTabRings>0</nrTabRings>
+      <tabRingSize>0.000000</tabRingSize>
+      <tiedArrayBeamList/>
+    </tiedArrayBeams>
+    <stokes>
+      <integrateChannels>false</integrateChannels>
+    </stokes>
+    <bypassPff>false</bypassPff>
+    <enableSuperterp>false</enableSuperterp>
+    <BLANKLINE>
+    
+    '''
     def __init__(self,
                  channels_per_subband     = 64,
                  integration_time_seconds = 2,
@@ -173,8 +337,6 @@ class BackendProcessing(object):
                  bypass_pff                    = False,
                  enable_superterp              = False
                  ):
-        r'''
-        '''
         self.channels_per_subband = channels_per_subband
         self.integration_time_seconds  = int(round(integration_time_seconds))
         self.correlated_data           = correlated_data
@@ -232,7 +394,7 @@ class BackendProcessing(object):
             return 'uvMeasurementAttributes'
 
 
-    def xml(self, project_name, child_id=None, parent_label=None):
+    def xml(self, project_name=None, child_id=None, parent_label=None):
         r'''
         '''
         def lower_case(bool):
@@ -246,32 +408,30 @@ class BackendProcessing(object):
 
             
         output = '''
-              <correlatedData>'''+lower_case(self.correlated_data)+'''</correlatedData>
-              <filteredData>'''+lower_case(self.filtered_data)+'''</filteredData>
-              <beamformedData>'''+lower_case(self.beamformed_data)+'''</beamformedData>
-              <coherentStokesData>'''+lower_case(coherent_stokes)+'''</coherentStokesData>
-              <incoherentStokesData>'''+lower_case(incoherent_stokes)+'''</incoherentStokesData>'''
+<correlatedData>'''+lower_case(self.correlated_data)+'''</correlatedData>
+<filteredData>'''+lower_case(self.filtered_data)+'''</filteredData>
+<beamformedData>'''+lower_case(self.beamformed_data)+'''</beamformedData>
+<coherentStokesData>'''+lower_case(coherent_stokes)+'''</coherentStokesData>
+<incoherentStokesData>'''+lower_case(incoherent_stokes)+'''</incoherentStokesData>'''
         if self.correlated_data:
             output += '''
-              <integrationInterval>'''+str(self.integration_time_seconds)+'''</integrationInterval>'''
+<integrationInterval>'''+str(self.integration_time_seconds)+'''</integrationInterval>'''
         output += '''
-              <channelsPerSubband>'''+str(self.channels_per_subband)+'''</channelsPerSubband>
-              <pencilBeams>
-                <flyseye>'''+lower_case(flyseye)+'''</flyseye>
-                <pencilBeamList/>
-              </pencilBeams>''' + self.tied_array_beams.xml(project_name)+'''
-              <stokes>
-                <integrateChannels>'''+lower_case(self.stokes_integrate_channels)+'''</integrateChannels>'''
+<channelsPerSubband>'''+str(self.channels_per_subband)+'''</channelsPerSubband>
+<pencilBeams>
+  <flyseye>'''+lower_case(flyseye)+'''</flyseye>
+  <pencilBeamList/>
+</pencilBeams>''' + self.tied_array_beams.xml()+'''
+<stokes>
+  <integrateChannels>'''+lower_case(self.stokes_integrate_channels)+'''</integrateChannels>'''
         if self.incoherent_stokes_data:
-            output += '''
-'''+self.incoherent_stokes_data.xml(project_name)
+            output += '\n'+self.incoherent_stokes_data.xml()
         if self.coherent_stokes_data:
-            output += '''
-'''+self.coherent_stokes_data.xml(project_name)
+            output += '\n'+self.coherent_stokes_data.xml()
 
         output += '''
-              </stokes>
-              <bypassPff>'''+lower_case(self.bypass_pff)+'''</bypassPff>
-              <enableSuperterp>'''+lower_case(self.enable_superterp)+'''</enableSuperterp>
+</stokes>
+<bypassPff>'''+lower_case(self.bypass_pff)+'''</bypassPff>
+<enableSuperterp>'''+lower_case(self.enable_superterp)+'''</enableSuperterp>
         '''
         return output
