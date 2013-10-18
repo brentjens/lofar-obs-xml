@@ -374,7 +374,7 @@ class BackendProcessing(object):
         if self.correlated_data:
             output += '''
               <integrationInterval>'''+str(self.integration_time_seconds)+'''</integrationInterval>'''
-        output +='''
+        output += '''
               <channelsPerSubband>'''+str(self.channels_per_subband)+'''</channelsPerSubband>
               <pencilBeams>
                 <flyseye>'''+lower_case(flyseye)+'''</flyseye>
@@ -461,21 +461,21 @@ class Observation(object):
 
 
     def xml(self, project_name, child_id, parent_label):
-        obs_name=self.beam_list[0].target_source.name+' '+self.antenna_set
+        obs_name = self.beam_list[0].target_source.name+' '+self.antenna_set
         if self.name:
             obs_name = self.name
 
-        now=ephem.Observer().date
+        now = ephem.Observer().date
 
-        start_date=self.start_date
-        end_date=ephem.Date(ephem.Date(self.start_date) + ephem.second*(self.duration_seconds)).tuple()
+        start_date = self.start_date
+        end_date = ephem.Date(ephem.Date(self.start_date) + ephem.second*(self.duration_seconds)).tuple()
         rounded_start_date = start_date[:-1]+(int(round(start_date[-1])),)
         rounded_end_date   = end_date[:-1]+(int(round(end_date[-1])),)
         now = now.tuple()[:-1] + (int(round(now.tuple()[-1])),)
 
         label = parent_label+'.'+str(child_id)+'.'+obs_name.replace(' ', '_')
 
-        observation_str="""
+        observation_str = """
         <lofar:observation>
           <name>"""+obs_name+"""</name>
           <description>"""+obs_name+"""</description>
@@ -523,7 +523,7 @@ class Observation(object):
             duration_s = 0
             if beam.duration_s is not None:
                 duration_s = beam.duration_s
-            observation_str +="""
+            observation_str += """
             <item index=\""""+str(beam_id)+"""\">
               <lofar:measurement xsi:type=\""""+self.backend.measurement_type()+"""\">
                 <name>"""+beam.target_source.name+"""</name>
@@ -574,7 +574,7 @@ class Observation(object):
             observation_str += """
               </lofar:measurement>
             </item>"""
-        observation_str+="""
+        observation_str += """
           </children>
         </lofar:observation>
 """

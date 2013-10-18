@@ -1,4 +1,5 @@
 from momxml.observationspecificationbase import ObservationSpecificationBase
+from momxml.observationspecificationbase import indent
 from momxml.momformats import mom_duration
 from momxml.utilities import parse_subband_list
 
@@ -51,7 +52,7 @@ class Beam(ObservationSpecificationBase):
     >>> observation_stub.clock_mhz = 200
     >>> observation_stub.frequency_range = 'HBA_LOW'
     >>> observation_stub.append_child(bm)
-    >>> print bm.xml('Project Name')
+    >>> print bm.xml('Project name')
       <lofar:measurement xsi:type="lofar:UVMeasurementType">
       <name>Cyg A</name>
       <description>Observation</description>
@@ -99,7 +100,7 @@ class Beam(ObservationSpecificationBase):
         if type(subband_spec) == type(''):
             self.subband_spec     = subband_spec
         elif type(subband_spec) == type([]):
-            self.subband_spec = ','.join(map(str,subband_spec))
+            self.subband_spec = ','.join([str(sub) for sub in subband_spec])
         else:
             raise ValueError('subband_spec(%r) is not a string list of ints' %
                              subband_spec)
@@ -123,7 +124,9 @@ class Beam(ObservationSpecificationBase):
 
         tied_array_beams = ''
         if backend.need_beam_observation():
-            tied_array_beams = backend.tied_array_beams.xml(project_name)
+            tied_array_beams = indent(
+                backend.tied_array_beams.xml(project_name),
+                amount = 4)
 
         result_data_products = ''
         if not backend.need_beam_observation():
