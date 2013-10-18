@@ -126,7 +126,7 @@ class ObservationSpecificationBase(object):
         xml_string = self.xml_prefix(project_name)
         if self.children:
             childlist_format = '\n<children>%s\n</children>'
-            child_format     = '\n<item index="%d">\n%s\n</item>'
+            child_format     = '\n  <item index="%d">\n%s\n  </item>'
             children = [child_format % (index, child.xml(project_name))
                         for index, child in enumerate(self.children)]
             xml_string += childlist_format % '\n'.join(children)

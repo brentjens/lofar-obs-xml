@@ -31,7 +31,7 @@ class Beam(ObservationSpecificationBase):
     **Examples**
 
     >>> from momxml import TargetSource, Angle
-    >>> from momxml.observation import BackendProcessing
+    >>> from momxml.backend import BackendProcessing
     >>> target = TargetSource(name      = 'Cyg A',
     ...                       ra_angle  = Angle(hms  = (19, 59, 28.3566)),
     ...                       dec_angle = Angle(sdms = ('+', 40, 44, 2.097)))

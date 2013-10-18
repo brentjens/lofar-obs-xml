@@ -304,7 +304,6 @@ class BackendProcessing(AutoReprBaseClass):
                       enable_superterp              = False,
                       bypass_pff                    = False)
     >>> print(bp.xml())
-    <BLANKLINE>
     <correlatedData>true</correlatedData>
     <filteredData>false</filteredData>
     <beamformedData>false</beamformedData>
@@ -362,7 +361,6 @@ class BackendProcessing(AutoReprBaseClass):
                       enable_superterp              = False,
                       bypass_pff                    = False)
     >>> print(bp_fe.xml())
-    <BLANKLINE>
     <correlatedData>false</correlatedData>
     <filteredData>false</filteredData>
     <beamformedData>false</beamformedData>
@@ -421,7 +419,6 @@ class BackendProcessing(AutoReprBaseClass):
                       enable_superterp              = False,
                       bypass_pff                    = False)
     >>> print(bp_cs.xml())
-    <BLANKLINE>
     <correlatedData>false</correlatedData>
     <filteredData>false</filteredData>
     <beamformedData>false</beamformedData>
@@ -535,8 +532,7 @@ class BackendProcessing(AutoReprBaseClass):
             flyseye = self.tied_array_beams.flyseye
 
             
-        output = '''
-<correlatedData>'''+lower_case(self.correlated_data)+'''</correlatedData>
+        output = '''<correlatedData>'''+lower_case(self.correlated_data)+'''</correlatedData>
 <filteredData>'''+lower_case(self.filtered_data)+'''</filteredData>
 <beamformedData>'''+lower_case(self.beamformed_data)+'''</beamformedData>
 <coherentStokesData>'''+lower_case(coherent_stokes)+'''</coherentStokesData>
@@ -561,5 +557,5 @@ class BackendProcessing(AutoReprBaseClass):
 </stokes>
 <bypassPff>'''+lower_case(self.bypass_pff)+'''</bypassPff>
 <enableSuperterp>'''+lower_case(self.enable_superterp)+'''</enableSuperterp>
-        '''
+'''
         return output
