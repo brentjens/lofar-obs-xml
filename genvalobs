@@ -155,7 +155,7 @@ observations. They are taken along in all other observations [%(default)s].''',
 
     arg('--min-alt', metavar='DEGREES',
         help = 'Minimum elevation for target sources [%(default)5.2f].',
-        type = float, default = 45.0)
+        type = float, default = 40.0)
 
     arg('--max-alt', metavar='DEGREES',
         help = 'Maximum elevation for target sources [%(default)5.2f].',
