@@ -108,12 +108,12 @@ def typecheck(variable, type_class, name = None):
     >>> typecheck(4.0, [int, type(None)])
     Traceback (most recent call last):
     ...
-    TypeError: type(4.0) not in [<type 'int'>, <type 'NoneType'>]
+    TypeError: type(4.0) not in ['int', 'NoneType']
     >>> a = 'blaargh'
     >>> typecheck(a, int, 'a')
     Traceback (most recent call last):
     ...
-    TypeError: type(a)('blaargh') not in [<type 'int'>]
+    TypeError: type(a)('blaargh') not in ['int']
     '''
     template = 'type(%(var)r) not in %(types)r'
     if name is not None:
@@ -126,7 +126,7 @@ def typecheck(variable, type_class, name = None):
             raise TypeError(template %
                             {'name'  : name,
                              'var'   : variable,
-                             'types' : type_list})
+                             'types' : [tp.__name__ for tp in type_list]})
 
 
 def unique(sequence):
