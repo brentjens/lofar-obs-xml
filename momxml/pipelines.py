@@ -5,9 +5,9 @@ on, this module will also support calibrator/target pipelines and
 imaging settings.
 '''
 
-from momxml.observationspecificationbase import ObservationSpecificationBase
-from momxml.utilities import AutoReprBaseClass, typecheck, lower_case
-
+from momxml.observationspecificationbase import ObservationSpecificationBase, indent
+from momxml.utilities import AutoReprBaseClass, typecheck, lower_case, unique
+import ephem
 
         
 class NDPPP(AutoReprBaseClass):
@@ -51,6 +51,7 @@ class NDPPP(AutoReprBaseClass):
           demix_if_needed = None,
           demix_always    = ['CygA', 'CasA'])
     >>> print dmx.xml()
+    <BLANKLINE>
     <demixingParameters>
       <averagingFreqStep>16</averagingFreqStep>
       <averagingTimeStep>2</averagingTimeStep>
@@ -122,7 +123,8 @@ class NDPPP(AutoReprBaseClass):
         r'''
         Produce an xml representation of demixing settings.
         '''
-        template = '''<demixingParameters>
+        template = '''
+<demixingParameters>
   <averagingFreqStep>%(avg_freq_step)d</averagingFreqStep>
   <averagingTimeStep>%(avg_time_step)d</averagingTimeStep>
   <demixFreqStep>%(demix_freq_step)d</demixFreqStep>
@@ -147,7 +149,200 @@ class NDPPP(AutoReprBaseClass):
         return template % args
 
 
-#class NDPPP(ObservationSpecificationBase):
-#    r'''
-#    '''
-#    #def __init__(self, 
+
+
+
+class AveragingPipeline(ObservationSpecificationBase):
+    r'''
+    **Examples**
+
+    >>> from momxml             import TargetSource, Angle
+    >>> from momxml.backend     import BackendProcessing
+    >>> from momxml.observation import Observation
+    >>> from momxml.beam        import Beam
+    >>> target = TargetSource(name      = 'Cyg A',
+    ...                       ra_angle  = Angle(hms  = (19, 59, 28.3566)),
+    ...                       dec_angle = Angle(sdms = ('+', 40, 44, 2.097)))
+
+    >>> bm = Beam(target, '77..324')
+    >>> obs = Observation('HBA_DUAL_INNER', 'LBA_LOW', (2013, 10, 20, 18, 5, 0),
+    ...                   duration_seconds = 600, name = 'Main observation',
+    ...                   stations  = ['CS001', 'RS106', 'DE601'],
+    ...                   clock_mhz = 200, beam_list = [bm],
+    ...                   backend   = BackendProcessing())
+
+    >>> avg = AveragingPipeline(name = 'Avg Pipeline', ndppp = NDPPP())
+    >>> avg.add_input_data_product(obs.children[0])
+    >>> obs.append_child(avg)
+    >>> avg
+    AveragingPipeline(parent            = Observation('Main observation'),
+                      name              = 'Avg Pipeline',
+                      predecessor_label = None,
+                      ndppp             = NDPPP(avg_freq_step   = 64,
+                                                avg_time_step   = 1,
+                                                demix_freq_step = 64,
+                                                ignore_target   = None,
+                                                demix_time_step = 10,
+                                                demix_if_needed = None,
+                                                demix_always    = None),
+                      input_data        = [Beam(parent           = Observation('Main observation'),
+                                               name             = 'Cyg A',
+                                               measurement_type = 'Target',
+                                               duration_s       = None,
+                                               target_source    = TargetSource(name      = 'Cyg A',
+                                                                               ra_angle  = Angle(shms = ('+', 19, 59, 28.3566)),
+                                                                               dec_angle = Angle(sdms = ('+', 40, 44, 2.097))),
+                                               subband_spec     = '77..324',
+                                               children         = None)],
+                      duration_s        = None,
+                      start_date        = None,
+                      default_template  = 'Preprocessing Pipeline',
+                      children          = None)
+    >>> print(avg.xml('Project name'))
+    <lofar:pipeline xsi:type="lofar:AveragingPipelineType">
+      <topology>Main_observation.1.Avg_Pipeline</topology>
+      <predecessor_topology>Main_observation</predecessor_topology>
+      <name>Avg Pipeline</name>
+      <description>Avg Pipeline: "Preprocessing Pipeline"</description>
+      <averagingPipelineAttributes>
+        <defaultTemplate>Preprocessing Pipeline</defaultTemplate>
+        <duration></duration>
+        <startTime></startTime>
+        <endTime></endTime>
+        <demixingParameters>
+          <averagingFreqStep>64</averagingFreqStep>
+          <averagingTimeStep>1</averagingTimeStep>
+          <demixFreqStep>64</demixFreqStep>
+          <demixTimeStep>10</demixTimeStep>
+          <demixAlways></demixAlways>
+          <demixIfNeeded></demixIfNeeded>
+          <ignoreTarget></ignoreTarget>
+        </demixingParameters>
+      </averagingPipelineAttributes>
+      <usedDataProducts>
+        <item>
+          <lofar:uvDataProduct topology="Main_observation.0.Cyg_A.dps">
+            <name>Main_observation.0.Cyg_A.dps</name>
+          </lofar:uvDataProduct>
+        </item>
+      </usedDataProducts>
+      <resultDataProducts>
+        <item>
+          <lofar:uvDataProduct>
+            <name>Main_observation.1.Avg_Pipeline.dps</name>
+            <topology>Main_observation.1.Avg_Pipeline.dps</topology>
+            <status>no_data</status>
+          </lofar:uvDataProduct>
+        </item>
+      </resultDataProducts>
+    </lofar:pipeline>
+
+
+    '''
+    def __init__(self, name, ndppp, input_data = None,
+                 duration_s = None, start_date = None,
+                 parent   = None, children = None,
+                 predecessor_label = None):
+        super(AveragingPipeline, self).__init__(name     = name,
+                                                parent   = parent,
+                                                children = children)
+        self.ndppp            = ndppp
+        self.input_data       = input_data
+        self.duration_s       = duration_s
+        self.start_date       = start_date
+        self.default_template = 'Preprocessing Pipeline'
+        self.predecessor_label = predecessor_label
+        self.validate()
+
+
+    def validate(self):
+        r'''
+        '''
+        typecheck(self.ndppp, NDPPP,
+                  'AveragingPipeline.NDPPP')
+        typecheck(self.predecessor_label, [type(None), str],
+                  'AveragingPipeline.predecessor_label')
+
+
+    def add_input_data_product(self, input_sap):
+        r'''
+        '''
+        if self.input_data is None:
+            self.input_data = []
+        self.input_data.append(input_sap)
+
+
+
+    def predecessor(self):
+        r'''
+        '''
+        if self.predecessor_label is not None:
+            return self.predecessor_label
+
+        predecessor_observations = unique(
+            [data_set.parent.label()
+             for data_set in self.input_data
+             if data_set.parent is not None])
+        if len(predecessor_observations) != 1:
+            raise ValueError('AveragingPipeline: more than one predecessor (%r)' %
+                             predecessor_observations)
+        return predecessor_observations[0]
+        
+        
+
+    def xml_prefix(self, project_name = None):
+        template ='''<lofar:pipeline xsi:type="lofar:AveragingPipelineType">
+  <topology>%(label)s</topology>
+  <predecessor_topology>%(predecessor)s</predecessor_topology>
+  <name>%(name)s</name>
+  <description>%(name)s: "%(default_template)s"</description>
+  <averagingPipelineAttributes>
+    <defaultTemplate>%(default_template)s</defaultTemplate>
+    <duration>%(duration)s</duration>
+    <startTime>%(start_time)s</startTime>
+    <endTime></endTime>%(ndppp)s
+  </averagingPipelineAttributes>
+  <usedDataProducts>%(used_data_products)s
+  </usedDataProducts>
+  <resultDataProducts>
+    <item>
+      <lofar:uvDataProduct>
+        <name>%(label)s.dps</name>
+        <topology>%(label)s.dps</topology>
+        <status>no_data</status>
+      </lofar:uvDataProduct>
+    </item>
+  </resultDataProducts>
+'''
+        used_data_product_template = '''\n<item>
+  <lofar:uvDataProduct topology="%(name)s">
+    <name>%(name)s</name>
+  </lofar:uvDataProduct>
+</item>'''
+        args = {
+            'label'       : self.label(),
+            'predecessor' : self.predecessor(),
+            'name'        : self.name,
+            'default_template' : self.default_template,
+            'duration'    : '',
+            'start_time'  : '',
+            'ndppp'       : indent(self.ndppp.xml(), 4),
+            'used_data_products' : ''
+        }
+        if self.duration_s is not None:
+            args['duration'] = mom_duration(seconds = self.duration_s)
+        if self.start_date is not None:
+            start_date = ephem.Date(self.start_date)
+            rounded_start_date = start_date[:-1]+(int(round(start_date[-1])),)
+            args['start_time'] = mom_timestamp(*rounded_start_date)
+        if self.input_data is None:
+            raise ValueError('AveragingPipeline.input_data is None!')
+        args['used_data_products'] = indent(
+            '\n'.join([
+                used_data_product_template % {'name' : sap.data_products_label()}
+                for sap in self.input_data]),
+            4)
+        return template % args
+
+    def xml_suffix(self, project_name= None):
+        return '</lofar:pipeline>'

@@ -3,7 +3,6 @@ from momxml.momformats   import *
 from momxml.targetsource import *
 from momxml.utilities    import *
 from math import ceil
-import copy
 import ephem
 
 
@@ -40,7 +39,7 @@ class Observation(ObservationSpecificationBase):
         self.start_date               = start_date
         self.bit_mode                 = bit_mode
         self.backend                  = backend
-        for beam in copy.deepcopy(beam_list):
+        for beam in beam_list:
             self.append_child(beam)
         self.validate()
         pass
