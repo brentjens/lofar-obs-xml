@@ -83,6 +83,51 @@ def with_auto_repr(cls):
 
 
 
+def typecheck(variable, type_class, name = None):
+    r'''
+    Raise TypeError if ``variable`` is not an instance of
+    ``type_class``.
+
+    **Parameters**
+
+    variable : any object
+        The variable that will be type-checked.
+
+    type_class : type or list of types
+        The desired type of ``variable``.
+
+    name : string
+        A descriptive name of the variable, used in the error
+        message.
+
+    **Examples**
+
+    >>> typecheck(4.0 , float)
+    >>> typecheck(None, [int, type(None)])
+    >>> typecheck(5   , [int, type(None)])
+    >>> typecheck(4.0, [int, type(None)])
+    Traceback (most recent call last):
+    ...
+    TypeError: type(4.0) not in [<type 'int'>, <type 'NoneType'>]
+    >>> a = 'blaargh'
+    >>> typecheck(a, int, 'a')
+    Traceback (most recent call last):
+    ...
+    TypeError: type(a)('blaargh') not in [<type 'int'>]
+    '''
+    template = 'type(%(var)r) not in %(types)r'
+    if name is not None:
+        template = 'type(%(name)s)(%(var)r) not in %(types)r'
+    if type(type_class) == list:
+        type_list = type_class
+    else:
+        type_list = [type_class]
+    if type(variable) not in type_list:
+            raise TypeError(template %
+                            {'name'  : name,
+                             'var'   : variable,
+                             'types' : type_list})
+
 
 def unique(sequence):
     r'''
