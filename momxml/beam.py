@@ -110,6 +110,12 @@ class Beam(ObservationSpecificationBase):
                 'measurement_type %r not in [\'Target\', \'Calibration\']' %
                 measurement_type)
 
+    def data_products_label(self):
+        r'''
+        Return the name of the data products produced by this beam.
+        '''
+        return self.label()+'.dps'
+
 
 
     def xml_prefix(self, project_name, current_date = None):
@@ -139,7 +145,7 @@ class Beam(ObservationSpecificationBase):
       <status>no_data</status>
     </lofar:uvDataProduct>
   </item>
-</resultDataProducts>''' % {'label': self.label()+'.dps'}
+</resultDataProducts>''' % {'label': self.data_products_label()}
         
         sub_bands     = parse_subband_list(self.subband_spec)
         bandwidth_mhz = len(sub_bands)*(self.parent.clock_mhz/1024.0)
