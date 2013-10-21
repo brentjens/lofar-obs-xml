@@ -7,6 +7,7 @@ imaging settings.
 
 from momxml.observationspecificationbase import ObservationSpecificationBase, indent
 from momxml.utilities import AutoReprBaseClass, typecheck, lower_case, unique
+from momxml.momformats import mom_duration, mom_timestamp
 import ephem
 
         
@@ -247,11 +248,14 @@ class AveragingPipeline(ObservationSpecificationBase):
                                                 parent   = parent,
                                                 children = children)
         self.ndppp            = ndppp
-        self.input_data       = input_data
+        self.input_data       = None
         self.duration_s       = duration_s
         self.start_date       = start_date
         self.default_template = 'Preprocessing Pipeline'
         self.predecessor_label = predecessor_label
+        if input_data is not None:
+            for item in input_data:
+                self.add_input_data_product(item)
         self.validate()
 
 
@@ -332,7 +336,7 @@ class AveragingPipeline(ObservationSpecificationBase):
         if self.duration_s is not None:
             args['duration'] = mom_duration(seconds = self.duration_s)
         if self.start_date is not None:
-            start_date = ephem.Date(self.start_date)
+            start_date = ephem.Date(self.start_date).tuple()
             rounded_start_date = start_date[:-1]+(int(round(start_date[-1])),)
             args['start_time'] = mom_timestamp(*rounded_start_date)
         if self.input_data is None:

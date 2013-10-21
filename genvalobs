@@ -21,7 +21,7 @@ from momxml import xml
 from momxml import SourceSpecificationError, InvalidStationSetError
 from momxml import NoSuitableSourceError
 from momxml import __version__
-
+from momxml.pipelines import NDPPP, AveragingPipeline
 
 #
 # Various messages
@@ -344,32 +344,32 @@ def plan_observing_sequence(job_description):
     #  'XC'             , 'IS'             , 'CS'           , 'FE' for
     #  cross correlation, incoherent stokes, coherent stokes, Fly's eye
     full_schedule = [
-        ['LBA_OUTER'     , 'LBA_LOW' , '12..499' , 200,  8, ['XC']],
-        ['HBA_DUAL'      , 'HBA_LOW' , '12..499' , 200,  8, ['XC']],
-        ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE']],
-        ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE']],
-        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['FE']],
-        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['IS']],
-        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['CS']],
-        ['LBA_INNER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC']],
-        ['LBA_OUTER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC']],
-        ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['XC']],
-        ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, ['XC']],
-        ['HBA_ZERO'      , 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
-        ['HBA_ONE'       , 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
-        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
-        ['HBA_DUAL_INNER', 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
-        ['HBA_JOINED'    , 'HBA_LOW' , '77..320' , 200, 16, ['XC']],
-        ['HBA_ZERO'      , 'HBA_MID' , '66..309' , 160, 16, ['XC']],
-        ['HBA_ONE'       , 'HBA_MID' , '66..309' , 160, 16, ['XC']],
-        ['HBA_DUAL'      , 'HBA_MID' , '66..309' , 160, 16, ['XC']],
-        ['HBA_DUAL_INNER', 'HBA_MID' , '66..309' , 160, 16, ['XC']],
-        ['HBA_JOINED'    , 'HBA_MID' , '66..309' , 160, 16, ['XC']],
-        ['HBA_ZERO'      , 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
-        ['HBA_ONE'       , 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
-        ['HBA_DUAL'      , 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
-        ['HBA_DUAL_INNER', 'HBA_HIGH', '52..255' , 200, 16, ['XC']],
-        ['HBA_JOINED'    , 'HBA_HIGH', '52..255' , 200, 16, ['XC']]]
+        ['LBA_OUTER'     , 'LBA_LOW' , '12..499' , 200,  8, ['XC'], ('Preprocessing', 8, 1, 64, 10, 'CygA CasA')],
+        ['HBA_DUAL'      , 'HBA_LOW' , '12..499' , 200,  8, ['XC'], ('Preprocessing', 16, 5, 64, 10)],
+        ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE'], None],
+        ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE'], None],
+        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['FE'], None],
+        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['IS'], None],
+        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['CS'], None],
+        ['LBA_INNER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC'], None],
+        ['LBA_OUTER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC'], None],
+        ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['XC'], None],
+        ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, ['XC'], None],
+        ['HBA_ZERO'      , 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
+        ['HBA_ONE'       , 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
+        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
+        ['HBA_DUAL_INNER', 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
+        ['HBA_JOINED'    , 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
+        ['HBA_ZERO'      , 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
+        ['HBA_ONE'       , 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
+        ['HBA_DUAL'      , 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
+        ['HBA_DUAL_INNER', 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
+        ['HBA_JOINED'    , 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
+        ['HBA_ZERO'      , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None],
+        ['HBA_ONE'       , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None],
+        ['HBA_DUAL'      , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None],
+        ['HBA_DUAL_INNER', 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None],
+        ['HBA_JOINED'    , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None]]
 
     if job_description.from_file is not None:
         full_schedule = read_custom_observation_sequence(
@@ -417,7 +417,8 @@ def plan_observing_sequence(job_description):
          subband_spec,
          clock_mhz,
          bit_mode,
-         data_products) in schedule:
+         data_products,
+         pipeline) in schedule:
         station_set   = copy.deepcopy(stations)
         target_source = job_description.source
         data_products = [data_product
@@ -500,7 +501,7 @@ def plan_observing_sequence(job_description):
             incoherent_stokes_data   = incoherent_stokes_data,
             tied_array_beams         = tied_array_beams)
 
-        observations.append(Observation(
+        obs = Observation(
             name                     = ','.join(data_products)+' '+antenna_set,
             antenna_set              = antenna_set,
             frequency_range          = frequency_range,
@@ -512,7 +513,26 @@ def plan_observing_sequence(job_description):
             bit_mode                 = bit_mode,
             beam_list=[Beam(
                 target_source            = target_source,
-                subband_spec             = subband_spec)]))
+                subband_spec             = subband_spec)])
+        if pipeline is not None:
+            if pipeline[0] == 'Preprocessing':
+                avg_freq_step, avg_time_step, demix_freq_step, demix_time_step = pipeline[1:5]
+                demix_always    = None
+                demix_if_needed = None
+                if len(pipeline) >= 6:
+                    demix_always = pipeline[5].split()
+                if len(pipeline) >= 7:
+                    demix_if_needed = pipeline[6].split()
+                pl = AveragingPipeline(name = 'Preproc.'+antenna_set,
+                                       ndppp = NDPPP(avg_freq_step, avg_time_step,
+                                                     demix_freq_step, demix_time_step,
+                                                     demix_always, demix_if_needed),
+                                       input_data = [child for child in obs.children
+                                                     if type(child) is Beam],
+                                       duration_s = duration_seconds,
+                                       start_date = ephem.Date(start_date +5*ephem.minute).tuple())
+                obs.append_child(pl)
+        observations.append(obs)
         start_date = ephem.Date(start_date
                                 + ephem.second*duration_seconds
                                 + ephem.second*job_description.gap)
