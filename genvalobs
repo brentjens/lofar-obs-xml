@@ -328,7 +328,8 @@ def read_custom_observation_sequence(file_contents):
                 fields[2],
                 int(fields[3]),
                 int(fields[4]),
-                [field.upper() for field in fields[5:]]]
+                [field.upper() for field in fields[5:]],
+                None]
 
     return [record_from_line(line) for line in no_empty_lines]
 
@@ -523,6 +524,14 @@ def plan_observing_sequence(job_description):
                     demix_always = pipeline[5].split()
                 if len(pipeline) >= 7:
                     demix_if_needed = pipeline[6].split()
+                for beam in [child for child in obs.children if type(child) is Beam]:
+                    if 'cyg' in beam.target_source.name.lower():
+                        if demix_always is not None:
+                            demix_always = [source for source in demix_always
+                                            if 'cyg' not in  source]
+                        if demix_if_needed is not None:
+                            demix_if_needed = [source for source in demix_if_needed
+                                               if 'cyg' not in  source]
                 pl = AveragingPipeline(name = 'Preproc.'+antenna_set,
                                        ndppp = NDPPP(avg_freq_step, avg_time_step,
                                                      demix_freq_step, demix_time_step,
