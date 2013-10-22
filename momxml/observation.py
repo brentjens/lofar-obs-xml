@@ -1,5 +1,6 @@
 from momxml.observationspecificationbase import ObservationSpecificationBase
-from momxml.momformats   import mom_duration, mom_timestamp
+from momxml.momformats   import mom_duration, mom_timestamp, mom_frequency_range
+from momxml.momformats   import mom_antenna_name_from_mac_name
 from momxml.targetsource import TargetSource
 from momxml.utilities    import validate_enumeration, indent
 from math import ceil
