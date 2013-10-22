@@ -129,6 +129,41 @@ def typecheck(variable, type_class, name = None):
                              'types' : [tp.__name__ for tp in type_list]})
 
 
+
+
+def indent(string, amount):
+    r'''
+    Indent a multi-line string by the given amount.
+
+    string : string
+        The string to indent.
+
+    amount : int
+        The direction and amount to indent.
+
+    **Examples**
+
+    >> indent('Hi\nThere', 2)
+      Hi
+      There
+
+    >> indent('Hi\nThere\n\n', -1)
+    i
+    here
+    <BLANKLINE>
+    <BLANKLINE>
+    '''
+    lines = string.split('\n')
+    if amount > 0:
+        lines = [line if '' == line else ' '*amount + line for line in lines]
+    if amount < 0:
+        lines = [line[-amount:] for line in lines]
+    return '\n'.join(lines)
+
+
+
+
+
 def unique(sequence):
     r'''
     Return a list containing all unique elements of a sequence.

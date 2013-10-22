@@ -1,7 +1,6 @@
 from momxml.observationspecificationbase import ObservationSpecificationBase
-from momxml.observationspecificationbase import indent
 from momxml.momformats import mom_duration
-from momxml.utilities import parse_subband_list
+from momxml.utilities import parse_subband_list, indent
 
 class Beam(ObservationSpecificationBase):
     r'''

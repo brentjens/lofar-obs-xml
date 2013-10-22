@@ -1,7 +1,7 @@
-from momxml.observationspecificationbase import ObservationSpecificationBase, indent
-from momxml.momformats   import *
-from momxml.targetsource import *
-from momxml.utilities    import *
+from momxml.observationspecificationbase import ObservationSpecificationBase
+from momxml.momformats   import mom_duration, mom_timestamp
+from momxml.targetsource import TargetSource
+from momxml.utilities    import validate_enumeration, indent
 from math import ceil
 import ephem
 

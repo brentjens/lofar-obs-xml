@@ -5,8 +5,8 @@ on, this module will also support calibrator/target pipelines and
 imaging settings.
 '''
 
-from momxml.observationspecificationbase import ObservationSpecificationBase, indent
-from momxml.utilities import AutoReprBaseClass, typecheck, lower_case, unique
+from momxml.observationspecificationbase import ObservationSpecificationBase
+from momxml.utilities import AutoReprBaseClass, typecheck, lower_case, unique, indent
 from momxml.momformats import mom_duration, mom_timestamp
 import ephem
 

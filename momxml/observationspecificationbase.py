@@ -3,36 +3,7 @@ A base class for classes that generate (part of) the xml needed to
 enter information into MoM.
 '''
 
-def indent(string, amount):
-    r'''
-    Indent a multi-line string by the given amount.
-
-    string : string
-        The string to indent.
-
-    amount : int
-        The direction and amount to indent.
-
-    **Examples**
-
-    >> indent('Hi\nThere', 2)
-      Hi
-      There
-
-    >> indent('Hi\nThere\n\n', -1)
-    i
-    here
-    <BLANKLINE>
-    <BLANKLINE>
-    '''
-    lines = string.split('\n')
-    if amount > 0:
-        lines = [line if '' == line else ' '*amount + line for line in lines]
-    if amount < 0:
-        lines = [line[-amount:] for line in lines]
-    return '\n'.join(lines)
-
-
+from momxml.utilities import indent
 
 
 

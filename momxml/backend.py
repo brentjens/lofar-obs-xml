@@ -1,6 +1,5 @@
 from momxml.observationspecificationbase import ObservationSpecificationBase
-from momxml.observationspecificationbase import indent
-from momxml.utilities import lower_case, AutoReprBaseClass
+from momxml.utilities import lower_case, AutoReprBaseClass, indent
 
 r'''
 This module contains the helper classes that contain the miriad
