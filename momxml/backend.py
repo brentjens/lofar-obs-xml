@@ -326,6 +326,7 @@ class BackendProcessing(AutoReprBaseClass):
     <BLANKLINE>
 
     Here is a Fly's eye example:
+
     >>> channels_per_subband = 16
     >>> coherent_stokes_data = Stokes('coherent',
     ...                               stokes_downsampling_steps = 128)
@@ -386,6 +387,7 @@ class BackendProcessing(AutoReprBaseClass):
     <BLANKLINE>
 
     And here for coherent stokes beam forming:
+
     >>> tied_array_beams     = TiedArrayBeams(flyseye      = False,
     ...                                       beam_offsets = None)
     >>> bp_cs = BackendProcessing(

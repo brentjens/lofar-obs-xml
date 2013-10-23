@@ -11,7 +11,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-
+   readme
+   momxml
 
 Indices and tables
 ==================
