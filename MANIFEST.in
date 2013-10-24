@@ -1,2 +1,2 @@
-include doc/*.txt
+recursive-include doc *
 include scripts/*.py
