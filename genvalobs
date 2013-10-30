@@ -108,7 +108,6 @@ options -m, -c, etc. as the default observing sequence. The last entry
 is using the 160 MHz clock. It will only be used in the observation
 sequence if the 160 MHz is selected using the -c / --clock option.
 
-_
 ''',
         formatter_class = argparse.RawDescriptionHelpFormatter)
 
@@ -147,10 +146,12 @@ observations. They are taken along in all other observations [%(default)s].''',
         default = 'nl')
 
     arg('-i', '--include', metavar='STATION_NAMES',
-        help = 'Comma separated list of station names to include.')
+        help = '''Comma separated list of station names to include. No
+        spaces allowed in the list. Example: -i cs013,de601,rs106''')
 
     arg('-e', '--exclude', metavar='STATION_NAMES',
-        help = 'Comma separated list of station names to exclude.')
+        help = '''Comma separated list of station names to exclude. No
+        spaces allowed in the list. Example: -e cs013,de601,rs106''')
 
 
     arg('--min-alt', metavar='DEGREES',
@@ -515,6 +516,7 @@ def plan_observing_sequence(job_description):
             beam_list=[Beam(
                 target_source            = target_source,
                 subband_spec             = subband_spec)])
+        observations.append(obs)
         if pipeline is not None:
             if pipeline[0] == 'Preprocessing':
                 avg_freq_step, avg_time_step, demix_freq_step, demix_time_step = pipeline[1:5]
@@ -540,8 +542,7 @@ def plan_observing_sequence(job_description):
                                                      if type(child) is Beam],
                                        duration_s = duration_seconds*2,
                                        start_date = ephem.Date(start_date +5*ephem.minute).tuple())
-                obs.append_child(pl)
-        observations.append(obs)
+                observations.append(pl)
         start_date = ephem.Date(start_date
                                 + ephem.second*duration_seconds
                                 + ephem.second*job_description.gap)

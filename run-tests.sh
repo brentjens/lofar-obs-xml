@@ -31,6 +31,8 @@ if [[ ! -f "$PYLINT" ]] ; then
     PYLINT=`which pylint2`
 fi
 
+make -C doc/ html
+
 echo ''
 echo '  *** Pylint output ***'
 echo ''

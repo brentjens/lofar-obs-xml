@@ -1,6 +1,13 @@
 ``momxml`` modules
 ==================
 
+``momxml``
+----------
+
+.. automodule:: momxml
+   :members:
+
+
 ``momxml.observation``
 ----------------------
 
