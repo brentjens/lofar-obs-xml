@@ -179,7 +179,7 @@ required.''',
 
     arg('-p', '--project', metavar='MOM_NAME',
         help    = 'Name of the observations\' MoM project [%(default)r].',
-        default = '2013LOFAROBS')
+        default = '2014LOFAROBS')
 
     arg('-k', '--keep', metavar='CORE_OR_EU',
         help = '''In case of HBA_DUAL or HBA_ONE network conflicts, keep
@@ -572,7 +572,7 @@ def main():
         children    = observations,
         grouping_parent = True)
     val_obs_folder = Folder(name     = 'Validation Obs',
-                            mom_id   = 192732,
+                            mom_id   = 339144,
                             children = [sub_folder])
     out = open(job_description.output, 'w')
     out.write(xml([val_obs_folder],
