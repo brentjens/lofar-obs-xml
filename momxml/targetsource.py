@@ -100,9 +100,10 @@ class TargetSource(object):
         SourceSpecificationError: dec_angle must be a momxml.Angle, not -2
 
         '''
-        if type(self.name) == type(u''):
-            raise SourceSpecificationError(
-                'Source name may not be a unicode string.')
+        if sys.version_info.major == 2:
+            if type(self.name) == type(u''):
+                raise SourceSpecificationError(
+                    'Source name may not be a unicode string.')
         if type(self.name) != type(''):
             raise SourceSpecificationError(
                 'Source name must be a string. You specified %s' %
@@ -249,8 +250,12 @@ def simbad(source_name, debug = False):
         'obj.notesel=off',
         'Ident=%s'])
 
-    result = urllib.urlopen(query % urllib.quote(source_name),
-                            proxies = {}).read()
+    if sys.version_info.major == 2:
+        result = urllib.urlopen(query % urllib.quote(source_name),
+                                proxies = {}).read()
+    else:
+        result = urllib.request.urlopen(query % urllib.quote(source_name),
+                                proxies = {}).read()
     if debug:
         print(result)
         sys.stdout.flush()

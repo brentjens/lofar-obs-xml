@@ -197,6 +197,7 @@ either "core" or "eu" stations [core].''',
         help = 'Print version number and exit.')
 
     arg('source', nargs = '?',
+        type=str,
         help = '''
 Force a source to be used for all observations, bypassing genvalobs\'
 own heuristics.''',
@@ -394,16 +395,16 @@ def plan_observing_sequence(job_description):
     if job_description.start_date:
         start_date = ephem.Date(job_description.start_date)
 
-    print 'LST at start observation: %s' % str(lofar_sidereal_time(start_date))
+    print('LST at start observation: %s' % str(lofar_sidereal_time(start_date)))
 
     mean_date     = (start_date +
                      ephem.second*len(schedule)*(job_description.duration +
                                                  job_description.gap)*0.5)
 
     mean_lst      = lofar_sidereal_time(mean_date)
-    print 'Mean date: ' + repr(mean_date)
-    print 'Mean LST: '+str(mean_lst)
-    print 'Mean LST rad: %f' % float(mean_lst)
+    print('Mean date: ' + repr(mean_date))
+    print('Mean LST: '+str(mean_lst))
+    print('Mean LST rad: %f' % float(mean_lst))
 
     include       = job_description.include
     include       = include and include.split(',')
@@ -449,8 +450,8 @@ def plan_observing_sequence(job_description):
         else:
             target_source = lookup_source(target_source)
 
-        print ','.join(data_products) + ' ' + antenna_set
-        print target_source
+        print(','.join(data_products) + ' ' + antenna_set)
+        print(target_source)
         # If clock switches, allow for two minutes extra
         if previous_clock != clock_mhz:
             start_date = ephem.Date(start_date + 2*ephem.minute)
@@ -559,7 +560,7 @@ def main():
     Main function. Connects command line parsing to actual observing
     sequence, creates a set of folders, and produces the XML file.
     '''
-    print parse_arguments()
+    print(parse_arguments())
     job_description = parse_arguments()
 
     observations = plan_observing_sequence(job_description)
@@ -587,7 +588,7 @@ def main():
 
 if __name__ == '__main__':
     try:
-        print 'Current LST: '+str(lofar_sidereal_time(ephem.Observer().date))
+        print('Current LST: '+str(lofar_sidereal_time(ephem.Observer().date)))
         exit(main())
     except (OSError, IOError, SourceSpecificationError,
             InvalidStationSetError, NoSuitableSourceError):
