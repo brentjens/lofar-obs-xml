@@ -9,7 +9,7 @@ observations that can be submitted to MoM.
 '''
 
 
-import sys, copy
+import sys, copy, string
 import ephem
 import argparse
 from momxml import Folder, SourceCatalogue, lofar_sidereal_time
@@ -120,6 +120,7 @@ sequence if the 160 MHz is selected using the -c / --clock option.
                    ephem.Observer().date.tuple()))
 
     arg('-m', '--mode', metavar='CORRELATOR_MODE',
+        type=string.upper,
         choices = ['XC', 'FE', 'CS', 'IS'], action='append',
         help    = '''
 Correlator modes to test. Choose one of XC (crosscorrelation), FE
@@ -424,7 +425,7 @@ def plan_observing_sequence(job_description):
          pipeline) in schedule:
         station_set   = copy.deepcopy(stations)
         target_source = job_description.source
-        data_products = [data_product
+        data_products = [data_product.upper()
                          for data_product in data_products
                          if data_product in job_description.mode]
 
