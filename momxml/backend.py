@@ -129,11 +129,10 @@ class Stokes(AutoReprBaseClass):
         rate per file (locus node / storage machine) below about 300 MB /
         s.
 
-    number_collapsed_channels : int
-        Frequency averaging parameter. Not sure if this is the number
-        of output channels, or the number of channels to be
-        averaged. If someone knows, let me know. 0 implies no
-        averaging.
+    number_collapsed_channels : None or int
+        The number of output channels. If this is smaller than the
+        number of channels for the correlator, the output channels
+        will be averaged. None implies no averaging.
 
     stokes_downsampling_steps : int
         Number of time samples to average before writing to
@@ -151,16 +150,16 @@ class Stokes(AutoReprBaseClass):
            subbands_per_file         = 512,
            polarizations             = 'IQUV',
            mode                      = 'coherent',
-           number_collapsed_channels = 0)
+           number_collapsed_channels = 16)
     >>> print(stk.xml())
     <subbandsPerFileCS>512</subbandsPerFileCS>
-    <numberCollapsedChannelsCS>0</numberCollapsedChannelsCS>
+    <numberCollapsedChannelsCS>16</numberCollapsedChannelsCS>
     <stokesDownsamplingStepsCS>64</stokesDownsamplingStepsCS>
     <whichCS>IQUV</whichCS>
     '''
 
     def __init__(self, mode, subbands_per_file = 512,
-                 number_collapsed_channels = 0,
+                 number_collapsed_channels = None,
                  stokes_downsampling_steps = 1,
                  polarizations = 'I'):
         self.mode                      = mode
@@ -543,9 +542,17 @@ class BackendProcessing(AutoReprBaseClass):
 </pencilBeams>''' + self.tied_array_beams.xml()+'''
 <stokes>
   <integrateChannels>'''+lower_case(self.stokes_integrate_channels)+'''</integrateChannels>'''
+
+        # If number_collapsed_channels is not set, default to
+        # correlator settings.
         if self.incoherent_stokes_data:
+            if self.incoherent_stokes_data.number_collapsed_channels is None:
+                    self.incoherent_stokes_data.number_collapsed_channels = self.channels_per_subband
             output += '\n'+indent(self.incoherent_stokes_data.xml(), 2)
         if self.coherent_stokes_data:
+            if self.coherent_stokes_data.number_collapsed_channels is None:
+                    self.coherent_stokes_data.number_collapsed_channels = self.channels_per_subband
+
             output += '\n'+indent(self.coherent_stokes_data.xml(), 2)
 
         output += '''
