@@ -150,6 +150,19 @@ class Stokes(AutoReprBaseClass):
            subbands_per_file         = 512,
            polarizations             = 'IQUV',
            mode                      = 'coherent',
+           number_collapsed_channels = None)
+    >>> print(stk.xml())
+    Traceback (most recent call last):
+    ...
+    ValueError: Stokes.xml(): number_collapsed_channels is not set.
+    >>> stk = Stokes(mode = 'coherent', polarizations = 'IQUV',
+    ...              stokes_downsampling_steps = 64,
+    ...              number_collapsed_channels = 16)
+    >>> stk
+    Stokes(stokes_downsampling_steps = 64,
+           subbands_per_file         = 512,
+           polarizations             = 'IQUV',
+           mode                      = 'coherent',
            number_collapsed_channels = 16)
     >>> print(stk.xml())
     <subbandsPerFileCS>512</subbandsPerFileCS>
@@ -211,6 +224,8 @@ class Stokes(AutoReprBaseClass):
         Produce the xml for the coherent stokes  or incoherent stokes
         settings of the backend.
         '''
+        if self.number_collapsed_channels is None:
+            raise ValueError('Stokes.xml(): number_collapsed_channels is not set.')
         return ('''<subbandsPerFile%(suffix)s>%(subbands_per_file)d</subbandsPerFile%(suffix)s>
 <numberCollapsedChannels%(suffix)s>%(number_collapsed_channels)d</numberCollapsedChannels%(suffix)s>
 <stokesDownsamplingSteps%(suffix)s>%(stokes_downsampling_steps)d</stokesDownsamplingSteps%(suffix)s>
@@ -347,7 +362,7 @@ class BackendProcessing(AutoReprBaseClass):
                                                              subbands_per_file         = 512,
                                                              polarizations             = 'I',
                                                              mode                      = 'coherent',
-                                                             number_collapsed_channels = 0),
+                                                             number_collapsed_channels = 16),
                       channels_per_subband          = 16,
                       correlated_data               = False,
                       tied_array_beams              = TiedArrayBeams(nr_tab_rings  = 0,
@@ -377,7 +392,7 @@ class BackendProcessing(AutoReprBaseClass):
     <stokes>
       <integrateChannels>false</integrateChannels>
       <subbandsPerFileCS>512</subbandsPerFileCS>
-      <numberCollapsedChannelsCS>0</numberCollapsedChannelsCS>
+      <numberCollapsedChannelsCS>16</numberCollapsedChannelsCS>
       <stokesDownsamplingStepsCS>128</stokesDownsamplingStepsCS>
       <whichCS>I</whichCS>
     </stokes>
@@ -404,7 +419,7 @@ class BackendProcessing(AutoReprBaseClass):
                                                              subbands_per_file         = 512,
                                                              polarizations             = 'I',
                                                              mode                      = 'coherent',
-                                                             number_collapsed_channels = 0),
+                                                             number_collapsed_channels = 16),
                       channels_per_subband          = 16,
                       correlated_data               = False,
                       tied_array_beams              = TiedArrayBeams(nr_tab_rings  = 0,
@@ -434,7 +449,7 @@ class BackendProcessing(AutoReprBaseClass):
     <stokes>
       <integrateChannels>false</integrateChannels>
       <subbandsPerFileCS>512</subbandsPerFileCS>
-      <numberCollapsedChannelsCS>0</numberCollapsedChannelsCS>
+      <numberCollapsedChannelsCS>16</numberCollapsedChannelsCS>
       <stokesDownsamplingStepsCS>128</stokesDownsamplingStepsCS>
       <whichCS>I</whichCS>
     </stokes>
@@ -457,15 +472,27 @@ class BackendProcessing(AutoReprBaseClass):
                  enable_superterp              = False
                  ):
         self.channels_per_subband = channels_per_subband
-        self.integration_time_seconds  = int(round(integration_time_seconds))
-        self.correlated_data           = correlated_data
-        self.filtered_data             = filtered_data
-        self.beamformed_data           = beamformed_data
-        self.coherent_stokes_data      = coherent_stokes_data
+        self.integration_time_seconds = int(round(integration_time_seconds))
+        self.correlated_data = correlated_data
+        self.filtered_data = filtered_data
+        self.beamformed_data = beamformed_data
+        self.coherent_stokes_data = coherent_stokes_data
+        # If number_collapsed_channels is not set, default to
+        # correlator settings.
+        if self.coherent_stokes_data:
+            if self.coherent_stokes_data.number_collapsed_channels is None:
+                    self.coherent_stokes_data.number_collapsed_channels = \
+                        self.channels_per_subband
+
         self.tied_array_beams          = tied_array_beams
         if self.tied_array_beams  is None:
             self.tied_array_beams = TiedArrayBeams()
+
         self.incoherent_stokes_data    = incoherent_stokes_data
+        if self.incoherent_stokes_data:
+            if self.incoherent_stokes_data.number_collapsed_channels is None:
+                    self.incoherent_stokes_data.number_collapsed_channels = \
+                        self.channels_per_subband
         self.stokes_integrate_channels = stokes_integrate_channels
         self.coherent_dedispersed_channels = coherent_dedispersed_channels
         self.bypass_pff                = bypass_pff
