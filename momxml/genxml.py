@@ -50,16 +50,16 @@ class Preprocessing(object):
 
     def __init__(self, freq_avg_factor, time_avg_factor,
                  demix_freq_step, demix_time_step,
-                 demix_always    = None,
+                 demix_always = None,
                  demix_if_needed = None,
-                 ignore_target   = None):
+                 ignore_target = None):
         self.freq_avg_factor = freq_avg_factor
         self.time_avg_factor = time_avg_factor
         self.demix_freq_step = demix_freq_step
         self.demix_time_step = demix_time_step
-        self.demix_always    = demix_always
+        self.demix_always = demix_always
         self.demix_if_needed = demix_if_needed
-        self.ignore_target   = ignore_target
+        self.ignore_target = ignore_target
 
 
 
@@ -111,13 +111,13 @@ class Calibration(object):
                  solve_parms = None, solve_uv_range = None,
                  strategy_baselines = None,
                  strategy_time_range = None):
-        self.sky_model           = sky_model
-        self.baselines           = baselines
-        self.correlations        = correlations
-        self.enable_beam_model   = enable_beam_model
-        self.solve_parms         = solve_parms
-        self.solve_uv_range      = solve_uv_range
-        self.strategy_baselines  = strategy_baselines
+        self.sky_model = sky_model
+        self.baselines = baselines
+        self.correlations = correlations
+        self.enable_beam_model = enable_beam_model
+        self.solve_parms = solve_parms
+        self.solve_uv_range = solve_uv_range
+        self.strategy_baselines = strategy_baselines
         self.strategy_time_range = strategy_time_range
 
     def __str__(self):
@@ -160,8 +160,8 @@ class Pipeline(object):
     '''
     def __init__(self, preprocessing = None, calibration = None, duration_s = None):
         self.preprocessing = preprocessing
-        self.calibration   = calibration
-        self.duration_s    = duration_s
+        self.calibration = calibration
+        self.duration_s = duration_s
 
     def __repr__(self):
         return ('''Pipeline(
@@ -219,13 +219,13 @@ class Beam(object):
     Demix:16;5;64;10;;;
     BBS:3C48;;;T;;;;
     '''
-    def __init__(self, name, ra, dec, subband_spec, pipeline = None):
-        self.name               = name
-        self.ra                 = ra
-        self.dec                = dec
-        self.subband_spec       = subband_spec
+    def __init__(self, name, ra, dec, subband_spec, pipeline=None):
+        self.name = name
+        self.ra = ra
+        self.dec = dec
+        self.subband_spec = subband_spec
         self.number_of_subbands = len(parse_subband_list(subband_spec))
-        self.pipeline           = pipeline
+        self.pipeline = pipeline
 
 
     def __repr__(self):
@@ -261,8 +261,8 @@ class ObservationPackage(object):
     def __init__(self, project_name, package_name, description, setup_mode):
         self.project_name = project_name
         self.package_name = package_name
-        self.description  = description
-        self.setup_mode   = setup_mode
+        self.description = description
+        self.setup_mode = setup_mode
 
     def __str__(self):
         return '''

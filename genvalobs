@@ -8,6 +8,8 @@ Uses the momxml library to compose an XML file containing LOFAR test
 observations that can be submitted to MoM.
 '''
 
+from __future__ import print_function
+
 
 import sys, copy
 import ephem
@@ -48,12 +50,12 @@ def uppercase_string(string_var):
     parse_arguments() as a data type.
 
     **Paremeters**
-    
+
     string_var : string
         The string to convert to upper case.
 
     **Returns**
-    
+
     An upper case string.
 
     **Examples**
@@ -68,7 +70,7 @@ def parse_arguments():
     Parse all command line arguments. Uses Python 2.7's argparse module.
     '''
     parser = argparse.ArgumentParser(
-        description = r'''
+        description=r'''
 The (optional) source name must be enclosed in single or double
 quotes if it contains spaces. The following sources are recommended:
 
@@ -130,100 +132,100 @@ is using the 160 MHz clock. It will only be used in the observation
 sequence if the 160 MHz is selected using the -c / --clock option.
 
 ''',
-        formatter_class = argparse.RawDescriptionHelpFormatter)
+        formatter_class=argparse.RawDescriptionHelpFormatter)
 
     #usage='%(prog)s [options] \'source name\'')
     arg = parser.add_argument
 
     arg('-o', '--output', metavar='FILENAME',
-        help    = 'Name of the output file [%(default)s].',
-        default = ('lofar-validation-%04d%02d%02d-%02d%02d%02d.xml' %
-                   ephem.Observer().date.tuple()))
+        help='Name of the output file [%(default)s].',
+        default=('lofar-validation-%04d%02d%02d-%02d%02d%02d.xml' %
+                 ephem.Observer().date.tuple()))
 
     arg('-m', '--mode', metavar='CORRELATOR_MODE',
         type=uppercase_string,
-        choices = ['XC', 'FE', 'CS', 'IS'], action='append',
-        help    = '''
+        choices=['XC', 'FE', 'CS', 'IS'], action='append',
+        help='''
 Correlator modes to test. Choose one of XC (crosscorrelation), FE
 (Fly\'s eye), IS (incoherent stokes), or CS (coherent stokes). One can
 specify more than one mode. If this argument is not spedified, all
 modes will be tested [XC,FE,CS,IS].''',
-        default = None)
+        default=None)
 
     arg('-d', '--duration', metavar='SECONDS',
-        help = 'Duration of individual observations in seconds [%(default)r].',
-        type = int, default=120)
+        help='Duration of individual observations in seconds [%(default)r].',
+        type=int, default=120)
 
     arg('-g', '--gap', metavar='SECONDS',
-        help = 'Gap between observations in seconds [%(default)r].',
-        type = int, default=60)
+        help='Gap between observations in seconds [%(default)r].',
+        type=int, default=60)
 
     arg('-s', '--stations', metavar='STATION_SET',
-        choices = ['superterp', 'core', 'remote', 'nl', 'eu', 'all', 'none'],
-        help    = '''
+        choices=['superterp', 'core', 'remote', 'nl', 'eu', 'all', 'none'],
+        help='''
 One of superterp, core, remote, nl, eu, all, or none. EU stations
 that conflict with certain HBA1 core fields are excluded from the
 HBA_ONE, HBA_ONE_INNER, HBA_DUAL, and HBA_DUAL_INNER
 observations. They are taken along in all other observations [%(default)s].''',
-        default = 'nl')
+        default='nl')
 
     arg('-i', '--include', metavar='STATION_NAMES',
-        help = '''Comma separated list of station names to include. No
+        help='''Comma separated list of station names to include. No
         spaces allowed in the list. Example: -i cs013,de601,rs106''')
 
     arg('-e', '--exclude', metavar='STATION_NAMES',
-        help = '''Comma separated list of station names to exclude. No
+        help='''Comma separated list of station names to exclude. No
         spaces allowed in the list. Example: -e cs013,de601,rs106''')
 
 
     arg('--min-alt', metavar='DEGREES',
-        help = 'Minimum elevation for target sources [%(default)5.2f].',
-        type = float, default = 40.0)
+        help='Minimum elevation for target sources [%(default)5.2f].',
+        type=float, default=40.0)
 
     arg('--max-alt', metavar='DEGREES',
-        help = 'Maximum elevation for target sources [%(default)5.2f].',
-        type = float, default = 70.0)
+        help='Maximum elevation for target sources [%(default)5.2f].',
+        type=float, default=70.0)
 
     arg('-c', '--clocks', metavar='CLOCK_MHZ', action='append',
-        choices = [160, 200],
-        help    = '''Allowed clock frequencies. Choose 160 or 200. Option can be
+        choices=[160, 200],
+        help='''Allowed clock frequencies. Choose 160 or 200. Option can be
 provided multiple times if more than one clock frequency is
 required.''',
         type=int, default=None)
 
     arg('-w', '--wait', metavar='SECONDS',
-        help = 'Number of seconds until the first observation [%(default)r].',
-        type = int, default=540)
+        help='Number of seconds until the first observation [%(default)r].',
+        type=int, default=540)
 
     arg('-t', '--start-date', metavar='DATE_STRING',
-        help = '''Specify an exact date and time to start the first
+        help='''Specify an exact date and time to start the first
         observation. Format: "yyyy/mm/dd hh:mm:ss.s"''')
 
     arg('-p', '--project', metavar='MOM_NAME',
-        help    = 'Name of the observations\' MoM project [%(default)r].',
-        default = '2014LOFAROBS')
+        help='Name of the observations\' MoM project [%(default)r].',
+        default='2014LOFAROBS')
 
     arg('-k', '--keep', metavar='CORE_OR_EU',
-        help = '''In case of HBA_DUAL or HBA_ONE network conflicts, keep
+        help='''In case of HBA_DUAL or HBA_ONE network conflicts, keep
 either "core" or "eu" stations [core].''',
         default='core', choices=['core', 'eu'])
 
 
     arg('-f', '--from-file', metavar='FILE_NAME',
         help='Read a custom observing sequence from FILE_NAME.',
-        default = None)
+        default=None)
 
     arg('-v', '--version', action='version',
-        version = '%(prog)s ' +__version__+
+        version='%(prog)s ' +__version__+
         ' (c) 2010-2013 M.A. Brentjens <brentjens@astron.nl>',
-        help = 'Print version number and exit.')
+        help='Print version number and exit.')
 
-    arg('source', nargs = '?',
+    arg('source', nargs='?',
         type=str,
-        help = '''
+        help='''
 Force a source to be used for all observations, bypassing genvalobs\'
 own heuristics.''',
-        default = None)
+        default=None)
 
     args = parser.parse_args()
     if args.clocks is None:
@@ -303,8 +305,8 @@ def read_custom_observation_sequence(file_contents):
         If an error occurs while reading the file.
 
     '''
-    lines          = [line.strip() for line in file_contents.split('\n')]
-    no_comments    = [line.split('#')[0].strip() for line in lines]
+    lines = [line.strip() for line in file_contents.split('\n')]
+    no_comments = [line.split('#')[0].strip() for line in lines]
     no_empty_lines = [line.strip()
                       for line in no_comments
                       if line.strip() != '']
@@ -313,11 +315,11 @@ def read_custom_observation_sequence(file_contents):
                           'HBA_ZERO', 'HBA_ONE', 'HBA_DUAL', 'HBA_JOINED',
                           'HBA_ZERO_INNER', 'HBA_ONE_INNER',
                           'HBA_DUAL_INNER']
-    valid_bands        = ['LBA_LOW', 'LBA_HIGH',
-                          'HBA_LOW', 'HBA_MID', 'HBA_HIGH']
-    valid_clocks       = [160, 200]
-    valid_bits         = [4, 8, 16]
-    valid_products     = ['XC', 'FE', 'IS', 'CS']
+    valid_bands = ['LBA_LOW', 'LBA_HIGH',
+                   'HBA_LOW', 'HBA_MID', 'HBA_HIGH']
+    valid_clocks = [160, 200]
+    valid_bits = [4, 8, 16]
+    valid_products = ['XC', 'FE', 'IS', 'CS']
 
     def record_from_line(line):
         'Split a line (at its whitespace) into a list of fields'
@@ -367,10 +369,14 @@ def plan_observing_sequence(job_description):
     '''
     # Possible products:
     #  'XC'             , 'IS'             , 'CS'           , 'FE' for
-    #  cross correlation, incoherent stokes, coherent stokes, Fly's eye
+    #  cross correlation, incoherent stokes, coherent stokes, Fly's
+    #  eye
+    # pylint: disable=bad-whitespace
     full_schedule = [
-        ['LBA_OUTER'     , 'LBA_LOW' , '12..499' , 200,  8, ['XC'], ('Preprocessing', 8, 1, 64, 10, 'CygA CasA')],
-        ['HBA_DUAL'      , 'HBA_LOW' , '12..499' , 200,  8, ['XC'], ('Preprocessing', 16, 5, 64, 10)],
+        ['LBA_OUTER'     , 'LBA_LOW' , '12..499' , 200,  8, ['XC'],
+         ('Preprocessing', 8, 1, 64, 10, 'CygA CasA')],
+        ['HBA_DUAL'      , 'HBA_LOW' , '12..499' , 200,  8, ['XC'],
+         ('Preprocessing', 16, 5, 64, 10)],
         ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE'], None],
         ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE'], None],
         ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['FE'], None],
@@ -395,6 +401,7 @@ def plan_observing_sequence(job_description):
         ['HBA_DUAL'      , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None],
         ['HBA_DUAL_INNER', 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None],
         ['HBA_JOINED'    , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None]]
+    # pylint: enable=bad-whitespace
 
     if job_description.from_file is not None:
         full_schedule = read_custom_observation_sequence(
@@ -410,32 +417,32 @@ def plan_observing_sequence(job_description):
     max_el_deg = job_description.max_alt
     min_el_deg = job_description.min_alt
 
-    schedule      = [obs for obs in full_schedule
-                     if obs[3] in job_description.clocks]
-    now           = ephem.Observer().date
-    start_date    = ephem.Date(now + ephem.second*job_description.wait)
+    schedule = [obs for obs in full_schedule
+                if obs[3] in job_description.clocks]
+    now = ephem.Observer().date
+    start_date = ephem.Date(now + ephem.second*job_description.wait)
     if job_description.start_date:
         start_date = ephem.Date(job_description.start_date)
 
     print('LST at start observation: %s' % str(lofar_sidereal_time(start_date)))
 
-    mean_date     = (start_date +
-                     ephem.second*len(schedule)*(job_description.duration +
-                                                 job_description.gap)*0.5)
+    mean_date = (start_date +
+                 ephem.second*len(schedule)*(job_description.duration +
+                                             job_description.gap)*0.5)
 
-    mean_lst      = lofar_sidereal_time(mean_date)
+    mean_lst = lofar_sidereal_time(mean_date)
     print('Mean date: ' + repr(mean_date))
     print('Mean LST: '+str(mean_lst))
     print('Mean LST rad: %f' % float(mean_lst))
 
-    include       = job_description.include
-    include       = include and include.split(',')
-    exclude       = job_description.exclude
-    exclude       = exclude and exclude.split(',')
-    stations      = station_list(job_description.stations,
-                                 include = include,
-                                 exclude = exclude,)
-    observations  = []
+    include = job_description.include
+    include = include and include.split(',')
+    exclude = job_description.exclude
+    exclude = exclude and exclude.split(',')
+    stations = station_list(job_description.stations,
+                            include=include,
+                            exclude=exclude,)
+    observations = []
     previous_clock = 200
     for (antenna_set,
          frequency_range,
@@ -444,7 +451,7 @@ def plan_observing_sequence(job_description):
          bit_mode,
          data_products,
          pipeline) in schedule:
-        station_set   = copy.deepcopy(stations)
+        station_set = copy.deepcopy(stations)
         target_source = job_description.source
         data_products = [data_product.upper()
                          for data_product in data_products
@@ -458,8 +465,8 @@ def plan_observing_sequence(job_description):
                 or 'IS' in data_products):
                 target_source = SourceCatalogue().psr_source(
                     mean_date, antenna_set[0:3],
-                    min_elevation_deg = min_el_deg,
-                    max_elevation_deg = max_el_deg)
+                    min_elevation_deg=min_el_deg,
+                    max_elevation_deg=max_el_deg)
             else:
                 if frequency_range[0:3] == 'LBA':
                     target_source = SourceCatalogue().cal_source(
@@ -467,8 +474,8 @@ def plan_observing_sequence(job_description):
                 else:
                     target_source = SourceCatalogue().cal_source(
                         mean_date, antenna_set[0:3],
-                        min_elevation_deg = min_el_deg,
-                        max_elevation_deg = max_el_deg)
+                        min_elevation_deg=min_el_deg,
+                        max_elevation_deg=max_el_deg)
         else:
             target_source = lookup_source(target_source)
 
@@ -478,32 +485,32 @@ def plan_observing_sequence(job_description):
         if previous_clock != clock_mhz:
             start_date = ephem.Date(start_date + 2*ephem.minute)
 
-        channels_per_subband   = 64
-        coherent_stokes_data   = None
+        channels_per_subband = 64
+        coherent_stokes_data = None
         incoherent_stokes_data = None
-        tied_array_beams       = None
-        duration_seconds       = job_description.duration
+        tied_array_beams = None
+        duration_seconds = job_description.duration
         if 'FE' in data_products:
             channels_per_subband = 16
             coherent_stokes_data = Stokes('coherent',
-                                          stokes_downsampling_steps = 128)
-            tied_array_beams     = TiedArrayBeams(flyseye      = True,
-                                                  beam_offsets = None)
+                                          stokes_downsampling_steps=128)
+            tied_array_beams = TiedArrayBeams(flyseye=True,
+                                              beam_offsets=None)
             if 'LBA' == antenna_set[0:3]:
                 duration_seconds = 600.0
         if 'CS' in data_products:
             coherent_stokes_data = Stokes('coherent',
-                                          stokes_downsampling_steps = 128)
+                                          stokes_downsampling_steps=128)
             if tied_array_beams is None:
-                tied_array_beams = TiedArrayBeams(flyseye      = False,
-                                                  beam_offsets = [(0.0, 0.0)])
+                tied_array_beams = TiedArrayBeams(flyseye=False,
+                                                  beam_offsets=[(0.0, 0.0)])
             else:
                 tied_array_beams.beam_offsets = [(0.0, 0.0)]
             core = set(station_list('core'))
             station_set = set(station_set).intersection(core)
         if 'IS' in data_products:
             incoherent_stokes_data = Stokes('incoherent',
-                                            stokes_downsampling_steps = 128)
+                                            stokes_downsampling_steps=128)
 
         good_stations = sorted(list(station_set))
         antenna_sets_with_conflicts = [
@@ -519,52 +526,55 @@ def plan_observing_sequence(job_description):
                     job_description.keep)
 
         backend = BackendProcessing(
-            integration_time_seconds = 1,
-            correlated_data          = 'XC' in data_products,
-            channels_per_subband     = channels_per_subband,
-            coherent_stokes_data     = coherent_stokes_data,
-            incoherent_stokes_data   = incoherent_stokes_data,
-            tied_array_beams         = tied_array_beams)
+            integration_time_seconds=1,
+            correlated_data='XC' in data_products,
+            channels_per_subband=channels_per_subband,
+            coherent_stokes_data=coherent_stokes_data,
+            incoherent_stokes_data=incoherent_stokes_data,
+            tied_array_beams=tied_array_beams)
 
         obs = Observation(
-            name                     = ','.join(data_products)+' '+antenna_set,
-            antenna_set              = antenna_set,
-            frequency_range          = frequency_range,
-            start_date               = start_date.tuple(),
-            duration_seconds         = duration_seconds,
-            stations                 = good_stations,
-            clock_mhz                = clock_mhz,
-            backend                  = backend,
-            bit_mode                 = bit_mode,
+            name=','.join(data_products)+' '+antenna_set,
+            antenna_set=antenna_set,
+            frequency_range=frequency_range,
+            start_date=start_date.tuple(),
+            duration_seconds=duration_seconds,
+            stations=good_stations,
+            clock_mhz=clock_mhz,
+            backend=backend,
+            bit_mode=bit_mode,
             beam_list=[Beam(
-                target_source            = target_source,
-                subband_spec             = subband_spec)])
+                target_source=target_source,
+                subband_spec=subband_spec)])
         observations.append(obs)
         if pipeline is not None:
             if pipeline[0] == 'Preprocessing':
-                avg_freq_step, avg_time_step, demix_freq_step, demix_time_step = pipeline[1:5]
-                demix_always    = None
+                avg_freq_step, avg_time_step = pipeline[1:3]
+                demix_freq_step, demix_time_step = pipeline[3:5]
+                demix_always = None
                 demix_if_needed = None
                 if len(pipeline) >= 6:
                     demix_always = pipeline[5].split()
                 if len(pipeline) >= 7:
                     demix_if_needed = pipeline[6].split()
-                for beam in [child for child in obs.children if type(child) is Beam]:
+                beams = [child for child in obs.children if type(child) is Beam]
+                for beam in beams:
                     if 'cyg' in beam.target_source.name.lower():
                         if demix_always is not None:
                             demix_always = [source for source in demix_always
                                             if 'cyg' not in  source]
                         if demix_if_needed is not None:
-                            demix_if_needed = [source for source in demix_if_needed
-                                               if 'cyg' not in  source]
-                pl = AveragingPipeline(name = 'Preproc.'+antenna_set,
-                                       ndppp = NDPPP(avg_freq_step, avg_time_step,
-                                                     demix_freq_step, demix_time_step,
-                                                     demix_always, demix_if_needed),
-                                       input_data = [child for child in obs.children
-                                                     if type(child) is Beam],
-                                       duration_s = duration_seconds*2,
-                                       start_date = ephem.Date(start_date +5*ephem.minute).tuple())
+                            demix_if_needed = [
+                                source for source in demix_if_needed
+                                if 'cyg' not in  source]
+                pl = AveragingPipeline(
+                    name='Preproc.'+antenna_set,
+                    ndppp=NDPPP(avg_freq_step, avg_time_step,
+                                demix_freq_step, demix_time_step,
+                                demix_always, demix_if_needed),
+                    input_data=beams,
+                    duration_s=duration_seconds*2,
+                    start_date=ephem.Date(start_date+5*ephem.minute).tuple())
                 observations.append(pl)
         start_date = ephem.Date(start_date
                                 + ephem.second*duration_seconds
@@ -586,20 +596,20 @@ def main():
     job_description = parse_arguments()
 
     observations = plan_observing_sequence(job_description)
-    folder_date  = observations[0].start_date
+    folder_date = observations[0].start_date
 
-    sub_folder     = Folder(
-        name        =  '%04d-%02d-%02d %02d:%02d' % folder_date[:-1],
-        description = ('Validation observations %04d-%02d-%02d %02d:%02d' %
-                       folder_date[:-1]),
-        children    = observations,
-        grouping_parent = True)
-    val_obs_folder = Folder(name     = 'Validation Obs',
-                            mom_id   = 339144,
-                            children = [sub_folder])
+    sub_folder = Folder(
+        name='%04d-%02d-%02d %02d:%02d' % folder_date[:-1],
+        description=('Validation observations %04d-%02d-%02d %02d:%02d' %
+                    folder_date[:-1]),
+        children=observations,
+        grouping_parent=True)
+    val_obs_folder = Folder(name='Validation Obs',
+                            mom_id=339144,
+                            children=[sub_folder])
     out = open(job_description.output, 'w')
     out.write(xml([val_obs_folder],
-                  project = job_description.project))
+                  project=job_description.project))
     out.close()
 
     return 0

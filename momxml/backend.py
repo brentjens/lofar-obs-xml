@@ -175,11 +175,11 @@ class Stokes(AutoReprBaseClass):
                  number_collapsed_channels = None,
                  stokes_downsampling_steps = 1,
                  polarizations = 'I'):
-        self.mode                      = mode
-        self.subbands_per_file         = subbands_per_file
+        self.mode = mode
+        self.subbands_per_file = subbands_per_file
         self.number_collapsed_channels = number_collapsed_channels
         self.stokes_downsampling_steps = stokes_downsampling_steps
-        self.polarizations             = polarizations
+        self.polarizations = polarizations
         self.validate()
 
 
@@ -187,7 +187,7 @@ class Stokes(AutoReprBaseClass):
         r'''
         Raises a ValueError for every problem found in the settings.
         '''
-        valid_modes         = ['coherent', 'incoherent']
+        valid_modes = ['coherent', 'incoherent']
         valid_polarizations = ['I', 'IQUV']
         if self.mode not in valid_modes:
             raise ValueError('mode(%r) not one of %r.' % 
