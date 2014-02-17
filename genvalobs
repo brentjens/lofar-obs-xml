@@ -9,7 +9,7 @@ observations that can be submitted to MoM.
 '''
 
 
-import sys, copy, string
+import sys, copy
 import ephem
 import argparse
 from momxml import Folder, SourceCatalogue, lofar_sidereal_time
@@ -22,6 +22,7 @@ from momxml import SourceSpecificationError, InvalidStationSetError
 from momxml import NoSuitableSourceError
 from momxml import __version__
 from momxml.pipelines import NDPPP, AveragingPipeline
+
 
 #
 # Various messages
@@ -41,6 +42,26 @@ def print_short_help():
     return sys.stdout.write('genvalobs: use "genvalobs --help" for help\n')
 
 
+def uppercase_string(string_var):
+    r'''
+    Function that converts string_var to upper case. Used in
+    parse_arguments() as a data type.
+
+    **Paremeters**
+    
+    string_var : string
+        The string to convert to upper case.
+
+    **Returns**
+    
+    An upper case string.
+
+    **Examples**
+
+    >>> [uppercase_string(s) for s in ['asd', 'aBc', '123']]
+    ['ASD', 'ABC', '123']
+    '''
+    return string_var.upper()
 
 def parse_arguments():
     r'''
@@ -120,7 +141,7 @@ sequence if the 160 MHz is selected using the -c / --clock option.
                    ephem.Observer().date.tuple()))
 
     arg('-m', '--mode', metavar='CORRELATOR_MODE',
-        type=string.upper,
+        type=uppercase_string,
         choices = ['XC', 'FE', 'CS', 'IS'], action='append',
         help    = '''
 Correlator modes to test. Choose one of XC (crosscorrelation), FE
