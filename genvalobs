@@ -65,6 +65,7 @@ def uppercase_string(string_var):
     '''
     return string_var.upper()
 
+
 def parse_arguments():
     r'''
     Parse all command line arguments. Uses Python 2.7's argparse module.

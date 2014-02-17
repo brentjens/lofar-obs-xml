@@ -21,7 +21,7 @@
 PYTHONPATH="`pwd`:$PYTHONPATH"
 NOSETESTS=`which nosetests`
 PYLINT=`which pylint`
-MODULE="momxml ./genvalobs"
+MODULE="momxml genvalobs.py"
 
 if [[ ! -f "$NOSETESTS" ]] ; then
     NOSETESTS=`which nosetests2`
@@ -57,6 +57,6 @@ else
                --cover-html \
                --cover-html-dir=coverage \
                --cover-erase \
-               -x # $@
+               -x $MODULE # $@
 fi
 
