@@ -28,7 +28,7 @@ class TiedArrayBeams(AutoReprBaseClass):
         to tile the beam.
     
     tab_ring_size : float
-        Distance between TAB rings. *Units are unclear to me*
+        Distance between TAB rings in RADIANS.
 
     **Examples**
     

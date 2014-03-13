@@ -233,7 +233,7 @@ own heuristics.''',
         args.clocks = [200]
 
     if args.mode is None:
-        args.mode = ['XC', 'FE', 'CS', 'IS']
+        args.mode = ['XC', 'FE', 'CS', 'IS', 'TR']
     args.mode = [mode.upper() for mode in args.mode]
     return  args
 
@@ -277,6 +277,7 @@ def read_custom_observation_sequence(file_contents):
                      - FE (fly's eye)
                      - CS (coherent stokes)
                      - IS (incoherent stokes)
+                     - TR (tab rings)
 
     Empty lines are ignored, comments start with # end run until the
     end of the line.
@@ -320,7 +321,7 @@ def read_custom_observation_sequence(file_contents):
                    'HBA_LOW', 'HBA_MID', 'HBA_HIGH']
     valid_clocks = [160, 200]
     valid_bits = [4, 8, 16]
-    valid_products = ['XC', 'FE', 'IS', 'CS']
+    valid_products = ['XC', 'FE', 'IS', 'CS', 'TR']
 
     def record_from_line(line):
         'Split a line (at its whitespace) into a list of fields'
@@ -383,6 +384,7 @@ def plan_observing_sequence(job_description):
         ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['FE'], None],
         ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['IS'], None],
         ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['CS'], None],
+        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['TR'], None],
         ['LBA_INNER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC'], None],
         ['LBA_OUTER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC'], None],
         ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['XC'], None],
@@ -463,7 +465,8 @@ def plan_observing_sequence(job_description):
         if target_source is None:
             if ('FE' in data_products
                 or 'CS' in data_products
-                or 'IS' in data_products):
+                or 'IS' in data_products
+                or 'TR' in data_products):
                 target_source = SourceCatalogue().psr_source(
                     mean_date, antenna_set[0:3],
                     min_elevation_deg=min_el_deg,
@@ -491,6 +494,17 @@ def plan_observing_sequence(job_description):
         incoherent_stokes_data = None
         tied_array_beams = None
         duration_seconds = job_description.duration
+        if 'TR' in data_products:
+            channels_per_subband = 16
+            station_subset = set(station_list('superterp'))
+            station_set = set(station_set).intersection(station_subset)
+            coherent_stokes_data = Stokes('coherent',
+                                          stokes_downsampling_steps=128)
+            tied_array_beams = TiedArrayBeams(flyseye=False,
+                                              beam_offsets=None,
+                                              nr_tab_rings=6,
+                                              tab_ring_size=0.0042799)
+            print('TAB ring test is experimental')
         if 'FE' in data_products:
             channels_per_subband = 16
             coherent_stokes_data = Stokes('coherent',
