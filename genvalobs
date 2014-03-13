@@ -206,10 +206,10 @@ required.''',
         help='Name of the observations\' MoM project [%(default)r].',
         default='2014LOFAROBS')
 
-    arg('-k', '--keep', metavar='CORE_OR_EU',
+    arg('-k', '--keep', metavar='STATIONS_TO_KEEP',
         help='''In case of HBA_DUAL or HBA_ONE network conflicts, keep
-either "core" or "eu" stations [core].''',
-        default='core', choices=['core', 'eu'])
+        either "core", "eu" stations, or "all" of them. [%(default)r].''',
+        default='core', choices=['core', 'eu', 'all'])
 
 
     arg('-f', '--from-file', metavar='FILE_NAME',
@@ -521,6 +521,8 @@ def plan_observing_sequence(job_description):
                 good_stations = exclude_conflicting_eu_stations(good_stations)
             elif 'eu' == job_description.keep:
                 good_stations = exclude_conflicting_nl_stations(good_stations)
+            elif 'all' == job_description.keep:
+                good_stations = good_stations
             else:
                 raise RuntimeError(
                     '%s stations never conflict, only core or eu' %
