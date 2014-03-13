@@ -412,6 +412,74 @@ def next_sunset(date, observer = None):
 
 
 
+def cmp_antenna_field_names(name_a, name_b):
+    r'''
+    Compare antenna field / station names. Useful for sorting lists of
+    those names.
+
+    **Parameters**
+
+    name_a : string
+        An antenna field or station name.
+    
+    name_b : string
+        The other antenna field or station name.
+    
+    **Returns**
+    
+    -1 if a < b, 0 if equal, and +1 if a > b. The sort order is:
+    1) core stations/fields in alphabetical order
+    2) all other stations/fields in numerical order.
+
+    **Examples**
+    
+    >>> cmp_antenna_field_names('CS001', 'CS001')
+    0
+    >>> cmp_antenna_field_names('CS501', 'RS106')
+    -1
+    >>> cmp_antenna_field_names('CS501HBA1', 'CS501HBA0')
+    1
+    >>> cmp_antenna_field_names('FR606LBA', 'DE605LBA')
+    1
+    '''
+    if name_a == name_b:
+        return 0
+    if 'CS' in name_a and 'CS' not in name_b:
+        return -1
+    if 'CS' not in name_a and 'CS' in name_b:
+        return +1
+    if 'CS' in name_a and 'CS' in name_b:
+        return cmp(name_a, name_b)
+    return cmp(int(name_a[2:5]), int(name_b[2:5]))
+
+
+
+def sort_station_list(stations):
+    r'''
+    Sort a station list so we first get the CS, then the RS and EU in
+    numerical order.
+
+    **Parameters**
+
+    stations : list of strings
+        The station list to sort.
+
+    **Examples**
+
+    >>> sort_station_list(['UK608', 'RS407', 'DE603', 'RS106',
+    ...     'RS205', 'CS026', 'SE607', 'CS501', 'DE605', 'RS509',
+    ...     'CS001'])
+    ['CS001', 'CS026', 'CS501', 'RS106', 'RS205', 'RS407', 'RS509', 'DE603', 'DE605', 'SE607', 'UK608']
+    >>> sort_station_list(['UK608HBA', 'RS407HBA', 'DE603HBA', 'RS106HBA',
+    ...     'CS026HBA1', 'SE607HBA', 'CS026HBA0', 'CS501HBA0', 'DE605HBA', 'RS509HBA',
+    ...     'CS001HBA1'])
+    ['CS001HBA1', 'CS026HBA0', 'CS026HBA1', 'CS501HBA0', 'RS106HBA', 'RS407HBA', 'RS509HBA', 'DE603HBA', 'DE605HBA', 'SE607HBA', 'UK608HBA']
+
+    '''
+    return sorted(stations, cmp=cmp_antenna_field_names)
+
+
+
 def station_list(station_set, include = None, exclude = None):
     r'''
     Provides a sorted list of station names, given a station set name,
@@ -493,7 +561,7 @@ def station_list(station_set, include = None, exclude = None):
         exclude_list = []
     else:
         exclude_list = [station.upper() for station in exclude]
-    return sorted([s for s in superset if s not in exclude_list])
+    return sort_station_list([s for s in superset if s not in exclude_list])
 
 
 
