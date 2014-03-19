@@ -139,7 +139,7 @@ class Stokes(AutoReprBaseClass):
         disk. Default is 1 (no averaging).
 
     polarizations : string
-       Either 'I' or 'IQUV'.
+       Either 'I', 'IQUV', or 'XXYY'.
 
     **Examples**
     
@@ -188,7 +188,7 @@ class Stokes(AutoReprBaseClass):
         Raises a ValueError for every problem found in the settings.
         '''
         valid_modes = ['coherent', 'incoherent']
-        valid_polarizations = ['I', 'IQUV']
+        valid_polarizations = ['I', 'IQUV', 'XXYY']
         if self.mode not in valid_modes:
             raise ValueError('mode(%r) not one of %r.' % 
                              (self.mode, valid_modes))
@@ -266,10 +266,12 @@ class BackendProcessing(AutoReprBaseClass):
         No idea what this means. Default is False.
 
     beamformed_data : bool
-        True if beamformed data is to be produced, such as complex
-        voltage, coherent stokes, or incoherent stokes data. If True
-        and neither coherent_stokes_data, nor incoherent_stokes_data
-        are specified, complex voltages are produced.
+        True if beamformed data is to be produced,
+        such as complex voltage, coherent stokes, or incoherent stokes
+        data. If True and coherent_stokes_data is set to
+        Stokes('coherent', polarizations='XXYY',
+               number_collapsed_channels=1, stokes_downsampling_steps=1),
+        complex voltages are produced.
 
     coherent_stokes_data : None or Stokes instance
         Coherent stokes settings.
