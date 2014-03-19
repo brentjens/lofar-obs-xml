@@ -113,6 +113,7 @@ with format:
                      - FE (fly's eye)
                      - CS (coherent stokes)
                      - IS (incoherent stokes)
+                     - TR (TAB rings)
 
     Empty lines are ignored, comments start with # end run until the
     end of the line.
@@ -145,12 +146,12 @@ sequence if the 160 MHz is selected using the -c / --clock option.
 
     arg('-m', '--mode', metavar='CORRELATOR_MODE',
         type=uppercase_string,
-        choices=['XC', 'FE', 'CS', 'IS'], action='append',
+        choices=['XC', 'FE', 'CS', 'IS', 'TR'], action='append',
         help='''
 Correlator modes to test. Choose one of XC (crosscorrelation), FE
 (Fly\'s eye), IS (incoherent stokes), or CS (coherent stokes). One can
 specify more than one mode. If this argument is not spedified, all
-modes will be tested [XC,FE,CS,IS].''',
+        modes will be tested [XC,FE,CS,IS,TR].''',
         default=None)
 
     arg('-d', '--duration', metavar='SECONDS',
@@ -384,7 +385,7 @@ def plan_observing_sequence(job_description):
         ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['FE'], None],
         ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['IS'], None],
         ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['CS'], None],
-        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['TR'], None],
+        ['HBA_DUAL'      , 'HBA_LOW' , '12..499' , 200,  8, ['TR'], None],
         ['LBA_INNER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC'], None],
         ['LBA_OUTER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC'], None],
         ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['XC'], None],
@@ -499,10 +500,10 @@ def plan_observing_sequence(job_description):
             station_subset = set(station_list('superterp'))
             station_set = set(station_set).intersection(station_subset)
             coherent_stokes_data = Stokes('coherent',
-                                          stokes_downsampling_steps=128)
+                                          stokes_downsampling_steps=16) #3^{0,1}*2^{0..12}
             tied_array_beams = TiedArrayBeams(flyseye=False,
                                               beam_offsets=None,
-                                              nr_tab_rings=6,
+                                              nr_tab_rings=5,
                                               tab_ring_size=0.0042799)
             print('TAB ring test is experimental')
         if 'FE' in data_products:
