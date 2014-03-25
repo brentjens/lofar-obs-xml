@@ -100,7 +100,9 @@ class TargetSource(object):
         SourceSpecificationError: dec_angle must be a momxml.Angle, not -2
 
         '''
-        if sys.version_info.major == 2:
+        # Named tuple was introduced in Python 2.7
+        # In python 2.7 use sys.version_info.major 
+        if sys.version_info[0] == 2:
             if type(self.name) == type(u''):
                 raise SourceSpecificationError(
                     'Source name may not be a unicode string.')
