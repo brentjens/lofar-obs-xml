@@ -622,8 +622,11 @@ def main():
                     folder_date[:-1]),
         children=observations,
         grouping_parent=True)
+    mom_id = None
+    if job_description.project == '2014LOFAROBS':
+        mom_id = 339144
     val_obs_folder = Folder(name='Validation Obs',
-                            mom_id=339144,
+                            mom_id=mom_id,
                             children=[sub_folder])
     out = open(job_description.output, 'w')
     out.write(xml([val_obs_folder],
