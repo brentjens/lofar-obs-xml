@@ -44,6 +44,7 @@ class Beam(ObservationSpecificationBase):
          target_source    = TargetSource(name      = 'Cyg A',
                                          ra_angle  = Angle(shms = ('+', 19, 59, 28.3566)),
                                          dec_angle = Angle(sdms = ('+', 40, 44, 2.097))),
+         tied_array_beams = None,
          subband_spec     = '77..324',
          children         = None)
     >>> observation_stub = ObservationSpecificationBase('Observation')
@@ -88,13 +89,16 @@ class Beam(ObservationSpecificationBase):
     '''
 
     def __init__(self, target_source, subband_spec,
-                 duration_s = None, measurement_type = 'Target'):
+                 duration_s=None,
+                 tied_array_beams=None,
+                 measurement_type='Target'):
         super(Beam, self).__init__(target_source.name,
                                    parent = None, children = None)
         self.target_source    = target_source
         self.subband_spec     = subband_spec
         self.measurement_type = measurement_type
         self.duration_s       = duration_s
+        self.tied_array_beams = tied_array_beams
 
         if type(subband_spec) == type(''):
             self.subband_spec     = subband_spec
@@ -128,9 +132,11 @@ class Beam(ObservationSpecificationBase):
             duration_s = int(round(self.duration_s))
 
         tied_array_beams = ''
-        if backend.need_beam_observation():
+        if backend.need_beam_observation() or self.tied_array_beams:
+            if self.tied_array_beams is None:
+                self.tied_array_beams = backend.tied_array_beams
             tied_array_beams = indent(
-                backend.tied_array_beams.xml(project_name),
+                self.tied_array_beams.xml(project_name),
                 amount = 4)
 
         result_data_products = ''

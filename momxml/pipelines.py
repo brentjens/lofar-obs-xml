@@ -193,6 +193,7 @@ class AveragingPipeline(ObservationSpecificationBase):
                                                target_source    = TargetSource(name      = 'Cyg A',
                                                                                ra_angle  = Angle(shms = ('+', 19, 59, 28.3566)),
                                                                                dec_angle = Angle(sdms = ('+', 40, 44, 2.097))),
+                                               tied_array_beams = None,
                                                subband_spec     = '77..324',
                                                children         = None)],
                       duration_s        = None,
