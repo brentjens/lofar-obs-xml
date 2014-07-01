@@ -502,7 +502,7 @@ def plan_observing_sequence(job_description):
             coherent_stokes_data = Stokes('coherent',
                                           stokes_downsampling_steps=16) #3^{0,1}*2^{0..12}
             tied_array_beams = TiedArrayBeams(flyseye=False,
-                                              beam_offsets=None,
+                                              beams_ra_dec_rad=None,
                                               nr_tab_rings=5,
                                               tab_ring_size=0.0042799)
             print('TAB ring test is experimental')
@@ -511,7 +511,7 @@ def plan_observing_sequence(job_description):
             coherent_stokes_data = Stokes('coherent',
                                           stokes_downsampling_steps=128)
             tied_array_beams = TiedArrayBeams(flyseye=True,
-                                              beam_offsets=None)
+                                              beams_ra_dec_rad=None)
             if 'LBA' == antenna_set[0:3]:
                 duration_seconds = 600.0
         if 'CS' in data_products:
@@ -519,9 +519,9 @@ def plan_observing_sequence(job_description):
                                           stokes_downsampling_steps=128)
             if tied_array_beams is None:
                 tied_array_beams = TiedArrayBeams(flyseye=False,
-                                                  beam_offsets=[(0.0, 0.0)])
+                                                  beams_ra_dec_rad=[target_source.ra_dec_rad()])
             else:
-                tied_array_beams.beam_offsets = [(0.0, 0.0)]
+                tied_array_beams.beams_ra_dec_rad = [target_source.ra_dec_rad()]
             core = set(station_list('core'))
             station_set = set(station_set).intersection(core)
         if 'IS' in data_products:

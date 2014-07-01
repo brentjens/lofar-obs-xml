@@ -160,6 +160,20 @@ class TargetSource(object):
         return self.dec_angle.as_deg()
 
 
+    def ra_dec_rad(self):
+        r'''
+        Returns coordinates as an (ra_rad, dec_rad) pair of floats.
+
+        **Examples**
+
+        >>> '(%.6f, %.6f)' % TargetSource('Cyg A',
+        ...                               ra_angle = Angle(deg = 299.868152),
+        ...                               dec_angle = Angle(deg = 40.733916) ).ra_dec_rad()
+        '(5.233687, 0.710941)'
+        '''
+        return (self.ra_angle.as_rad(), self.dec_angle.as_rad())
+
+
     def __repr__(self):
         return ('''TargetSource(name      = %r,
              ra_angle  = Angle(shms = %r),

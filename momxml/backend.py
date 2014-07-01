@@ -18,10 +18,9 @@ class TiedArrayBeams(AutoReprBaseClass):
     flyseye : bool
         If True, store data streams from each station individually.
 
-    beam_offsets : list of pairs of float
-        The offsets of the phase centres of the TABs in $lm$
-        coordinates in a SIN projection towards the pointing centre of
-        the stations. *Units are unclear to me!*
+    beams_ra_dec_rad : None or list of pairs of float
+        The RA, Dec in rad of the phase centres of the TABs in J2000
+        coordinates.
 
     nr_tab_rings : int
         Alternatively, one can specify with how many rings one wants
@@ -30,14 +29,19 @@ class TiedArrayBeams(AutoReprBaseClass):
     tab_ring_size : float
         Distance between TAB rings in RADIANS.
 
+    beam_offsets : None
+        Previously, the offsets with repsoect to the phase
+        center. Option is invalid as of 2014-06-14, LOFAR 2.4. Use
+        beams_ra_dec_rad instead.
+
     **Examples**
     
     >>> tab = TiedArrayBeams()
     >>> tab
-    TiedArrayBeams(nr_tab_rings  = 0,
-                   flyseye       = False,
-                   beam_offsets  = None,
-                   tab_ring_size = 0)
+    TiedArrayBeams(nr_tab_rings     = 0,
+                   flyseye          = False,
+                   beams_ra_dec_rad = None,
+                   tab_ring_size    = 0)
     >>> print(tab.xml())
     <BLANKLINE>
     <tiedArrayBeams>
@@ -49,11 +53,20 @@ class TiedArrayBeams(AutoReprBaseClass):
 
     >>> tab_fe = TiedArrayBeams(flyseye      = True,
     ...                         beam_offsets = [(0.0, 0.0), (0.1, -0.05)])
+    Traceback (most recent call last):
+    ...
+    ValueError: Relative beam_offsets not supported as of LOFAR 2.4 (2014-06-30) use beams_ra_dec_rad instead
+    
+    Whoops.... that was the old way of specifying. Let's try again now.
+
+    >>> tab_fe = TiedArrayBeams(flyseye = True,
+    ...                         beams_ra_dec_rad = [(3.1, +0.5),
+    ...                                             (3.2, +0.54)])
     >>> tab_fe
-    TiedArrayBeams(nr_tab_rings  = 0,
-                   flyseye       = True,
-                   beam_offsets  = [(0.0, 0.0), (0.1, -0.05)],
-                   tab_ring_size = 0)
+    TiedArrayBeams(nr_tab_rings     = 0,
+                   flyseye          = True,
+                   beams_ra_dec_rad = [(3.1, 0.5), (3.2, 0.54)],
+                   tab_ring_size    = 0)
     >>> print(tab_fe.xml())
     <BLANKLINE>
     <tiedArrayBeams>
@@ -61,21 +74,23 @@ class TiedArrayBeams(AutoReprBaseClass):
       <nrTabRings>0</nrTabRings>
       <tabRingSize>0.000000</tabRingSize>
       <tiedArrayBeamList>
-        <tiedArrayBeam><coherent>true</coherent><angle1>0.000000</angle1><angle2>0.000000</angle2></tiedArrayBeam>
-        <tiedArrayBeam><coherent>true</coherent><angle1>0.100000</angle1><angle2>-0.050000</angle2></tiedArrayBeam>
+        <tiedArrayBeam><coherent>true</coherent><angle1>3.100000</angle1><angle2>0.500000</angle2></tiedArrayBeam>
+        <tiedArrayBeam><coherent>true</coherent><angle1>3.200000</angle1><angle2>0.540000</angle2></tiedArrayBeam>
       </tiedArrayBeamList>
     </tiedArrayBeams>
     '''
     def __init__(self, flyseye    = False,
                  beam_offsets     = None,
+                 beams_ra_dec_rad  = None,
                  nr_tab_rings     = 0,
                  tab_ring_size    = 0):
-        #super(TiedArrayBeams, self).__init__(name   = 'TAB',
-        #                                     parent = None, children = None)
-        self.flyseye          = flyseye
-        self.beam_offsets     = beam_offsets
-        self.nr_tab_rings     = nr_tab_rings
-        self.tab_ring_size    = tab_ring_size
+        self.flyseye = flyseye
+        if beam_offsets is not None:
+            raise ValueError(
+                'Relative beam_offsets not supported as of LOFAR 2.4 (2014-06-30) use beams_ra_dec_rad instead')
+        self.beams_ra_dec_rad = beams_ra_dec_rad
+        self.nr_tab_rings = nr_tab_rings
+        self.tab_ring_size = tab_ring_size
 
 
     def xml(self, project_name = None):
@@ -87,7 +102,7 @@ class TiedArrayBeams(AutoReprBaseClass):
                   (lower_case(self.flyseye),
                    self.nr_tab_rings,
                    self.tab_ring_size))
-        if self.beam_offsets and len(self.beam_offsets) > 0:
+        if self.beams_ra_dec_rad and len(self.beams_ra_dec_rad) > 0:
             output += ('''
   <tiedArrayBeamList>
     %s
@@ -95,7 +110,7 @@ class TiedArrayBeams(AutoReprBaseClass):
                        '\n    '.join(
                            ['<tiedArrayBeam><coherent>true</coherent><angle1>%f</angle1><angle2>%f</angle2></tiedArrayBeam>'
         % (angle_1, angle_2)
-                            for angle_1, angle_2 in self.beam_offsets]))
+                            for angle_1, angle_2 in self.beams_ra_dec_rad]))
         else:
             output += '''
   <tiedArrayBeamList/>'''
@@ -309,10 +324,10 @@ class BackendProcessing(AutoReprBaseClass):
                       coherent_stokes_data          = None,
                       channels_per_subband          = 64,
                       correlated_data               = True,
-                      tied_array_beams              = TiedArrayBeams(nr_tab_rings  = 0,
-                                                                     flyseye       = False,
-                                                                     beam_offsets  = None,
-                                                                     tab_ring_size = 0),
+                      tied_array_beams              = TiedArrayBeams(nr_tab_rings     = 0,
+                                                                     flyseye          = False,
+                                                                     beams_ra_dec_rad = None,
+                                                                     tab_ring_size    = 0),
                       coherent_dedispersed_channels = False,
                       enable_superterp              = False,
                       bypass_pff                    = False)
@@ -346,8 +361,8 @@ class BackendProcessing(AutoReprBaseClass):
     >>> channels_per_subband = 16
     >>> coherent_stokes_data = Stokes('coherent',
     ...                               stokes_downsampling_steps = 128)
-    >>> tied_array_beams     = TiedArrayBeams(flyseye      = True,
-    ...                                       beam_offsets = None)
+    >>> tied_array_beams     = TiedArrayBeams(flyseye = True,
+    ...                                       beams_ra_dec_rad = None)
 
     >>> bp_fe = BackendProcessing(
     ...        correlated_data          = False,
@@ -367,10 +382,10 @@ class BackendProcessing(AutoReprBaseClass):
                                                              number_collapsed_channels = 16),
                       channels_per_subband          = 16,
                       correlated_data               = False,
-                      tied_array_beams              = TiedArrayBeams(nr_tab_rings  = 0,
-                                                                     flyseye       = True,
-                                                                     beam_offsets  = None,
-                                                                     tab_ring_size = 0),
+                      tied_array_beams              = TiedArrayBeams(nr_tab_rings     = 0,
+                                                                     flyseye          = True,
+                                                                     beams_ra_dec_rad = None,
+                                                                     tab_ring_size    = 0),
                       coherent_dedispersed_channels = False,
                       enable_superterp              = False,
                       bypass_pff                    = False)
@@ -404,8 +419,8 @@ class BackendProcessing(AutoReprBaseClass):
 
     And here for coherent stokes beam forming:
 
-    >>> tied_array_beams     = TiedArrayBeams(flyseye      = False,
-    ...                                       beam_offsets = None)
+    >>> tied_array_beams     = TiedArrayBeams(flyseye = False,
+    ...                                       beams_ra_dec_rad = None)
     >>> bp_cs = BackendProcessing(
     ...        correlated_data          = False,
     ...        channels_per_subband     = channels_per_subband,
@@ -424,10 +439,10 @@ class BackendProcessing(AutoReprBaseClass):
                                                              number_collapsed_channels = 16),
                       channels_per_subband          = 16,
                       correlated_data               = False,
-                      tied_array_beams              = TiedArrayBeams(nr_tab_rings  = 0,
-                                                                     flyseye       = False,
-                                                                     beam_offsets  = None,
-                                                                     tab_ring_size = 0),
+                      tied_array_beams              = TiedArrayBeams(nr_tab_rings     = 0,
+                                                                     flyseye          = False,
+                                                                     beams_ra_dec_rad = None,
+                                                                     tab_ring_size    = 0),
                       coherent_dedispersed_channels = False,
                       enable_superterp              = False,
                       bypass_pff                    = False)

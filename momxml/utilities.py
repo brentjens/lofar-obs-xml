@@ -48,7 +48,7 @@ def with_auto_repr(cls):
     ...         self.a = a
     ...         self.b = b
     >>> aa = Elements(1, '3')
-    >>> print repr(aa)[0:-11]
+    >>> print repr(aa)[0:-16]
     <momxml.utilities.Elements object at
     >>> Elements = with_auto_repr(Elements)
     >>> bb = Elements (1, 'v')
