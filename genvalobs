@@ -219,7 +219,7 @@ required.''',
 
     arg('-v', '--version', action='version',
         version='%(prog)s ' +__version__+
-        ' (c) 2010-2013 M.A. Brentjens <brentjens@astron.nl>',
+        ' (c) 2010-2014 M.A. Brentjens <brentjens@astron.nl>',
         help='Print version number and exit.')
 
     arg('source', nargs='?',
