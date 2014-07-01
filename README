@@ -25,7 +25,6 @@ Prerequisites
 
 Python 2.6 or newer and pyephem (http://rhodesmill.org/pyephem/).
 
-
 Installation
 ------------
 
@@ -40,7 +39,7 @@ usage: genvalobs [-h] [-o FILENAME] [-m CORRELATOR_MODE] [-d SECONDS]
                  [-g SECONDS] [-s STATION_SET] [-i STATION_NAMES]
                  [-e STATION_NAMES] [--min-alt DEGREES] [--max-alt DEGREES]
                  [-c CLOCK_MHZ] [-w SECONDS] [-t DATE_STRING] [-p MOM_NAME]
-                 [-k CORE_OR_EU] [-f FILE_NAME] [-v]
+                 [-k STATIONS_TO_KEEP] [-f FILE_NAME] [-v]
                  [source]
 
 The (optional) source name must be enclosed in single or double
@@ -84,11 +83,12 @@ with format:
                      - FE (fly's eye)
                      - CS (coherent stokes)
                      - IS (incoherent stokes)
+                     - TR (TAB rings)
 
     Empty lines are ignored, comments start with # end run until the
     end of the line.
 
-    Example file ::
+    Example file:
 
         # Antennaset    Band      Subbands   Clock  Bits   Products
         LBA_OUTER       LBA_LOW   12..499    200     8     XC
@@ -103,23 +103,21 @@ options -m, -c, etc. as the default observing sequence. The last entry
 is using the 160 MHz clock. It will only be used in the observation
 sequence if the 160 MHz is selected using the -c / --clock option.
 
-_
-
-positional arguments ::
+positional arguments:
   source                Force a source to be used for all observations,
                         bypassing genvalobs' own heuristics.
 
-optional arguments ::
+optional arguments:
   -h, --help            show this help message and exit
   -o FILENAME, --output FILENAME
                         Name of the output file [lofar-
-                        validation-20131023-065128.xml].
+                        validation-20140701-101048.xml].
   -m CORRELATOR_MODE, --mode CORRELATOR_MODE
                         Correlator modes to test. Choose one of XC
                         (crosscorrelation), FE (Fly's eye), IS (incoherent
                         stokes), or CS (coherent stokes). One can specify more
                         than one mode. If this argument is not spedified, all
-                        modes will be tested [XC,FE,CS,IS].
+                        modes will be tested [XC,FE,CS,IS,TR].
   -d SECONDS, --duration SECONDS
                         Duration of individual observations in seconds [120].
   -g SECONDS, --gap SECONDS
@@ -131,9 +129,13 @@ optional arguments ::
                         HBA_DUAL, and HBA_DUAL_INNER observations. They are
                         taken along in all other observations [nl].
   -i STATION_NAMES, --include STATION_NAMES
-                        Comma separated list of station names to include.
+                        Comma separated list of station names to include. No
+                        spaces allowed in the list. Example: -i
+                        cs013,de601,rs106
   -e STATION_NAMES, --exclude STATION_NAMES
-                        Comma separated list of station names to exclude.
+                        Comma separated list of station names to exclude. No
+                        spaces allowed in the list. Example: -e
+                        cs013,de601,rs106
   --min-alt DEGREES     Minimum elevation for target sources [40.00].
   --max-alt DEGREES     Maximum elevation for target sources [70.00].
   -c CLOCK_MHZ, --clocks CLOCK_MHZ
@@ -147,10 +149,11 @@ optional arguments ::
                         observation. Format: "yyyy/mm/dd hh:mm:ss.s"
   -p MOM_NAME, --project MOM_NAME
                         Name of the observations' MoM project
-                        ['2013LOFAROBS'].
-  -k CORE_OR_EU, --keep CORE_OR_EU
+                        ['2014LOFAROBS'].
+  -k STATIONS_TO_KEEP, --keep STATIONS_TO_KEEP
                         In case of HBA_DUAL or HBA_ONE network conflicts, keep
-                        either "core" or "eu" stations [core].
+                        either "core", "eu" stations, or "all" of them.
+                        ['core'].
   -f FILE_NAME, --from-file FILE_NAME
                         Read a custom observing sequence from FILE_NAME.
   -v, --version         Print version number and exit.
