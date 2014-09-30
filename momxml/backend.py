@@ -526,11 +526,14 @@ class BackendProcessing(AutoReprBaseClass):
 
     def instrument_name(self):
         r'''
+        These names are actually very important to MoM. They specify which
+        default observation screen is displayed. Valid values are
+        'Beam Observation', 'Interferometer', and 'TBB (standalone)'
         '''
         if self.need_beam_observation():
             return 'Beam Observation'
         else:
-            return 'Interferometer'
+            return 'Beam Observation' # 'Interferometer'
 
 
 
@@ -540,7 +543,7 @@ class BackendProcessing(AutoReprBaseClass):
         if self.need_beam_observation():
             return 'BeamObservation'
         else:
-            return 'Interferometer'
+            return 'BeamObservation'
         
             
     def measurement_type(self):
