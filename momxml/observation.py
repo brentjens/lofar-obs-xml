@@ -118,7 +118,7 @@ class Observation(ObservationSpecificationBase):
 
 
 
-def xml(items, project='2013LOFAROBS'):
+def xml(items, project='2013LOFAROBS', description=None):
     """
     Format a list of *items* as an XML string that can be
     uploaded to a MoM project with name *project*.
@@ -129,7 +129,7 @@ def xml(items, project='2013LOFAROBS'):
     xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.astron.nl/MoM2-Lofar http://lofar.astron.nl:8080/mom3/schemas/LofarMoM2.xsd http://www.astron.nl/MoM2 http://lofar.astron.nl:8080/mom3/schemas/MoM2.xsd \">
     <version>1.16</version>
     <name>"""+project+"""</name>
-    <description>"""+project+"""</description>
+    <description>"""+ (description or project) +"""</description>
     <children>
       <item>\n"""+'      </item>\n      <item>'.join([indent(item.xml(project), 8)
                                                     for child_id, item in enumerate(items)])+"""
