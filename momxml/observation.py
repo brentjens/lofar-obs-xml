@@ -10,7 +10,8 @@ import ephem
 
 class Observation(ObservationSpecificationBase):
     def __init__(self, antenna_set, frequency_range, start_date, duration_seconds,
-                 stations, clock_mhz, beam_list, backend, name = None, bit_mode=16):
+                 stations, clock_mhz, beam_list, backend, name = None, bit_mode=16,
+                 allow_tbb=True, allow_aartfaac=True):
         """
         *antenna_set*            : One of 'LBA_INNER', 'LBA_OUTER', 'HBA_ZERO', 'HBA_ONE',
                                   'HBA_DUAL', or 'HBA_JOINED'
@@ -29,6 +30,15 @@ class Observation(ObservationSpecificationBase):
         *backend*                : BackendProcessing instance with correlator settings
         *name*                   : Name of the observation. Defaults to name of first target plus antenna set.
         *bit_mode*               : number of bits per sample. Either 4, 8, or 16.
+
+    allow_tbb : bool
+       If True, allow piggy-back observing with Transient Buffer Boards [TBB].
+       Default: True.
+
+    allow_aartfaac : bool
+       If True, allow piggy-back observing with AARTFAAC.
+       Default: True.
+
         """
         super(Observation, self).__init__(name = name, parent = None, children = None)
 
@@ -39,6 +49,8 @@ class Observation(ObservationSpecificationBase):
         self.clock_mhz                = int(clock_mhz)
         self.start_date               = start_date
         self.bit_mode                 = bit_mode
+        self.allow_aartfaac           = allow_aartfaac
+        self.allow_tbb                = allow_tbb
         self.backend                  = backend
         for beam in beam_list:
             self.append_child(beam)
@@ -92,6 +104,8 @@ class Observation(ObservationSpecificationBase):
     <projectName>'''+project_name+'''</projectName>
     <instrument>'''+self.backend.instrument_name()+'''</instrument>
     <defaultTemplate>'''+self.backend.default_template()+'''</defaultTemplate>
+    <tbbPiggybackAllowed>'''+str(self.allow_tbb).lower()+'''</tbbPiggybackAllowed>
+    <aartfaacPiggybackAllowed>'''+str(self.allow_aartfaac).lower()+'''</aartfaacPiggybackAllowed>
     <userSpecification>
       <antenna>'''+mom_antenna_name_from_mac_name(self.antenna_set)+'''</antenna>
       <clock mode=\"'''+str(self.clock_mhz)+''' MHz\"/>

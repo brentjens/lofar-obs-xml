@@ -312,6 +312,7 @@ class BackendProcessing(AutoReprBaseClass):
         If True, also beamform the superterp stations and treat them
         as a separate large station.
 
+
     **Examples**
 
     >>> bp = BackendProcessing()
