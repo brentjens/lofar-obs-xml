@@ -109,7 +109,7 @@ class Observation(ObservationSpecificationBase):
     <userSpecification>
       <antenna>'''+mom_antenna_name_from_mac_name(self.antenna_set)+'''</antenna>
       <clock mode=\"'''+str(self.clock_mhz)+''' MHz\"/>
-      <instrumentFilter>'''+mom_frequency_range(self.frequency_range)+'''</instrumentFilter>
+      <instrumentFilter>'''+mom_frequency_range(self.frequency_range, self.clock_mhz)+'''</instrumentFilter>
 '''+indent(self.backend.xml(), 6)+'''      <stationSet>Custom</stationSet>
       <stations>
         '''+'\n        '.join(['<station name=\"'+n+'\" />' for n in self.stations])+'''

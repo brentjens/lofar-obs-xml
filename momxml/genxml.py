@@ -460,7 +460,7 @@ def xml_generator_input_single_set(**kwargs):
     args['create_calibrator_observations'] = \
         str(kwargs['create_calibrator_observations']).lower()
     args['antenna_mode']      = mom_antenna_name(kwargs['antenna_mode'])
-    args['instrument_filter'] = mom_frequency_range(kwargs['instrument_filter'])
+    args['instrument_filter'] = mom_frequency_range(kwargs['instrument_filter'], kwargs['clock_mhz'])
     args['stations']          = ','.join(kwargs['stations']).upper()
     args['calibrator_source'] = ''.join(kwargs['calibrator_source'].split())
     args['calibrator_beam_specs'] = str(kwargs['calibrator_beam'])

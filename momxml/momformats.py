@@ -30,7 +30,7 @@ def mom_antenna_name_from_mac_name(mac_name):
 
 
 
-def mom_frequency_range(freq_band_name):
+def mom_frequency_range(freq_band_name, clock_mhz):
     r'''
     Obtain a string containing the MoM frequency range for a given
     frequency band.
@@ -42,26 +42,39 @@ def mom_frequency_range(freq_band_name):
         (30-90), 'HBA_LOW' (110-190), 'HBA_MID' (170-230), and
         'HBA_HIGH' (210-250).
 
+    clock_mhz : int
+        Clock frequency in MHz. Either 200 or 160.
+
     **Returns**
 
     A string.
 
     **Examples**
 
-    >>> for band in ['LBA_LOW', 'LBA_HIGH', 'HBA_LOW', 'HBA_MID', 'HBA_HIGH']:
-    ...    mom_frequency_range(band)
+    >>> for band in ['LBA_LOW', 'LBA_HIGH', 'HBA_LOW', 'HBA_HIGH']:
+    ...    mom_frequency_range(band, 200)
     '10-90 MHz'
     '30-90 MHz'
     '110-190 MHz'
-    '170-230 MHz'
     '210-250 MHz'
+    >>> for band in ['LBA_LOW', 'LBA_HIGH', 'HBA_MID']:
+    ...    mom_frequency_range(band, 160)
+    '10-70 MHz'
+    '30-70 MHz'
+    '170-230 MHz'
 
     '''
-    translation_table = {'LBA_LOW' : '10-90 MHz',
-                         'LBA_HIGH': '30-90 MHz',
-                         'HBA_LOW' : '110-190 MHz',
-                         'HBA_MID' : '170-230 MHz',
-                         'HBA_HIGH': '210-250 MHz'}
+    if clock_mhz == 200:
+        translation_table = {'LBA_LOW' : '10-90 MHz',
+                             'LBA_HIGH': '30-90 MHz',
+                             'HBA_LOW' : '110-190 MHz',
+                             'HBA_HIGH': '210-250 MHz'}
+    elif clock_mhz == 160:
+        translation_table = {'LBA_LOW' : '10-70 MHz',
+                             'LBA_HIGH': '30-70 MHz',
+                             'HBA_MID' : '170-230 MHz'}
+    else:
+        translation_table = {}
     return translation_table[freq_band_name]
 
 
