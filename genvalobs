@@ -205,7 +205,7 @@ required.''',
 
     arg('-p', '--project', metavar='MOM_NAME',
         help='Name of the observations\' MoM project [%(default)r].',
-        default='2014LOFAROBS')
+        default='2015LOFAROBS')
 
     arg('-k', '--keep', metavar='STATIONS_TO_KEEP',
         help='''In case of HBA_DUAL or HBA_ONE network conflicts, keep
@@ -219,7 +219,7 @@ required.''',
 
     arg('-v', '--version', action='version',
         version='%(prog)s ' +__version__+
-        ' (c) 2010-2014 M.A. Brentjens <brentjens@astron.nl>',
+        ' (c) 2010-2015 M.A. Brentjens <brentjens@astron.nl>',
         help='Print version number and exit.')
 
     arg('source', nargs='?',
@@ -464,10 +464,8 @@ def plan_observing_sequence(job_description):
         if len(data_products) == 0:
             continue # No data products to write, no point to observe.
         if target_source is None:
-            if ('FE' in data_products
-                or 'CS' in data_products
-                or 'IS' in data_products
-                or 'TR' in data_products):
+            if (any([dprod in data_products
+                     for dprod in ['FE', 'CS', 'IS', 'TR']])):
                 target_source = SourceCatalogue().psr_source(
                     mean_date, antenna_set[0:3],
                     min_elevation_deg=min_el_deg,
@@ -625,8 +623,8 @@ def main():
         children=observations,
         grouping_parent=True)
     mom_id = None
-    if job_description.project == '2014LOFAROBS':
-        mom_id = 339144
+    if job_description.project == '2015LOFAROBS':
+        mom_id = 454958
     val_obs_folder = Folder(name='Validation Obs',
                             mom_id=mom_id,
                             children=[sub_folder],
