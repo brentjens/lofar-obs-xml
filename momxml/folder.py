@@ -27,6 +27,11 @@ class Folder(ObservationSpecificationBase):
         Set to True if the folders' children must all share the same
         group ID.
 
+    update_folder : bool
+        If True, re-use a folder with the same name if it already
+        exists. If it does not, the folder will be created. Do not set
+        mom_id when setting update_folder to true.
+
     **Examples**
 
     >>> folder = Folder(name     = 'root folder',
@@ -37,10 +42,12 @@ class Folder(ObservationSpecificationBase):
     >>> print folder
     Folder(parent          = NoneType,
            grouping_parent = True,
+           update_folder   = True,
            name            = 'root folder',
            mom_id          = 12345,
            children        = [Folder(parent          = Folder('root folder'),
                                     grouping_parent = False,
+                                    update_folder   = True,
                                     name            = 'child',
                                     mom_id          = None,
                                     children        = None,
@@ -53,7 +60,7 @@ class Folder(ObservationSpecificationBase):
       <description>Main folder</description>
       <children>
         <item index="0">
-          <lofar:folder topology_parent="false">
+          <lofar:folder topology_parent="false" update_folder="true">
             <topology>root_folder.0.child</topology>
             <name>child</name>
           </lofar:folder>
@@ -65,11 +72,13 @@ class Folder(ObservationSpecificationBase):
                  children    = None,
                  description = None,
                  mom_id      = None,
-                 grouping_parent = False):
+                 grouping_parent = False,
+                 update_folder = True):
         super(Folder, self).__init__(name, parent=None, children=children)
         self.description     = description
         self.mom_id          = mom_id
         self.grouping_parent = grouping_parent
+        self.update_folder   = update_folder
 
 
     def xml_prefix(self, project_name):
@@ -78,7 +87,8 @@ class Folder(ObservationSpecificationBase):
             preamble = ('<lofar:folder mom2Id="%s" topology_parent="%s">' %
                         (self.mom_id, lower_case(self.grouping_parent)))
         else:
-            preamble = '<lofar:folder topology_parent="%s">' % lower_case(self.grouping_parent)
+            preamble = ('<lofar:folder topology_parent="%s" update_folder="%s">' %
+                        (lower_case(self.grouping_parent), lower_case(self.update_folder)))
         preamble += '\n  <topology>%s</topology>' % self.label()
         preamble += '\n  <name>'+self.name+'</name>'
 

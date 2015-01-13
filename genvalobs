@@ -621,7 +621,7 @@ def main():
     sub_folder = Folder(
         name='%04d-%02d-%02d %02d:%02d' % folder_date[:-1],
         description=('Validation observations %04d-%02d-%02d %02d:%02d' %
-                    folder_date[:-1]),
+                     folder_date[:-1]),
         children=observations,
         grouping_parent=True)
     mom_id = None
@@ -629,7 +629,8 @@ def main():
         mom_id = 339144
     val_obs_folder = Folder(name='Validation Obs',
                             mom_id=mom_id,
-                            children=[sub_folder])
+                            children=[sub_folder],
+                            update_folder=False)
     out = open(job_description.output, 'w')
     out.write(xml([val_obs_folder],
                   project=job_description.project))
