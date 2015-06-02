@@ -251,8 +251,8 @@ def simbad(source_name, debug = False):
 
     >>> simbad('3C 196')
     TargetSource(name      = '3C 196',
-                 ra_angle  = Angle(shms = ('+', 8, 13, 36.0678)),
-                 dec_angle = Angle(sdms = ('+', 48, 13, 2.581)))
+                 ra_angle  = Angle(shms = ('+', 8, 13, 36.0561)),
+                 dec_angle = Angle(sdms = ('+', 48, 13, 2.636)))
     '''
     query = '&'.join([
         'http://simbad.u-strasbg.fr/simbad/sim-id?output.format=ASCII',
