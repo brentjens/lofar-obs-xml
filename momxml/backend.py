@@ -312,6 +312,10 @@ class BackendProcessing(AutoReprBaseClass):
         If True, also beamform the superterp stations and treat them
         as a separate large station.
 
+    need_station_control: bool
+        If True, the observation will control both correlator and
+        stations. If false, stations are under manual control. SET
+        FALSE AT YOUR OWN RISK. 
 
     **Examples**
 
@@ -321,6 +325,7 @@ class BackendProcessing(AutoReprBaseClass):
                       stokes_integrate_channels     = False,
                       integration_time_seconds      = 2,
                       filtered_data                 = False,
+                      need_station_control          = True,
                       beamformed_data               = False,
                       coherent_stokes_data          = None,
                       channels_per_subband          = 64,
@@ -375,6 +380,7 @@ class BackendProcessing(AutoReprBaseClass):
                       stokes_integrate_channels     = False,
                       integration_time_seconds      = 2,
                       filtered_data                 = False,
+                      need_station_control          = True,
                       beamformed_data               = False,
                       coherent_stokes_data          = Stokes(stokes_downsampling_steps = 128,
                                                              subbands_per_file         = 512,
@@ -432,6 +438,7 @@ class BackendProcessing(AutoReprBaseClass):
                       stokes_integrate_channels     = False,
                       integration_time_seconds      = 2,
                       filtered_data                 = False,
+                      need_station_control          = True,
                       beamformed_data               = False,
                       coherent_stokes_data          = Stokes(stokes_downsampling_steps = 128,
                                                              subbands_per_file         = 512,
@@ -487,10 +494,11 @@ class BackendProcessing(AutoReprBaseClass):
                  coherent_dedispersed_channels = False,
                  tied_array_beams              = None,
                  bypass_pff                    = False,
-                 enable_superterp              = False
+                 enable_superterp              = False,
+                 need_station_control = True
                  ):
         self.channels_per_subband = channels_per_subband
-        self.integration_time_seconds = int(round(integration_time_seconds))
+        self.integration_time_seconds = integration_time_seconds
         self.correlated_data = correlated_data
         self.filtered_data = filtered_data
         self.beamformed_data = beamformed_data
@@ -515,6 +523,7 @@ class BackendProcessing(AutoReprBaseClass):
         self.coherent_dedispersed_channels = coherent_dedispersed_channels
         self.bypass_pff                = bypass_pff
         self.enable_superterp          = enable_superterp
+        self.need_station_control = need_station_control
 
 
     def need_beam_observation(self):
@@ -541,10 +550,10 @@ class BackendProcessing(AutoReprBaseClass):
     def default_template(self):
         r'''
         '''
-        if self.need_beam_observation():
+        if self.need_station_control:
             return 'BeamObservation'
         else:
-            return 'BeamObservation'
+            return 'BeamObservationNoStationControl'
         
             
     def measurement_type(self):
