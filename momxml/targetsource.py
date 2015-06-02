@@ -33,6 +33,13 @@ class TargetSource(object):
     dec_angle : None or an Angle
         J2000 declination.
 
+    reference_frame : string
+        Reference frame for the longitudinal (ra/az/lon) and
+        latitudinal (dec/el/lat) coordinates. Examples: 'J2000',
+        'B1950', 'AZELGEO', 'AZEL', 'GALACTIC', 'JMEAN', JTRUE',
+        etc... Basically anything supported by Casacore.
+        Default: 'J2000'
+
     **Raises**
 
     SourceSpecificationError
@@ -50,10 +57,12 @@ class TargetSource(object):
 
     '''
 
-    def __init__(self, name = '', ra_angle = None, dec_angle = None):
+    def __init__(self, name = '', ra_angle = None, dec_angle = None,
+                 reference_frame='J2000'):
         self.name      = name
         self.ra_angle  = ra_angle
         self.dec_angle = dec_angle
+        self.reference_frame = reference_frame
         self.validate_and_normalize()
 
 

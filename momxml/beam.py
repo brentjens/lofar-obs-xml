@@ -171,6 +171,7 @@ class Beam(ObservationSpecificationBase):
             'target_name'              : self.target_source.name,
             'ra_deg'                   : self.target_source.ra_deg(),
             'dec_deg'                  : self.target_source.dec_deg(),
+            'reference_frame'          : self.target_source.reference_frame,
             'mom_duration'             : mom_duration(seconds = duration_s),
             'bandwidth_mhz'            : bandwidth_mhz,
             'central_frequency_mhz'    : central_frequency_mhz,
@@ -191,7 +192,7 @@ class Beam(ObservationSpecificationBase):
     <targetName>%(target_name)s</targetName>
     <ra>%(ra_deg)r</ra>
     <dec>%(dec_deg)r</dec>
-    <equinox>J2000</equinox>
+    <equinox>%(reference_frame)s</equinox>
     <duration>%(mom_duration)s</duration>
     <subbandsSpecification>
       <bandWidth unit=\"MHz\">%(bandwidth_mhz).4f</bandWidth>
