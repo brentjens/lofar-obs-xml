@@ -517,11 +517,11 @@ def station_list(station_set, include = None, exclude = None):
     ...  station_list('core'))
     True
     >>> station_list('eu')
-    ['DE601', 'DE602', 'DE603', 'DE604', 'DE605', 'FR606', 'SE607', 'UK608']
+    ['DE601', 'DE602', 'DE603', 'DE604', 'DE605', 'FR606', 'SE607', 'UK608', 'DE609']
     >>> station_list('all')==station_list('nl', include=station_list('eu'))
     True
     >>> len(unique(station_list('all')))
-    46
+    47
     >>> station_list('wsrt')
     Traceback (most recent call last):
     ...
@@ -538,7 +538,7 @@ def station_list(station_set, include = None, exclude = None):
                  'RS310', 'RS406', 'RS407', 'RS409', 'RS503', 'RS508', 'RS509']
     netherlands = core + remote
     europe    = ['DE601', 'DE602', 'DE603', 'DE604', 'DE605', 'FR606', 'SE607',
-                   'UK608']
+                   'UK608', 'DE609']
     all_stations = netherlands + europe
 
     lookup_table = {'superterp': superterp,
