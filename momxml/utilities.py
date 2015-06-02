@@ -412,46 +412,32 @@ def next_sunset(date, observer = None):
 
 
 
-def cmp_antenna_field_names(name_a, name_b):
+def antenna_field_sort_key(name):
     r'''
-    Compare antenna field / station names. Useful for sorting lists of
-    those names.
+    Produce a sort key for station names.
 
     **Parameters**
 
-    name_a : string
-        An antenna field or station name.
-    
-    name_b : string
-        The other antenna field or station name.
-    
-    **Returns**
-    
-    -1 if a < b, 0 if equal, and +1 if a > b. The sort order is:
-    1) core stations/fields in alphabetical order
-    2) all other stations/fields in numerical order.
+    name : string
+        The antenna field's name.
 
     **Examples**
-    
-    >>> cmp_antenna_field_names('CS001', 'CS001')
-    0
-    >>> cmp_antenna_field_names('CS501', 'RS106')
-    -1
-    >>> cmp_antenna_field_names('CS501HBA1', 'CS501HBA0')
-    1
-    >>> cmp_antenna_field_names('FR606LBA', 'DE605LBA')
-    1
-    '''
-    if name_a == name_b:
-        return 0
-    if 'CS' in name_a and 'CS' not in name_b:
-        return -1
-    if 'CS' not in name_a and 'CS' in name_b:
-        return +1
-    if 'CS' in name_a and 'CS' in name_b:
-        return cmp(name_a, name_b)
-    return cmp(int(name_a[2:5]), int(name_b[2:5]))
 
+    >>> antenna_field_sort_key('CS002HBA1')
+    21
+    >>> antenna_field_sort_key('CS021LBA')
+    210
+    >>> antenna_field_sort_key('RS106HBA')
+    10600
+    >>> antenna_field_sort_key('UK608HBA')
+    60800
+    '''
+    station_number = int(name[2:5])*10
+    if name[0:2].upper() != 'CS':
+        station_number *=10
+    if 'HBA1' in name:
+        station_number += 1
+    return station_number
 
 
 def sort_station_list(stations):
@@ -476,7 +462,7 @@ def sort_station_list(stations):
     ['CS001HBA1', 'CS026HBA0', 'CS026HBA1', 'CS501HBA0', 'RS106HBA', 'RS407HBA', 'RS509HBA', 'DE603HBA', 'DE605HBA', 'SE607HBA', 'UK608HBA']
 
     '''
-    return sorted(stations, cmp=cmp_antenna_field_names)
+    return sorted(stations, key=antenna_field_sort_key)
 
 
 
