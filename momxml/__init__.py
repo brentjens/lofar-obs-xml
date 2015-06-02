@@ -1,4 +1,4 @@
-__version__ = '1.8-dev'
+__version__ = '1.8-rc1'
 
 from momxml.angles    import signum, sign_char, int_from_sign_char, Angle
 
