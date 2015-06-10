@@ -155,6 +155,11 @@ class NDPPP(AutoReprBaseClass):
 
 class AveragingPipeline(ObservationSpecificationBase):
     r'''
+    **Parameters**
+    
+    flagging_strategy: 'LBAdefault', 'HBAdefault', or None
+        NDPPP flagging strategy.
+
     **Examples**
 
     >>> from momxml             import TargetSource, Angle
@@ -179,6 +184,7 @@ class AveragingPipeline(ObservationSpecificationBase):
     AveragingPipeline(parent            = Observation('Main observation'),
                       name              = 'Avg Pipeline',
                       predecessor_label = None,
+                      flagging_strategy = None,
                       ndppp             = NDPPP(avg_freq_step   = 64,
                                                 avg_time_step   = 1,
                                                 demix_freq_step = 64,
@@ -220,6 +226,7 @@ class AveragingPipeline(ObservationSpecificationBase):
           <demixIfNeeded></demixIfNeeded>
           <ignoreTarget></ignoreTarget>
         </demixingParameters>
+        <flaggingStrategy>HBAdefault</flaggingStrategy>
       </averagingPipelineAttributes>
       <usedDataProducts>
         <item>
@@ -243,6 +250,7 @@ class AveragingPipeline(ObservationSpecificationBase):
     '''
     def __init__(self, name, ndppp, input_data = None,
                  duration_s = None, start_date = None,
+                 flagging_strategy = None,
                  parent   = None, children = None,
                  predecessor_label = None):
         super(AveragingPipeline, self).__init__(name     = name,
@@ -252,6 +260,7 @@ class AveragingPipeline(ObservationSpecificationBase):
         self.input_data       = None
         self.duration_s       = duration_s
         self.start_date       = start_date
+        self.flagging_strategy = flagging_strategy
         self.default_template = 'Preprocessing Pipeline'
         self.predecessor_label = predecessor_label
         if input_data is not None:
@@ -306,6 +315,7 @@ class AveragingPipeline(ObservationSpecificationBase):
     <duration>%(duration)s</duration>
     <startTime>%(start_time)s</startTime>
     <endTime></endTime>%(ndppp)s
+    <flaggingStrategy>%(flagging_strategy)s</flaggingStrategy>
   </averagingPipelineAttributes>
   <usedDataProducts>%(used_data_products)s
   </usedDataProducts>
@@ -331,6 +341,7 @@ class AveragingPipeline(ObservationSpecificationBase):
             'default_template' : self.default_template,
             'duration'    : '',
             'start_time'  : '',
+            'flagging_strategy': self.flagging_strategy,
             'ndppp'       : indent(self.ndppp.xml(), 4),
             'used_data_products' : ''
         }
@@ -342,6 +353,13 @@ class AveragingPipeline(ObservationSpecificationBase):
             args['start_time'] = mom_timestamp(*rounded_start_date)
         if self.input_data is None:
             raise ValueError('AveragingPipeline.input_data is None!')
+        if self.flagging_strategy is None:
+            args['flagging_strategy'] = self.input_data[0].parent.antenna_set[0:3].upper()+'default'
+        elif self.flagging_strategy in ['HBAdefault', 'LBAdefault']:
+            args['flagging_strategy'] = self.flagging_strategy
+        else:
+            raise ValueError('momxml.AverigingPipeline: unknown flagging strategy %r' %
+                             self.flagging_strategy)
         args['used_data_products'] = indent(
             '\n'.join([
                 used_data_product_template % {'name' : sap.data_products_label()}
