@@ -18,7 +18,8 @@ from momxml import Folder, SourceCatalogue, lofar_sidereal_time
 from momxml import Stokes, TiedArrayBeams, BackendProcessing, Beam, Observation
 from momxml import exclude_conflicting_eu_stations
 from momxml import exclude_conflicting_nl_stations
-from momxml import station_list
+from momxml import station_list, radec_from_lm, parse_subband_list
+from momxml import TargetSource, Angle
 from momxml import xml
 from momxml import SourceSpecificationError, InvalidStationSetError
 from momxml import NoSuitableSourceError
@@ -234,7 +235,7 @@ own heuristics.''',
         args.clocks = [200]
 
     if args.mode is None:
-        args.mode = ['XC', 'FE', 'CS', 'IS', 'TR']
+        args.mode = ['XC', 'FE', 'CS', 'IS', 'TR', 'BM']
     args.mode = [mode.upper() for mode in args.mode]
     return  args
 
@@ -322,7 +323,7 @@ def read_custom_observation_sequence(file_contents):
                    'HBA_LOW', 'HBA_MID', 'HBA_HIGH']
     valid_clocks = [160, 200]
     valid_bits = [4, 8, 16]
-    valid_products = ['XC', 'FE', 'IS', 'CS', 'TR']
+    valid_products = ['XC', 'FE', 'IS', 'CS', 'TR', 'BM']
     valid_pipelines = ['Preprocessing']
 
     pipeline = None
@@ -348,6 +349,7 @@ def read_custom_observation_sequence(file_contents):
     def record_from_line(line):
         'Split a line (at its whitespace) into a list of fields'
         fields = line.split()
+        data_products = []
 
         if len(fields) < 6: # or len(fields) > 9:
             raise ValueError('Line %r is malformed' % line)
@@ -376,13 +378,17 @@ def read_custom_observation_sequence(file_contents):
                 else:
                     raise ValueError('Data product %r not in %r' %
                                      (data_product, valid_products))
+            elif data_product.upper() in valid_products:
+                data_products.append(data_product.upper())
+            else:
+                raise ValueError('Do not know what to do with %r' % data_product)
 
         return [fields[0].upper(),
                 fields[1].upper(),
                 fields[2],
                 int(fields[3]),
                 int(fields[4]),
-                [field.upper() for field in fields[5:]],
+                data_products,
                 pipeline]
 
     return [record_from_line(line) for line in no_empty_lines]
@@ -396,15 +402,20 @@ def plan_observing_sequence(job_description):
     all of the policy.
     '''
     # Possible products:
-    #  'XC'             , 'IS'             , 'CS'           , 'FE' for
-    #  cross correlation, incoherent stokes, coherent stokes, Fly's
-    #  eye
+    #  'XC'             , 'IS'             , 'CS'           , 'FE'       'BM' for
+    #  cross correlation, incoherent stokes, coherent stokes, Fly's eye, 5x5 beam scans
     # pylint: disable=bad-whitespace
     full_schedule = [
         ['LBA_OUTER'     , 'LBA_LOW' , '12..499' , 200,  8, ['XC'],
          ('Preprocessing', 8, 1, 64, 10, 'CygA CasA')],
         ['HBA_DUAL'      , 'HBA_LOW' , '12..499' , 200,  8, ['XC'],
          ('Preprocessing', 16, 5, 64, 10)],
+        ['LBA_OUTER'     , 'LBA_HIGH' ,
+         ','.join(['%d' % sb for sb in range(150, 331, 10)]), 200,  8, ['BM'],
+         ('Preprocessing', 64, 2, 64, 10)],
+        ['HBA_DUAL'      , 'HBA_LOW' ,
+         ','.join(['%d' % sb for sb in range(77, 348, 15)]) , 200,  8, ['BM'],
+         ('Preprocessing', 64, 5, 64, 10)],
         ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE'], None],
         ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE'], None],
         ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['FE'], None],
@@ -442,6 +453,8 @@ def plan_observing_sequence(job_description):
         print('='*60)
     else:
         print('using default sequence')
+        for observation in full_schedule:
+            print(observation)
 
     max_el_deg = job_description.max_alt
     min_el_deg = job_description.min_alt
@@ -570,12 +583,58 @@ def plan_observing_sequence(job_description):
 
         backend = BackendProcessing(
             integration_time_seconds=1,
-            correlated_data='XC' in data_products,
+            correlated_data=('XC' in data_products) or ('BM' in data_products),
             channels_per_subband=channels_per_subband,
             coherent_stokes_data=coherent_stokes_data,
             incoherent_stokes_data=incoherent_stokes_data,
             tied_array_beams=tied_array_beams)
 
+        beam_list=[Beam(
+            target_source=target_source,
+            subband_spec=subband_spec)]
+        if 'BM' in data_products:
+            max_sb = sorted(parse_subband_list(subband_spec))[-1]
+            max_freq_hz = clock_mhz*1e6*(max_sb/1024.0)
+            if 'HBA' in antenna_set:
+                all_stations = ''.join(good_stations)
+                if 'DE' in all_stations or \
+                   'FR' in all_stations or \
+                   'UK' in all_stations or \
+                   'PL' in all_stations or \
+                   'FI' in all_stations:
+                    station_size_m = 11*5
+                elif 'RS' in all_stations and 'INNER' not in antenna_set:
+                    station_size_m = 8*5
+                else:
+                    station_size_m =6*5
+            if 'LBA_OUTER' in antenna_set or \
+               'LBA_SPARSE' in antenna_set or \
+               'LBA_X' in antenna_set or \
+               'LBA_Y' in antenna_set:
+                station_size_m = 80.0
+            if 'LBA_INNER' in antenna_set:
+                if 'DE' in all_stations or \
+                   'FR' in all_stations or \
+                   'UK' in all_stations or \
+                   'PL' in all_stations or \
+                   'FI' in all_stations:
+                    station_size_m = 80.0
+                else:
+                    station_size_m = 30.0
+            nyquist_spacing_rad = 0.5*299792458.0/(max_freq_hz*station_size_m)
+            beam_id = 1
+            for offset_m in range(-2, 3):
+                for offset_l in range(-2, 3):
+                    if not (offset_m == 0 and offset_l == 0):
+                        ra, dec = radec_from_lm(offset_l*nyquist_spacing_rad/1.1,
+                                                offset_m*nyquist_spacing_rad/1.1,
+                                                target_source.ra_angle.as_rad(),
+                                                target_source.dec_angle.as_rad())
+                        aux_field = TargetSource('Aux-%03d' % beam_id,
+                                                 ra_angle=ra, dec_angle=dec)
+                        beam_list.append(Beam(aux_field, subband_spec=subband_spec))
+                        beam_id += 1
+        
         obs = Observation(
             name=','.join(data_products)+' '+antenna_set,
             antenna_set=antenna_set,
@@ -586,9 +645,7 @@ def plan_observing_sequence(job_description):
             clock_mhz=clock_mhz,
             backend=backend,
             bit_mode=bit_mode,
-            beam_list=[Beam(
-                target_source=target_source,
-                subband_spec=subband_spec)])
+            beam_list=beam_list)
         observations.append(obs)
         if pipeline is not None:
             if pipeline[0] == 'Preprocessing':
