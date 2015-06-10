@@ -287,7 +287,7 @@ def read_custom_observation_sequence(file_contents):
 
         # Antennaset    Band      Subbands   Clock  Bits   Products
         LBA_OUTER       LBA_LOW   12..499    200     8     XC
-        HBA_DUAL        HBA_LOW   12..499    200     8     XC
+        HBA_DUAL        HBA_LOW   12..499    200     8     XC       Preprocessing 64 2 64 10
         LBA_INNER       LBA_HIGH  156..399   200    16     FE
         HBA_DUAL        HBA_LOW   77..320    200    16     IS
         HBA_DUAL        HBA_LOW   77..320    200    16     CS
@@ -323,12 +323,33 @@ def read_custom_observation_sequence(file_contents):
     valid_clocks = [160, 200]
     valid_bits = [4, 8, 16]
     valid_products = ['XC', 'FE', 'IS', 'CS', 'TR']
+    valid_pipelines = ['Preprocessing']
 
+    pipeline = None
+
+    def parse_pipeline_spec(words):
+        pipeline_def = [words[0]]
+        if pipeline_def[0] == 'Preprocessing':
+            if len(words) >= 3:
+                pipeline_def.append(int(words[1]))
+                pipeline_def.append(int(words[2]))
+            if len(words) >= 5:
+                pipeline_def.append(int(words[3]))
+                pipeline_def.append(int(words[4]))
+            else:
+                pipeline_def.append(64)
+                pipeline_def.append(10)
+            if len(words) > 5:
+                pipeline_def.append(' '.join(words[5:]))
+        else:
+            raise ValueError('Unknown pipeline %r' % words[0])
+        return pipeline_def
+    
     def record_from_line(line):
         'Split a line (at its whitespace) into a list of fields'
         fields = line.split()
 
-        if len(fields) < 6 or len(fields) > 9:
+        if len(fields) < 6: # or len(fields) > 9:
             raise ValueError('Line %r is malformed' % line)
 
         if fields[0].upper() not in valid_antenna_sets:
@@ -347,10 +368,14 @@ def read_custom_observation_sequence(file_contents):
             raise ValueError('Bit mode %r not in %r' %
                              (int(fields[4]), valid_bits))
 
-        for data_product in fields[5:]:
+        for offset, data_product in enumerate(fields[5:]):
             if data_product.upper() not in valid_products:
-                raise ValueError('Data product %r not in %r' %
-                                 (data_product, valid_products))
+                if data_product in valid_pipelines:
+                    pipeline = parse_pipeline_spec(fields[5+offset:])
+                    break
+                else:
+                    raise ValueError('Data product %r not in %r' %
+                                     (data_product, valid_products))
 
         return [fields[0].upper(),
                 fields[1].upper(),
@@ -358,7 +383,7 @@ def read_custom_observation_sequence(file_contents):
                 int(fields[3]),
                 int(fields[4]),
                 [field.upper() for field in fields[5:]],
-                None]
+                pipeline]
 
     return [record_from_line(line) for line in no_empty_lines]
 
