@@ -120,9 +120,9 @@ with format:
 
     Example file:
 
-        # Antennaset    Band      Subbands   Clock  Bits   Products
+        # Antennaset    Band      Subbands   Clock  Bits   Products  Pipeline (avg freq; avg time; demix freq-window; demix time-window)
         LBA_OUTER       LBA_LOW   12..499    200     8     XC
-        HBA_DUAL        HBA_LOW   12..499    200     8     XC
+        HBA_DUAL        HBA_LOW   12..499    200     8     XC        Preprocessing 64 2 64 10
         LBA_INNER       LBA_HIGH  156..399   200    16     FE
         HBA_DUAL        HBA_LOW   77..320    200    16     IS
         HBA_DUAL        HBA_LOW   77..320    200    16     CS
