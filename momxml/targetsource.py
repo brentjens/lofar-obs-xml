@@ -279,8 +279,7 @@ def simbad(source_name, debug = False):
         result = urllib.urlopen(query % urllib.quote(source_name),
                                 proxies = {}).read()
     else:
-        result = urllib.request.urlopen(query % urllib.quote(source_name),
-                                proxies = {}).read()
+        result = urllib.request.urlopen(query % urllib.parse.quote(source_name)).read().decode('utf8')
     if debug:
         print(result)
         sys.stdout.flush()
