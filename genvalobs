@@ -276,9 +276,11 @@ def read_custom_observation_sequence(file_contents):
 
     - DATA_PRODUCTS: white-space separated list of products. Allowed:
                      - XC (cross-correlation)
+                     - BM (5x5 multi-beam XC)
                      - FE (fly's eye)
-                     - CS (coherent stokes)
                      - IS (incoherent stokes)
+                     - CS (coherent stokes)
+                     - CV (complex voltage)
                      - TR (tab rings)
 
     Empty lines are ignored, comments start with # end run until the
@@ -323,7 +325,7 @@ def read_custom_observation_sequence(file_contents):
                    'HBA_LOW', 'HBA_MID', 'HBA_HIGH']
     valid_clocks = [160, 200]
     valid_bits = [4, 8, 16]
-    valid_products = ['XC', 'FE', 'IS', 'CS', 'TR', 'BM']
+    valid_products = ['XC', 'FE', 'IS', 'CS', 'CV', 'TR', 'BM']
     valid_pipelines = ['Preprocessing']
 
     pipeline = None
@@ -421,6 +423,7 @@ def plan_observing_sequence(job_description):
         ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['FE'], None],
         ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['IS'], None],
         ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['CS'], None],
+        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['CV'], None],
         ['HBA_DUAL'      , 'HBA_LOW' , '12..499' , 200,  8, ['TR'], None],
         ['LBA_INNER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC'], None],
         ['LBA_OUTER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC'], None],
@@ -554,6 +557,18 @@ def plan_observing_sequence(job_description):
             channels_per_subband = 16
             coherent_stokes_data = Stokes('coherent',
                                           stokes_downsampling_steps=128)
+            if tied_array_beams is None:
+                tied_array_beams = TiedArrayBeams(flyseye=False,
+                                                  beams_ra_dec_rad=[target_source.ra_dec_rad()])
+            else:
+                tied_array_beams.beams_ra_dec_rad = [target_source.ra_dec_rad()]
+            core = set(station_list('core'))
+            station_set = set(station_set).intersection(core)
+        if 'CV' in data_products:
+            channels_per_subband = 1
+            coherent_stokes_data = Stokes('coherent', polarizations='XXYY',
+                                          number_collapsed_channels=1,
+                                          stokes_downsampling_steps=1),
             if tied_array_beams is None:
                 tied_array_beams = TiedArrayBeams(flyseye=False,
                                                   beams_ra_dec_rad=[target_source.ra_dec_rad()])
