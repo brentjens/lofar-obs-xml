@@ -132,7 +132,7 @@ class Observation(ObservationSpecificationBase):
 
 
 
-def xml(items, project='2013LOFAROBS', description=None):
+def xml(items, project='2015LOFAROBS_new', description=None):
     """
     Format a list of *items* as an XML string that can be
     uploaded to a MoM project with name *project*.

@@ -705,7 +705,7 @@ def main():
         children=observations,
         grouping_parent=True)
     mom_id = None
-    if job_description.project == '2015LOFAROBS':
+    if job_description.project == '2015LOFAROBS_new':
         mom_id = 522060
     val_obs_folder = Folder(name='Validation Obs',
                             mom_id=mom_id,
