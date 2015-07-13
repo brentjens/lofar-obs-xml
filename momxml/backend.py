@@ -38,9 +38,9 @@ class TiedArrayBeams(AutoReprBaseClass):
     
     >>> tab = TiedArrayBeams()
     >>> tab
-    TiedArrayBeams(nr_tab_rings     = 0,
+    TiedArrayBeams(beams_ra_dec_rad = None,
                    flyseye          = False,
-                   beams_ra_dec_rad = None,
+                   nr_tab_rings     = 0,
                    tab_ring_size    = 0)
     >>> print(tab.xml())
     <BLANKLINE>
@@ -63,9 +63,9 @@ class TiedArrayBeams(AutoReprBaseClass):
     ...                         beams_ra_dec_rad = [(3.1, +0.5),
     ...                                             (3.2, +0.54)])
     >>> tab_fe
-    TiedArrayBeams(nr_tab_rings     = 0,
+    TiedArrayBeams(beams_ra_dec_rad = [(3.1, 0.5), (3.2, 0.54)],
                    flyseye          = True,
-                   beams_ra_dec_rad = [(3.1, 0.5), (3.2, 0.54)],
+                   nr_tab_rings     = 0,
                    tab_ring_size    = 0)
     >>> print(tab_fe.xml())
     <BLANKLINE>
@@ -161,11 +161,11 @@ class Stokes(AutoReprBaseClass):
     >>> stk = Stokes(mode = 'coherent', polarizations = 'IQUV',
     ...              stokes_downsampling_steps = 64)
     >>> stk
-    Stokes(stokes_downsampling_steps = 64,
-           subbands_per_file         = 512,
+    Stokes(mode                      = 'coherent',
+           number_collapsed_channels = None,
            polarizations             = 'IQUV',
-           mode                      = 'coherent',
-           number_collapsed_channels = None)
+           stokes_downsampling_steps = 64,
+           subbands_per_file         = 512)
     >>> print(stk.xml())
     Traceback (most recent call last):
     ...
@@ -174,11 +174,11 @@ class Stokes(AutoReprBaseClass):
     ...              stokes_downsampling_steps = 64,
     ...              number_collapsed_channels = 16)
     >>> stk
-    Stokes(stokes_downsampling_steps = 64,
-           subbands_per_file         = 512,
+    Stokes(mode                      = 'coherent',
+           number_collapsed_channels = 16,
            polarizations             = 'IQUV',
-           mode                      = 'coherent',
-           number_collapsed_channels = 16)
+           stokes_downsampling_steps = 64,
+           subbands_per_file         = 512)
     >>> print(stk.xml())
     <subbandsPerFileCS>512</subbandsPerFileCS>
     <numberCollapsedChannelsCS>16</numberCollapsedChannelsCS>
@@ -321,22 +321,22 @@ class BackendProcessing(AutoReprBaseClass):
 
     >>> bp = BackendProcessing()
     >>> bp
-    BackendProcessing(incoherent_stokes_data        = None,
-                      stokes_integrate_channels     = False,
-                      integration_time_seconds      = 2,
-                      filtered_data                 = False,
-                      need_station_control          = True,
-                      beamformed_data               = False,
-                      coherent_stokes_data          = None,
+    BackendProcessing(beamformed_data               = False,
+                      bypass_pff                    = False,
                       channels_per_subband          = 64,
-                      correlated_data               = True,
-                      tied_array_beams              = TiedArrayBeams(nr_tab_rings     = 0,
-                                                                     flyseye          = False,
-                                                                     beams_ra_dec_rad = None,
-                                                                     tab_ring_size    = 0),
                       coherent_dedispersed_channels = False,
+                      coherent_stokes_data          = None,
+                      correlated_data               = True,
                       enable_superterp              = False,
-                      bypass_pff                    = False)
+                      filtered_data                 = False,
+                      incoherent_stokes_data        = None,
+                      integration_time_seconds      = 2,
+                      need_station_control          = True,
+                      stokes_integrate_channels     = False,
+                      tied_array_beams              = TiedArrayBeams(beams_ra_dec_rad = None,
+                                                                     flyseye          = False,
+                                                                     nr_tab_rings     = 0,
+                                                                     tab_ring_size    = 0))
     >>> print(bp.xml())
     <correlatedData>true</correlatedData>
     <filteredData>false</filteredData>
@@ -376,26 +376,26 @@ class BackendProcessing(AutoReprBaseClass):
     ...        coherent_stokes_data     = coherent_stokes_data,
     ...        tied_array_beams         = tied_array_beams)
     >>> bp_fe
-    BackendProcessing(incoherent_stokes_data        = None,
-                      stokes_integrate_channels     = False,
-                      integration_time_seconds      = 2,
-                      filtered_data                 = False,
-                      need_station_control          = True,
-                      beamformed_data               = False,
-                      coherent_stokes_data          = Stokes(stokes_downsampling_steps = 128,
-                                                             subbands_per_file         = 512,
-                                                             polarizations             = 'I',
-                                                             mode                      = 'coherent',
-                                                             number_collapsed_channels = 16),
+    BackendProcessing(beamformed_data               = False,
+                      bypass_pff                    = False,
                       channels_per_subband          = 16,
-                      correlated_data               = False,
-                      tied_array_beams              = TiedArrayBeams(nr_tab_rings     = 0,
-                                                                     flyseye          = True,
-                                                                     beams_ra_dec_rad = None,
-                                                                     tab_ring_size    = 0),
                       coherent_dedispersed_channels = False,
+                      coherent_stokes_data          = Stokes(mode                      = 'coherent',
+                                                             number_collapsed_channels = 16,
+                                                             polarizations             = 'I',
+                                                             stokes_downsampling_steps = 128,
+                                                             subbands_per_file         = 512),
+                      correlated_data               = False,
                       enable_superterp              = False,
-                      bypass_pff                    = False)
+                      filtered_data                 = False,
+                      incoherent_stokes_data        = None,
+                      integration_time_seconds      = 2,
+                      need_station_control          = True,
+                      stokes_integrate_channels     = False,
+                      tied_array_beams              = TiedArrayBeams(beams_ra_dec_rad = None,
+                                                                     flyseye          = True,
+                                                                     nr_tab_rings     = 0,
+                                                                     tab_ring_size    = 0))
     >>> print(bp_fe.xml())
     <correlatedData>false</correlatedData>
     <filteredData>false</filteredData>
@@ -434,26 +434,26 @@ class BackendProcessing(AutoReprBaseClass):
     ...        coherent_stokes_data     = coherent_stokes_data,
     ...        tied_array_beams         = tied_array_beams)
     >>> bp_cs
-    BackendProcessing(incoherent_stokes_data        = None,
-                      stokes_integrate_channels     = False,
-                      integration_time_seconds      = 2,
-                      filtered_data                 = False,
-                      need_station_control          = True,
-                      beamformed_data               = False,
-                      coherent_stokes_data          = Stokes(stokes_downsampling_steps = 128,
-                                                             subbands_per_file         = 512,
-                                                             polarizations             = 'I',
-                                                             mode                      = 'coherent',
-                                                             number_collapsed_channels = 16),
+    BackendProcessing(beamformed_data               = False,
+                      bypass_pff                    = False,
                       channels_per_subband          = 16,
-                      correlated_data               = False,
-                      tied_array_beams              = TiedArrayBeams(nr_tab_rings     = 0,
-                                                                     flyseye          = False,
-                                                                     beams_ra_dec_rad = None,
-                                                                     tab_ring_size    = 0),
                       coherent_dedispersed_channels = False,
+                      coherent_stokes_data          = Stokes(mode                      = 'coherent',
+                                                             number_collapsed_channels = 16,
+                                                             polarizations             = 'I',
+                                                             stokes_downsampling_steps = 128,
+                                                             subbands_per_file         = 512),
+                      correlated_data               = False,
                       enable_superterp              = False,
-                      bypass_pff                    = False)
+                      filtered_data                 = False,
+                      incoherent_stokes_data        = None,
+                      integration_time_seconds      = 2,
+                      need_station_control          = True,
+                      stokes_integrate_channels     = False,
+                      tied_array_beams              = TiedArrayBeams(beams_ra_dec_rad = None,
+                                                                     flyseye          = False,
+                                                                     nr_tab_rings     = 0,
+                                                                     tab_ring_size    = 0))
     >>> print(bp_cs.xml())
     <correlatedData>false</correlatedData>
     <filteredData>false</filteredData>

@@ -141,23 +141,23 @@ class Angle(object):
     Direct values:
 
     >>> Angle(deg = 360.0)
-    Angle(rad = 6.28318530718)
+    Angle(rad = 6.283185307179586)
     >>> Angle(rad = pi)
-    Angle(rad = 3.14159265359)
+    Angle(rad = 3.141592653589793)
 
     Hours:
 
     >>> Angle(hms = (3, 15, 30.2))
-    Angle(rad = 0.853044216323)
+    Angle(rad = 0.8530442163226618)
     >>> Angle(shms = ('-', 3, 15, 30.2))
-    Angle(rad = -0.853044216323)
+    Angle(rad = -0.8530442163226618)
 
     Degrees:
 
     >>> Angle(sdms = ('+', 3, 15, 30.2))
-    Angle(rad = 0.0568696144215)
+    Angle(rad = 0.05686961442151079)
     >>> Angle(sdms = ('-', 3, 15, 30.2))
-    Angle(rad = -0.0568696144215)
+    Angle(rad = -0.05686961442151079)
 
 
     Whoops:
@@ -220,7 +220,7 @@ class Angle(object):
         >>> a = Angle(rad = 2.0)
         >>> rad = a.set_shms('-', 2, 30, 45.2)
         >>> str(a.as_rad())
-        '-0.657785506256'
+        '-0.6577855062557962'
         '''
         sgn      = int_from_sign_char(sign)
         self.rad = sgn*pi*(hours + minutes/60.0 + seconds/3600.0)/12.0
@@ -257,7 +257,7 @@ class Angle(object):
         >>> a = Angle(rad = 2.0)
         >>> rad = a.set_sdms('-', 2, 30, 45.2)
         >>> str(a.as_rad())
-        '-0.0438523670837'
+        '-0.04385236708371975'
 
         '''
         sgn      = int_from_sign_char(sign)
@@ -282,9 +282,9 @@ class Angle(object):
 
         >>> a = Angle(rad = 2.0)
         >>> str(a.set_deg(180.0))
-        '3.14159265359'
+        '3.141592653589793'
         >>> str(a.set_deg(-90.0))
-        '-1.57079632679'
+        '-1.5707963267948966'
         '''
         self.rad = deg*pi/180.0
         return self.rad
@@ -344,7 +344,7 @@ class Angle(object):
 
         >>> a = Angle (rad = 3.0)
         >>> str(a.as_deg())
-        '171.887338539'
+        '171.88733853924697'
         '''
         return self.rad*180.0/pi
 
@@ -361,7 +361,7 @@ class Angle(object):
 
         >>> a = Angle (rad = 3.0)
         >>> str(a.as_hours())
-        '11.4591559026'
+        '11.459155902616464'
         '''
         return self.rad*12.0/pi
 
@@ -438,7 +438,7 @@ class Angle(object):
 
         >>> from math import sin, cos
         >>> str(sin(float(Angle(deg = 180.0))))
-        '1.22464679915e-16'
+        '1.2246467991473532e-16'
         >>> cos(float(Angle(deg = 180.0)))
         -1.0
         '''
@@ -506,6 +506,7 @@ class Angle(object):
         return Angle(rad = self.as_rad() * float(factor))
 
 
+
     def __div__(self, divisor):
         r'''
         Implement Angle()/divisor
@@ -513,7 +514,7 @@ class Angle(object):
         **Parameters**
 
         divisor : number
-            The factor to devide the angle by.
+            The factor to divide the angle by.
 
         **Returns**
 
@@ -527,3 +528,27 @@ class Angle(object):
         Angle(rad = 0.5)
         '''
         return Angle(rad = self.as_rad() / float(divisor))
+
+
+    def __truediv__(self, divisor):
+        r'''
+        Implement Angle()/divisor
+
+        **Parameters**
+
+        divisor : number
+            The factor to divide the angle by.
+
+        **Returns**
+
+        An Angle instance.
+
+        **Examples**
+
+        >>> (Angle(deg = -90)/2).as_deg()
+        -45.0
+        >>> Angle(rad = 2.0)/4.0
+        Angle(rad = 0.5)
+        '''
+        return Angle(rad = self.as_rad() / float(divisor))
+

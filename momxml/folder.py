@@ -39,21 +39,21 @@ class Folder(ObservationSpecificationBase):
     ...                 description = 'Main folder',
     ...                 mom_id      = 12345,
     ...                 grouping_parent = True)
-    >>> print folder
+    >>> print(folder)
     Folder(parent          = NoneType,
-           grouping_parent = True,
-           update_folder   = True,
-           name            = 'root folder',
-           mom_id          = 12345,
            children        = [Folder(parent          = Folder('root folder'),
-                                    grouping_parent = False,
-                                    update_folder   = True,
-                                    name            = 'child',
-                                    mom_id          = None,
                                     children        = None,
-                                    description     = None)],
-           description     = 'Main folder')
-    >>> print folder.xml('test_project')
+                                    description     = None,
+                                    grouping_parent = False,
+                                    mom_id          = None,
+                                    name            = 'child',
+                                    update_folder   = True)],
+           description     = 'Main folder',
+           grouping_parent = True,
+           mom_id          = 12345,
+           name            = 'root folder',
+           update_folder   = True)
+    >>> print(folder.xml('test_project'))
     <lofar:folder mom2Id="12345" topology_parent="true">
       <topology>root_folder</topology>
       <name>root folder</name>

@@ -214,7 +214,7 @@ class Beam(object):
     ...             pipeline     = Pipeline(Preprocessing(16, 5, 64, 10),
     ...                                     Calibration(sky_model='3C48'),
     ...                                     duration_s = 120))
-    >>> print str(beam)
+    >>> print(str(beam))
     206.264806;68.754935;3Cwhatever;96..105,123..132,143..152,175..184,217..226,238..247,258..267,286..295;80;T;120
     Demix:16;5;64;10;;;
     BBS:3C48;;;T;;;;

@@ -88,25 +88,26 @@ class TargetSource(object):
         TargetSource(name      = 'Cyg A',
                      ra_angle  = Angle(shms = ('+', 19, 59, 28.3565)),
                      dec_angle = Angle(sdms = ('+', 40, 44, 2.099)))
-        >>> TargetSource(u'Cyg A',
-        ...              ra_angle = Angle(shms = ('+', 19, 59, 28.3565)),
-        ...              dec_angle = Angle(sdms = ('+', 40, 44, 2.099)) )
-        Traceback (most recent call last):
-        ...
-        SourceSpecificationError: Source name may not be a unicode string.
+
+        # >>> TargetSource(u'Cyg A',
+        # ...              ra_angle = Angle(shms = ('+', 19, 59, 28.3565)),
+        # ...              dec_angle = Angle(sdms = ('+', 40, 44, 2.099)) )
+        # Traceback (most recent call last):
+        # ...
+        # momxml.targetsource.SourceSpecificationError: Source name may not be a unicode string.
         >>> TargetSource('Cyg A',
         ...              ra_angle = 3.0,
         ...              dec_angle = Angle(sdms = ('+', 40, 44, 2.099)) )
         Traceback (most recent call last):
         ...
-        SourceSpecificationError: ra_angle must be a momxml.Angle, not 3.0
+        momxml.targetsource.SourceSpecificationError: ra_angle must be a momxml.Angle, not 3.0
 
         >>> TargetSource('Cyg A',
         ...              ra_angle = Angle(shms = ('+', 19, 59, 28.3565)),
         ...              dec_angle = -2)
         Traceback (most recent call last):
         ...
-        SourceSpecificationError: dec_angle must be a momxml.Angle, not -2
+        momxml.targetsource.SourceSpecificationError: dec_angle must be a momxml.Angle, not -2
 
         '''
         # Named tuple was introduced in Python 2.7

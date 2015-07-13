@@ -23,7 +23,7 @@ class AutoReprBaseClass(object):
     def __repr__(self):
         name    = self.__class__.__name__
         as_dict = self.__dict__
-        members = as_dict.keys()
+        members = sorted(as_dict.keys())
         longest_member = sorted([len(s) for s in members])[-1]
         member_strings = [mem.ljust(longest_member)+' = '+repr(as_dict[mem])
                           for mem in members]
@@ -48,11 +48,11 @@ def with_auto_repr(cls):
     ...         self.a = a
     ...         self.b = b
     >>> aa = Elements(1, '3')
-    >>> print repr(aa)[0:-16]
+    >>> print(repr(aa)[0:-16])
     <momxml.utilities.Elements object at
     >>> Elements = with_auto_repr(Elements)
     >>> bb = Elements (1, 'v')
-    >>> print repr(bb)
+    >>> print(repr(bb))
     Elements(a = 1,
              b = 'v')
     '''
@@ -67,7 +67,7 @@ def with_auto_repr(cls):
         def __repr__(self):
             name    = cls.__name__
             as_dict = self.__dict__
-            members = as_dict.keys()
+            members = sorted(as_dict.keys())
             longest_member = sorted([len(s) for s in members])[-1]
             member_strings = [mem.ljust(longest_member)+' = '+repr(as_dict[mem])
                               for mem in members]
@@ -179,10 +179,8 @@ def unique(sequence):
 
     **Examples**
 
-    >>> unique([1, 2, 3, 4])
+    >>> sorted(unique([3, 2, 4, 3, 1, 1, 2]))
     [1, 2, 3, 4]
-    >>> unique([2, 'a', 4, 'a', 2])
-    ['a', 2, 4]
     '''
     return list(set(sequence))
 
@@ -299,7 +297,7 @@ def lofar_observer(date = None):
     **Examples**
 
     >>> lofar_observer('2013/04/15 12:34:56')
-    <ephem.Observer date='2013/4/15 12:34:56' epoch='2000/1/1 12:00:00' lon=6:52:11.4 lat=52:54:54.4 elevation=49.344m horizon=0:00:00.0 temp=15.0C pressure=1010.0mBar>
+    <ephem.Observer date='2013/4/15 12:34:56' epoch='2000/1/1 12:00:00' lon=6:52:11.4 lat=52:54:54.4 elevation=49.343999999999994m horizon=0:00:00.0 temp=15.0C pressure=1010.0mBar>
 
     '''
     lofar           = ephem.Observer()
@@ -321,7 +319,7 @@ def lofar_sidereal_time(date):
     **Examples**
 
     >>> type(lofar_sidereal_time(ephem.Observer().date))
-    <type 'ephem.Angle'>
+    <class 'ephem.Angle'>
     >>> lofar           = ephem.Observer()
     >>> lofar.long      = +6.869837540*pi/180
     >>> lofar.lat       = +52.915122495*pi/180
@@ -403,7 +401,7 @@ def next_sunset(date, observer = None):
     **Examples**
 
     >>> print(next_sunset('2013/04/03 12:00:00'))
-    2013/4/3 18:11:17
+    2013/4/3 18:11:18
     '''
 
     if observer is None:
@@ -511,7 +509,7 @@ def station_list(station_set, include = None, exclude = None):
     >>> station_list('wsrt')
     Traceback (most recent call last):
     ...
-    InvalidStationSetError: wsrt is not a valid station set.
+    momxml.utilities.InvalidStationSetError: wsrt is not a valid station set.
 
     '''
     superterp = ['CS002', 'CS003', 'CS004', 'CS005', 'CS006', 'CS007']

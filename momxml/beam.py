@@ -38,21 +38,21 @@ class Beam(ObservationSpecificationBase):
     >>> bm = Beam(target, '77..324')
     >>> bm
     Beam(parent           = NoneType,
-         name             = 'Cyg A',
-         measurement_type = 'Target',
+         children         = None,
          duration_s       = None,
+         measurement_type = 'Target',
+         name             = 'Cyg A',
+         subband_spec     = '77..324',
          target_source    = TargetSource(name      = 'Cyg A',
                                          ra_angle  = Angle(shms = ('+', 19, 59, 28.3566)),
                                          dec_angle = Angle(sdms = ('+', 40, 44, 2.097))),
-         tied_array_beams = None,
-         subband_spec     = '77..324',
-         children         = None)
+         tied_array_beams = None)
     >>> observation_stub = ObservationSpecificationBase('Observation')
     >>> observation_stub.backend = BackendProcessing()
     >>> observation_stub.clock_mhz = 200
     >>> observation_stub.frequency_range = 'HBA_LOW'
     >>> observation_stub.append_child(bm)
-    >>> print bm.xml('Project name')
+    >>> print(bm.xml('Project name'))
     <lofar:measurement xsi:type="lofar:UVMeasurementType">
     <name>Cyg A</name>
     <description>Observation</description>

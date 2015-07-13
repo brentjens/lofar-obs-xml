@@ -41,7 +41,7 @@ class ObservationSpecificationBase(object):
     def __repr__(self):
         name    = self.__class__.__name__
         as_dict = self.__dict__
-        members = as_dict.keys()
+        members = sorted(as_dict.keys())
         longest_member = sorted([len(s) for s in members])[-1]
 
         member_strings = [mem.ljust(longest_member)+' = '+repr(as_dict[mem])

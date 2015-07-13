@@ -46,12 +46,12 @@ class NDPPP(AutoReprBaseClass):
     >>> dmx
     NDPPP(avg_freq_step   = 16,
           avg_time_step   = 2,
+          demix_always    = ['CygA', 'CasA'],
           demix_freq_step = 64,
-          ignore_target   = None,
-          demix_time_step = 10,
           demix_if_needed = None,
-          demix_always    = ['CygA', 'CasA'])
-    >>> print dmx.xml()
+          demix_time_step = 10,
+          ignore_target   = None)
+    >>> print(dmx.xml())
     <BLANKLINE>
     <demixingParameters>
       <averagingFreqStep>16</averagingFreqStep>
@@ -182,30 +182,30 @@ class AveragingPipeline(ObservationSpecificationBase):
     >>> obs.append_child(avg)
     >>> avg
     AveragingPipeline(parent            = Observation('Main observation'),
-                      name              = 'Avg Pipeline',
-                      predecessor_label = None,
+                      children          = None,
+                      default_template  = 'Preprocessing Pipeline',
+                      duration_s        = None,
                       flagging_strategy = None,
-                      ndppp             = NDPPP(avg_freq_step   = 64,
-                                                avg_time_step   = 1,
-                                                demix_freq_step = 64,
-                                                ignore_target   = None,
-                                                demix_time_step = 10,
-                                                demix_if_needed = None,
-                                                demix_always    = None),
                       input_data        = [Beam(parent           = Observation('Main observation'),
-                                               name             = 'Cyg A',
-                                               measurement_type = 'Target',
+                                               children         = None,
                                                duration_s       = None,
+                                               measurement_type = 'Target',
+                                               name             = 'Cyg A',
+                                               subband_spec     = '77..324',
                                                target_source    = TargetSource(name      = 'Cyg A',
                                                                                ra_angle  = Angle(shms = ('+', 19, 59, 28.3566)),
                                                                                dec_angle = Angle(sdms = ('+', 40, 44, 2.097))),
-                                               tied_array_beams = None,
-                                               subband_spec     = '77..324',
-                                               children         = None)],
-                      duration_s        = None,
-                      start_date        = None,
-                      default_template  = 'Preprocessing Pipeline',
-                      children          = None)
+                                               tied_array_beams = None)],
+                      name              = 'Avg Pipeline',
+                      ndppp             = NDPPP(avg_freq_step   = 64,
+                                                avg_time_step   = 1,
+                                                demix_always    = None,
+                                                demix_freq_step = 64,
+                                                demix_if_needed = None,
+                                                demix_time_step = 10,
+                                                ignore_target   = None),
+                      predecessor_label = None,
+                      start_date        = None)
     >>> print(avg.xml('Project name'))
     <lofar:pipeline xsi:type="lofar:AveragingPipelineType">
       <topology>Main_observation.1.Avg_Pipeline</topology>
