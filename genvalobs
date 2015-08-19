@@ -701,7 +701,6 @@ def main():
         children=observations,
         grouping_parent=True)
     val_obs_folder = Folder(name='Validation Obs',
-                            mom_id=mom_id,
                             children=[sub_folder],
                             update_folder=True)
     out = open(job_description.output, 'w')

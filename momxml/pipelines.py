@@ -212,6 +212,9 @@ class AveragingPipeline(ObservationSpecificationBase):
       <predecessor_topology>Main_observation</predecessor_topology>
       <name>Avg Pipeline</name>
       <description>Avg Pipeline: "Preprocessing Pipeline"</description>
+      <currentStatus>
+        <mom2:approvedStatus/>
+      </currentStatus>
       <averagingPipelineAttributes>
         <defaultTemplate>Preprocessing Pipeline</defaultTemplate>
         <duration></duration>
@@ -310,6 +313,9 @@ class AveragingPipeline(ObservationSpecificationBase):
   <predecessor_topology>%(predecessor)s</predecessor_topology>
   <name>%(name)s</name>
   <description>%(name)s: "%(default_template)s"</description>
+  <currentStatus>
+    <mom2:approvedStatus/>
+  </currentStatus>
   <averagingPipelineAttributes>
     <defaultTemplate>%(default_template)s</defaultTemplate>
     <duration>%(duration)s</duration>

@@ -97,7 +97,7 @@ class Observation(ObservationSpecificationBase):
   <description>'''+obs_name+'''</description>
   <topology>'''+self.label()+'''</topology>
   <currentStatus>
-    <mom2:openedStatus/>
+    <mom2:approvedStatus/>
   </currentStatus>
   <lofar:observationAttributes>
     <name>'''+obs_name+'''</name>
