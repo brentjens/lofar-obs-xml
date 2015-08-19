@@ -3,8 +3,10 @@ Specification of target sources to use in Observation Beams.
 '''
 
 from momxml.angles import Angle
-import urllib
 import sys
+import urllib
+if sys.version_info.major > 2:
+    import urllib.request as request
 
 class NoSimbadCoordinatesError(RuntimeError):
     r'''
@@ -280,7 +282,7 @@ def simbad(source_name, debug = False):
         result = urllib.urlopen(query % urllib.quote(source_name),
                                 proxies = {}).read()
     else:
-        result = urllib.request.urlopen(query % urllib.parse.quote(source_name)).read().decode('utf8')
+        result = request.urlopen(query % urllib.parse.quote(source_name)).read().decode('utf8')
     if debug:
         print(result)
         sys.stdout.flush()
