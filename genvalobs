@@ -663,15 +663,15 @@ def plan_observing_sequence(job_description):
                             demix_if_needed = [
                                 source for source in demix_if_needed
                                 if 'cyg' not in  source]
-                pl = AveragingPipeline(
-                    name='Preproc.'+antenna_set,
-                    ndppp=NDPPP(avg_freq_step, avg_time_step,
-                                demix_freq_step, demix_time_step,
-                                demix_always, demix_if_needed),
-                    input_data=beams,
-                    duration_s=duration_seconds*2,
-                    start_date=ephem.Date(start_date+5*ephem.minute).tuple())
-                observations.append(pl)
+                    pl = AveragingPipeline(
+                        name='Preproc.'+antenna_set,
+                        ndppp=NDPPP(avg_freq_step, avg_time_step,
+                                    demix_freq_step, demix_time_step,
+                                    demix_always, demix_if_needed),
+                        input_data=[beam],
+                        duration_s=duration_seconds*2,
+                        start_date=ephem.Date(start_date+duration_seconds*ephem.second+5*ephem.minute).tuple())
+                    observations[-1].append_child(pl)
         start_date = ephem.Date(start_date
                                 + ephem.second*duration_seconds
                                 + ephem.second*job_description.gap)
