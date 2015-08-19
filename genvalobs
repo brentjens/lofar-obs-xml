@@ -700,13 +700,10 @@ def main():
                      folder_date[:-1]),
         children=observations,
         grouping_parent=True)
-    mom_id = None
-    if job_description.project == '2015LOFAROBS_new':
-        mom_id = 522060
     val_obs_folder = Folder(name='Validation Obs',
                             mom_id=mom_id,
                             children=[sub_folder],
-                            update_folder=False)
+                            update_folder=True)
     out = open(job_description.output, 'w')
     out.write(xml([val_obs_folder],
                   project=job_description.project))
