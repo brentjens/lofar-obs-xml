@@ -206,13 +206,7 @@ required.''',
 
     arg('-p', '--project', metavar='MOM_NAME',
         help='Name of the observations\' MoM project [%(default)r].',
-        default='2015LOFAROBS')
-
-    arg('-k', '--keep', metavar='STATIONS_TO_KEEP',
-        help='''In case of HBA_DUAL or HBA_ONE network conflicts, keep
-        either "core", "eu" stations, or "all" of them. [%(default)r].''',
-        default='core', choices=['core', 'eu', 'all'])
-
+        default='2015LOFAROBS_new')
 
     arg('-f', '--from-file', metavar='FILE_NAME',
         help='Read a custom observing sequence from FILE_NAME.',
@@ -582,19 +576,6 @@ def plan_observing_sequence(job_description):
                                             stokes_downsampling_steps=128)
 
         good_stations = sorted(list(station_set))
-        antenna_sets_with_conflicts = [
-            'HBA_ONE', 'HBA_DUAL', 'HBA_ONE_INNER', 'HBA_DUAL_INNER']
-        if antenna_set in antenna_sets_with_conflicts:
-            if 'core' == job_description.keep:
-                good_stations = exclude_conflicting_eu_stations(good_stations)
-            elif 'eu' == job_description.keep:
-                good_stations = exclude_conflicting_nl_stations(good_stations)
-            elif 'all' == job_description.keep:
-                good_stations = good_stations
-            else:
-                raise RuntimeError(
-                    '%s stations never conflict, only core or eu' %
-                    job_description.keep)
 
         backend = BackendProcessing(
             integration_time_seconds=1,
