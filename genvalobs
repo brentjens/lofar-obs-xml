@@ -217,6 +217,10 @@ required.''',
         ' (c) 2010-2015 M.A. Brentjens <brentjens@astron.nl>',
         help='Print version number and exit.')
 
+    arg('-a', '--approved', action='store_true',
+        help="Set initial status of observations and pipelines to 'approved' instead of 'opened'.",
+        default=False)
+    
     arg('source', nargs='?',
         type=str,
         help='''
@@ -482,6 +486,10 @@ def plan_observing_sequence(job_description):
     stations = station_list(job_description.stations,
                             include=include,
                             exclude=exclude,)
+    initial_status = 'opened'
+    if job_description.approved:
+        initial_status='approved'
+
     observations = []
     previous_clock = 200
     for (antenna_set,
@@ -631,7 +639,6 @@ def plan_observing_sequence(job_description):
                                                  ra_angle=ra, dec_angle=dec)
                         beam_list.append(Beam(aux_field, subband_spec=subband_spec))
                         beam_id += 1
-        
         obs = Observation(
             name=','.join(data_products)+' '+antenna_set,
             antenna_set=antenna_set,
@@ -642,7 +649,8 @@ def plan_observing_sequence(job_description):
             clock_mhz=clock_mhz,
             backend=backend,
             bit_mode=bit_mode,
-            beam_list=beam_list)
+            beam_list=beam_list,
+            initial_status=initial_status)
         observations.append(obs)
         if pipeline is not None:
             if pipeline[0] == 'Preprocessing':
@@ -671,7 +679,8 @@ def plan_observing_sequence(job_description):
                                     demix_always, demix_if_needed),
                         input_data=[beam],
                         duration_s=duration_seconds*2,
-                        start_date=ephem.Date(start_date+duration_seconds*ephem.second+5*ephem.minute).tuple())
+                        start_date=ephem.Date(start_date+duration_seconds*ephem.second+5*ephem.minute).tuple(),
+                        initial_status=initial_status)
                     observations[-1].append_child(pl)
         start_date = ephem.Date(start_date
                                 + ephem.second*duration_seconds

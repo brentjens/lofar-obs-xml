@@ -178,14 +178,15 @@ class Beam(ObservationSpecificationBase):
             'central_frequency_mhz'    : central_frequency_mhz,
             'subband_spec'             : self.subband_spec,
             'tied_array_beams'         : tied_array_beams,
-            'result_data_products'     : result_data_products
+            'result_data_products'     : result_data_products,
+            'initial_status'           : self.parent.initial_status,
         }
         prefix_format = '''<lofar:measurement xsi:type=\"%(backend_measurement_type)s\">
 <name>%(name)s</name>
 <description>%(description)s</description>
 <topology>%(topology)s</topology>
 <currentStatus>
-  <mom2:openedStatus/>
+  <mom2:%(initial_status)sStatus/>
 </currentStatus>
 <lofar:%(backend_attributes)s>
   <measurementType>%(measurement_type)s</measurementType>
