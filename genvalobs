@@ -346,6 +346,7 @@ def read_custom_observation_sequence(file_contents):
         'Split a line (at its whitespace) into a list of fields'
         fields = line.split()
         data_products = []
+        pipeline = None
 
         if len(fields) < 6: # or len(fields) > 9:
             raise ValueError('Line %r is malformed' % line)
