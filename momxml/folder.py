@@ -45,11 +45,13 @@ class Folder(ObservationSpecificationBase):
                                     children        = None,
                                     description     = None,
                                     grouping_parent = False,
+                                    initial_status  = 'opened',
                                     mom_id          = None,
                                     name            = 'child',
                                     update_folder   = True)],
            description     = 'Main folder',
            grouping_parent = True,
+           initial_status  = 'opened',
            mom_id          = 12345,
            name            = 'root folder',
            update_folder   = True)

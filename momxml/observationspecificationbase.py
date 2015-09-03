@@ -24,18 +24,25 @@ class ObservationSpecificationBase(object):
     children : None or a list of ObservationSpecificationBase
         The children of the current instance.
 
+    initial_status : string
+        Either 'opened' or 'approved'
+
     **Examples**
 
     >>> OSB = ObservationSpecificationBase
     '''
 
-    def __init__(self, name, parent = None, children = None):
+    def __init__(self, name, parent = None, children = None, initial_status='opened'):
         self.name     = name
         self.parent   = parent
         self.children = None
         if children is not None:
             for child in children:
                 self.append_child(child)
+        self.initial_status = initial_status
+        if initial_status not in ['opened', 'approved']:
+            raise ValueError('ObservationSpecificationBase(): initial_status(%r) is neither \'opened\' nor \'approved\''%
+                             initial_status)
 
 
     def __repr__(self):

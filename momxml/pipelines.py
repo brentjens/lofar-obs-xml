@@ -186,9 +186,11 @@ class AveragingPipeline(ObservationSpecificationBase):
                       default_template  = 'Preprocessing Pipeline',
                       duration_s        = None,
                       flagging_strategy = None,
+                      initial_status    = 'opened',
                       input_data        = [Beam(parent           = Observation('Main observation'),
                                                children         = None,
                                                duration_s       = None,
+                                               initial_status   = 'opened',
                                                measurement_type = 'Target',
                                                name             = 'Cyg A',
                                                subband_spec     = '77..324',
@@ -213,7 +215,7 @@ class AveragingPipeline(ObservationSpecificationBase):
       <name>Avg Pipeline</name>
       <description>Avg Pipeline: "Preprocessing Pipeline"</description>
       <currentStatus>
-        <mom2:approvedStatus/>
+        <mom2:openedStatus/>
       </currentStatus>
       <averagingPipelineAttributes>
         <defaultTemplate>Preprocessing Pipeline</defaultTemplate>
@@ -314,7 +316,7 @@ class AveragingPipeline(ObservationSpecificationBase):
   <name>%(name)s</name>
   <description>%(name)s: "%(default_template)s"</description>
   <currentStatus>
-    <mom2:approvedStatus/>
+    <mom2:%(initial_status)sStatus/>
   </currentStatus>
   <averagingPipelineAttributes>
     <defaultTemplate>%(default_template)s</defaultTemplate>
@@ -349,7 +351,8 @@ class AveragingPipeline(ObservationSpecificationBase):
             'start_time'  : '',
             'flagging_strategy': self.flagging_strategy,
             'ndppp'       : indent(self.ndppp.xml(), 4),
-            'used_data_products' : ''
+            'used_data_products' : '',
+            'initial_status': self.initial_status
         }
         if self.duration_s is not None:
             args['duration'] = mom_duration(seconds = self.duration_s)

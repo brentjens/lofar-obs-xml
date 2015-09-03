@@ -11,7 +11,7 @@ import ephem
 class Observation(ObservationSpecificationBase):
     def __init__(self, antenna_set, frequency_range, start_date, duration_seconds,
                  stations, clock_mhz, beam_list, backend, name = None, bit_mode=16,
-                 allow_tbb=True, allow_aartfaac=True):
+                 allow_tbb=True, allow_aartfaac=True, initial_status='opened'):
         """
         *antenna_set*            : One of 'LBA_INNER', 'LBA_OUTER', 'HBA_ZERO', 'HBA_ONE',
                                   'HBA_DUAL', or 'HBA_JOINED'
@@ -30,6 +30,7 @@ class Observation(ObservationSpecificationBase):
         *backend*                : BackendProcessing instance with correlator settings
         *name*                   : Name of the observation. Defaults to name of first target plus antenna set.
         *bit_mode*               : number of bits per sample. Either 4, 8, or 16.
+        *initial_status*         : status when first imported into MoM. Either 'opened' or 'approved'
 
     allow_tbb : bool
        If True, allow piggy-back observing with Transient Buffer Boards [TBB].
@@ -40,7 +41,8 @@ class Observation(ObservationSpecificationBase):
        Default: True.
 
         """
-        super(Observation, self).__init__(name = name, parent = None, children = None)
+        super(Observation, self).__init__(name = name, parent = None, children = None,
+                                          initial_status=initial_status)
 
         self.antenna_set              = antenna_set
         self.frequency_range          = frequency_range
@@ -97,7 +99,7 @@ class Observation(ObservationSpecificationBase):
   <description>'''+obs_name+'''</description>
   <topology>'''+self.label()+'''</topology>
   <currentStatus>
-    <mom2:approvedStatus/>
+    <mom2:'''+self.initial_status+'''Status/>
   </currentStatus>
   <lofar:observationAttributes>
     <name>'''+obs_name+'''</name>

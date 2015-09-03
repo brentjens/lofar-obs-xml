@@ -40,6 +40,7 @@ class Beam(ObservationSpecificationBase):
     Beam(parent           = NoneType,
          children         = None,
          duration_s       = None,
+         initial_status   = 'opened',
          measurement_type = 'Target',
          name             = 'Cyg A',
          subband_spec     = '77..324',
