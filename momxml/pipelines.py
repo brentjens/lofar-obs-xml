@@ -160,6 +160,10 @@ class AveragingPipeline(ObservationSpecificationBase):
     flagging_strategy: 'LBAdefault', 'HBAdefault', or None
         NDPPP flagging strategy.
 
+    initial_status : string
+        Either 'opened' or 'approved'
+
+
     **Examples**
 
     >>> from momxml             import TargetSource, Angle
@@ -257,10 +261,12 @@ class AveragingPipeline(ObservationSpecificationBase):
                  duration_s = None, start_date = None,
                  flagging_strategy = None,
                  parent   = None, children = None,
-                 predecessor_label = None):
-        super(AveragingPipeline, self).__init__(name     = name,
-                                                parent   = parent,
-                                                children = children)
+                 predecessor_label = None,
+                 initial_status='opened'):
+        super(AveragingPipeline, self).__init__(name=name,
+                                                parent=parent,
+                                                children=children,
+                                                initial_status=initial_status)
         self.ndppp            = ndppp
         self.input_data       = None
         self.duration_s       = duration_s
