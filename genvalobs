@@ -220,6 +220,14 @@ required.''',
     arg('-a', '--approved', action='store_true',
         help="Set initial status of observations and pipelines to 'approved' instead of 'opened'.",
         default=False)
+
+    arg('--max-subbands', metavar='N',
+        help='''Set the maximum allowed number of sub bands per
+observation. When minimal resources are required, use for example
+10. If limited, it will take the first N sub bands.''',
+        type=int,
+        default=488)
+
     
     arg('source', nargs='?',
         type=str,
@@ -594,6 +602,9 @@ def plan_observing_sequence(job_description):
             incoherent_stokes_data=incoherent_stokes_data,
             tied_array_beams=tied_array_beams)
 
+        sb_list = sorted(parse_subband_list(subband_spec))
+        subband_spec = ','.join([str(sb) for sb in sb_list[0:max(job_description.max_subbands, 1)]])
+        multibeam_subband_spec = ','.join([str(sb) for sb in sb_list[0:max(int(job_description.max_subbands/25.0 + 0.5), 1)]])
         beam_list=[Beam(
             target_source=target_source,
             subband_spec=subband_spec)]
@@ -637,7 +648,7 @@ def plan_observing_sequence(job_description):
                                                 target_source.dec_angle.as_rad())
                         aux_field = TargetSource('Aux-%03d' % beam_id,
                                                  ra_angle=ra, dec_angle=dec)
-                        beam_list.append(Beam(aux_field, subband_spec=subband_spec))
+                        beam_list.append(Beam(aux_field, subband_spec=multibeam_subband_spec))
                         beam_id += 1
         obs = Observation(
             name=','.join(data_products)+' '+antenna_set,
