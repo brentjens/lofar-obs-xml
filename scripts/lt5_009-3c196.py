@@ -59,7 +59,7 @@ target_subbands = '62..393' # 380 subbands 115 -- 189 MHz
 subbands_base = array([ 62,  75,  88, 101, 114, 127, 140, 153, 166, 179, 192, 205, 218,
                             231, 244, 257, 270, 283, 296, 309, 322, 335, 348, 361, 374, 387])
 subbands_offset = int(sys.argv[2])*6
-cal_subbands    = [[','.join([str(sb) for sb in (subbands_base+subbands_offset)])]*6][0]
+cal_subbands    = ','.join([str(sb) for sb in (subbands_base+subbands_offset)])
 print(cal_subbands)
 #'77,99,121,144,166,188,211,233,257,278,299,321,345,367,389,412,434,456'
 
