@@ -110,11 +110,13 @@ with format:
     - BIT_MODE: either 4, 8, or 16
 
     - DATA_PRODUCTS: white-space separated list of products. Allowed:
-                     - XC (cross-correlation)
-                     - FE (fly's eye)
-                     - CS (coherent stokes)
-                     - IS (incoherent stokes)
-                     - TR (TAB rings)
+                     - XC      (cross-correlation)
+                     - FE      (fly's eye)
+                     - CS_I    (coherent stokes I)
+                     - CS_IQUV (coherent stokes IQUV)
+                     - IS_I    (incoherent stokes I)
+                     - IS_IQUV (incoherent stokes IQUV)
+                     - TR      (TAB rings)
 
     Empty lines are ignored, comments start with # end run until the
     end of the line.
@@ -125,9 +127,10 @@ with format:
         LBA_OUTER       LBA_LOW   12..499    200     8     XC
         HBA_DUAL        HBA_LOW   12..499    200     8     XC        Preprocessing 64 2 64 10
         LBA_INNER       LBA_HIGH  156..399   200    16     FE
-        HBA_DUAL        HBA_LOW   77..320    200    16     IS
-        HBA_DUAL        HBA_LOW   77..320    200    16     CS
-        HBA_DUAL_INNER  HBA_MID   66..309    160    16     XC IS
+        HBA_DUAL        HBA_LOW   77..320    200    16     IS_I
+        HBA_DUAL        HBA_LOW   77..320    200    16     CS_I
+        HBA_DUAL        HBA_LOW   77..320    200    16     CS_IQUV
+        HBA_DUAL_INNER  HBA_MID   66..309    160    16     XC IS_I
 
 Note that the custom sequence is subject to the same filtering by
 options -m, -c, etc. as the default observing sequence. The last entry
@@ -147,12 +150,12 @@ sequence if the 160 MHz is selected using the -c / --clock option.
 
     arg('-m', '--mode', metavar='CORRELATOR_MODE',
         type=uppercase_string,
-        choices=['XC', 'FE', 'CS', 'IS', 'TR'], action='append',
+        choices=['XC', 'FE', 'CS', 'CS_I', 'CS_IQUV', 'IS', 'IS_I', 'IS_IQUV', 'TR'], action='append',
         help='''
 Correlator modes to test. Choose one of XC (crosscorrelation), FE
 (Fly\'s eye), IS (incoherent stokes), or CS (coherent stokes). One can
 specify more than one mode. If this argument is not spedified, all
-        modes will be tested [XC,FE,CS,IS,TR].''',
+        modes will be tested [XC, FE, CS_I, CS_IQUV, IS_I, IS_IQUV, TR].''',
         default=None)
 
     arg('-d', '--duration', metavar='SECONDS',
@@ -241,7 +244,7 @@ own heuristics.''',
         args.clocks = [200]
 
     if args.mode is None:
-        args.mode = ['XC', 'FE', 'CS', 'IS', 'TR', 'BM']
+        args.mode = ['XC', 'FE', 'CS', 'CS_I', 'CS_IQUV', 'IS', 'IS_I', 'IS_IQUV', 'TR', 'BM']
     args.mode = [mode.upper() for mode in args.mode]
     return  args
 
@@ -284,8 +287,10 @@ def read_custom_observation_sequence(file_contents):
                      - XC (cross-correlation)
                      - BM (5x5 multi-beam XC)
                      - FE (fly's eye)
-                     - IS (incoherent stokes)
-                     - CS (coherent stokes)
+                     - IS_I    (incoherent stokes)
+                     - IS_IQUV (incoherent stokes)
+                     - CS_I    (coherent stokes)
+                     - CS_IQUV (coherent stokes)
                      - CV (complex voltage)
                      - TR (tab rings)
 
@@ -298,9 +303,10 @@ def read_custom_observation_sequence(file_contents):
         LBA_OUTER       LBA_LOW   12..499    200     8     XC
         HBA_DUAL        HBA_LOW   12..499    200     8     XC       Preprocessing 64 2 64 10
         LBA_INNER       LBA_HIGH  156..399   200    16     FE
-        HBA_DUAL        HBA_LOW   77..320    200    16     IS
-        HBA_DUAL        HBA_LOW   77..320    200    16     CS
-        HBA_DUAL_INNER  HBA_MID   66..309    160    16     XC IS
+        HBA_DUAL        HBA_LOW   77..320    200    16     IS_I
+        HBA_DUAL        HBA_LOW   77..320    200    16     CS_I
+        HBA_DUAL        HBA_LOW   77..320    200    16     CS_IQUV
+        HBA_DUAL_INNER  HBA_MID   66..309    160    16     XC IS_I
 
     Note that the last entry is using the 160 MHz clock. It will only be
     used in the observation sequence if the 160 MHz is selected using
@@ -331,7 +337,7 @@ def read_custom_observation_sequence(file_contents):
                    'HBA_LOW', 'HBA_MID', 'HBA_HIGH']
     valid_clocks = [160, 200]
     valid_bits = [4, 8, 16]
-    valid_products = ['XC', 'FE', 'IS', 'CS', 'CV', 'TR', 'BM']
+    valid_products = ['XC', 'FE', 'IS', 'IS_I', 'IS_IQUV', 'CS', 'CS_I', 'CS_IQUV', 'CV', 'TR', 'BM']
     valid_pipelines = ['Preprocessing']
 
     pipeline = None
@@ -428,8 +434,9 @@ def plan_observing_sequence(job_description):
         ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE'], None],
         ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE'], None],
         ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['FE'], None],
-        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['IS'], None],
-        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['CS'], None],
+        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['IS_I'], None],
+        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['CS_I'], None],
+        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['CS_IQUV'], None],
         ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['CV'], None],
         ['HBA_DUAL'      , 'HBA_LOW' , '12..499' , 200,  8, ['TR'], None],
         ['LBA_INNER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC'], None],
@@ -517,7 +524,7 @@ def plan_observing_sequence(job_description):
             continue # No data products to write, no point to observe.
         if target_source is None:
             if (any([dprod in data_products
-                     for dprod in ['FE', 'CS', 'IS', 'TR']])):
+                     for dprod in ['FE', 'CS', 'CS_I', 'CS_IQUV', 'IS', 'IS_I', 'IS_IQUV', 'TR']])):
                 target_source = SourceCatalogue().psr_source(
                     mean_date, antenna_set[0:3],
                     min_elevation_deg=min_el_deg,
@@ -564,9 +571,20 @@ def plan_observing_sequence(job_description):
                                               beams_ra_dec_rad=None)
             if 'LBA' == antenna_set[0:3]:
                 duration_seconds = 600.0
-        if 'CS' in data_products:
+        if 'CS' in data_products or 'CS_I' in data_products:
             channels_per_subband = 16
-            coherent_stokes_data = Stokes('coherent',
+            coherent_stokes_data = Stokes('coherent', polarizations='I',
+                                          stokes_downsampling_steps=128)
+            if tied_array_beams is None:
+                tied_array_beams = TiedArrayBeams(flyseye=False,
+                                                  beams_ra_dec_rad=[target_source.ra_dec_rad()])
+            else:
+                tied_array_beams.beams_ra_dec_rad = [target_source.ra_dec_rad()]
+            core = set(station_list('core'))
+            station_set = set(station_set).intersection(core)
+        if 'CS_IQUV' in data_products:
+            channels_per_subband = 16
+            coherent_stokes_data = Stokes('coherent', polarizations='IQUV',
                                           stokes_downsampling_steps=128)
             if tied_array_beams is None:
                 tied_array_beams = TiedArrayBeams(flyseye=False,
@@ -587,9 +605,13 @@ def plan_observing_sequence(job_description):
                 tied_array_beams.beams_ra_dec_rad = [target_source.ra_dec_rad()]
             core = set(station_list('core'))
             station_set = set(station_set).intersection(core)
-        if 'IS' in data_products:
+        if 'IS' in data_products or 'IS_I' in data_products:
             channels_per_subband = 16
-            incoherent_stokes_data = Stokes('incoherent',
+            incoherent_stokes_data = Stokes('incoherent', polarizations='I',
+                                            stokes_downsampling_steps=128)
+        if 'IS_IQUV' in data_products:
+            channels_per_subband = 16
+            incoherent_stokes_data = Stokes('incoherent', polarizations='IQUV',
                                             stokes_downsampling_steps=128)
 
         good_stations = sorted(list(station_set))
