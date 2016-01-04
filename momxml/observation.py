@@ -105,7 +105,7 @@ class Observation(ObservationSpecificationBase):
     <name>'''+obs_name+'''</name>
     <projectName>'''+project_name+'''</projectName>
     <instrument>'''+self.backend.instrument_name()+'''</instrument>
-    <defaultTemplate>'''+self.backend.default_template()+'''</defaultTemplate>
+    <defaultTemplate>'''+self.backend.default_template+'''</defaultTemplate>
     <tbbPiggybackAllowed>'''+str(self.allow_tbb).lower()+'''</tbbPiggybackAllowed>
     <aartfaacPiggybackAllowed>'''+str(self.allow_aartfaac).lower()+'''</aartfaacPiggybackAllowed>
     <userSpecification>

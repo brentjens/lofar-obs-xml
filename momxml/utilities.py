@@ -297,7 +297,7 @@ def lofar_observer(date = None):
     **Examples**
 
     >>> lofar_observer('2013/04/15 12:34:56')
-    <ephem.Observer date='2013/4/15 12:34:56' epoch='2000/1/1 12:00:00' lon=6:52:11.4 lat=52:54:54.4 elevation=49.343999999999994m horizon=0:00:00.0 temp=15.0C pressure=1010.0mBar>
+    <ephem.Observer date='2013/4/15 12:34:56' epoch='2000/1/1 12:00:00' lon='6:52:11.4' lat='52:54:54.4' elevation=49.343999999999994m horizon=0:00:00.0 temp=15.0C pressure=1010.0mBar>
 
     '''
     lofar           = ephem.Observer()

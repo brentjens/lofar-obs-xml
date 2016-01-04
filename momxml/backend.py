@@ -312,10 +312,11 @@ class BackendProcessing(AutoReprBaseClass):
         If True, also beamform the superterp stations and treat them
         as a separate large station.
 
-    need_station_control: bool
-        If True, the observation will control both correlator and
-        stations. If false, stations are under manual control. SET
-        FALSE AT YOUR OWN RISK. 
+    default_template: string
+        Default observation template to use. Possible values are:
+        'BeamObservation' (default),
+        'BeamObservationNoStationControl', and
+        'BeamObservationNoPlots'. 
 
     **Examples**
 
@@ -327,11 +328,11 @@ class BackendProcessing(AutoReprBaseClass):
                       coherent_dedispersed_channels = False,
                       coherent_stokes_data          = None,
                       correlated_data               = True,
+                      default_template              = 'BeamObservation',
                       enable_superterp              = False,
                       filtered_data                 = False,
                       incoherent_stokes_data        = None,
                       integration_time_seconds      = 2,
-                      need_station_control          = True,
                       stokes_integrate_channels     = False,
                       tied_array_beams              = TiedArrayBeams(beams_ra_dec_rad = None,
                                                                      flyseye          = False,
@@ -386,11 +387,11 @@ class BackendProcessing(AutoReprBaseClass):
                                                              stokes_downsampling_steps = 128,
                                                              subbands_per_file         = 512),
                       correlated_data               = False,
+                      default_template              = 'BeamObservation',
                       enable_superterp              = False,
                       filtered_data                 = False,
                       incoherent_stokes_data        = None,
                       integration_time_seconds      = 2,
-                      need_station_control          = True,
                       stokes_integrate_channels     = False,
                       tied_array_beams              = TiedArrayBeams(beams_ra_dec_rad = None,
                                                                      flyseye          = True,
@@ -444,11 +445,11 @@ class BackendProcessing(AutoReprBaseClass):
                                                              stokes_downsampling_steps = 128,
                                                              subbands_per_file         = 512),
                       correlated_data               = False,
+                      default_template              = 'BeamObservation',
                       enable_superterp              = False,
                       filtered_data                 = False,
                       incoherent_stokes_data        = None,
                       integration_time_seconds      = 2,
-                      need_station_control          = True,
                       stokes_integrate_channels     = False,
                       tied_array_beams              = TiedArrayBeams(beams_ra_dec_rad = None,
                                                                      flyseye          = False,
@@ -495,7 +496,7 @@ class BackendProcessing(AutoReprBaseClass):
                  tied_array_beams              = None,
                  bypass_pff                    = False,
                  enable_superterp              = False,
-                 need_station_control = True
+                 default_template = 'BeamObservation'
                  ):
         self.channels_per_subband = channels_per_subband
         self.integration_time_seconds = integration_time_seconds
@@ -523,7 +524,14 @@ class BackendProcessing(AutoReprBaseClass):
         self.coherent_dedispersed_channels = coherent_dedispersed_channels
         self.bypass_pff                = bypass_pff
         self.enable_superterp          = enable_superterp
-        self.need_station_control = need_station_control
+        valid_default_templates = ['BeamObservation',
+                                   'BeamObservationNoPlots',
+                                   'BeamObservationNoStationControl']
+        if default_template not in valid_default_templates:
+            raise ValueError('%s is not a valid default template, choose one of %r' %
+                             (default_template, valid_default_templates))
+        self.default_template = default_template
+
 
 
     def need_beam_observation(self):
@@ -546,15 +554,6 @@ class BackendProcessing(AutoReprBaseClass):
             return 'Beam Observation' # 'Interferometer'
 
 
-
-    def default_template(self):
-        r'''
-        '''
-        if self.need_station_control:
-            return 'BeamObservation'
-        else:
-            return 'BeamObservationNoStationControl'
-        
             
     def measurement_type(self):
         if self.need_beam_observation():
