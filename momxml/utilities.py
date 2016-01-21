@@ -297,7 +297,7 @@ def lofar_observer(date = None):
     **Examples**
 
     >>> lofar_observer('2013/04/15 12:34:56')
-    <ephem.Observer date='2013/4/15 12:34:56' epoch='2000/1/1 12:00:00' lon='6:52:11.4' lat='52:54:54.4' elevation=49.343999999999994m horizon=0:00:00.0 temp=15.0C pressure=1010.0mBar>
+    <ephem.Observer date='2013/4/15 12:34:56' epoch='2000/1/1 12:00:00' lon=6:52:11.4 lat=52:54:54.4 elevation=49.343999999999994m horizon=0:00:00.0 temp=15.0C pressure=1010.0mBar>
 
     '''
     lofar           = ephem.Observer()
@@ -501,11 +501,11 @@ def station_list(station_set, include = None, exclude = None):
     ...  station_list('core'))
     True
     >>> station_list('eu')
-    ['DE601', 'DE602', 'DE603', 'DE604', 'DE605', 'FR606', 'SE607', 'UK608', 'DE609']
+    ['DE601', 'DE602', 'DE603', 'DE604', 'DE605', 'FR606', 'SE607', 'UK608', 'DE609', 'PL610', 'PL611', 'PL612']
     >>> station_list('all')==station_list('nl', include=station_list('eu'))
     True
     >>> len(unique(station_list('all')))
-    47
+    50
     >>> station_list('wsrt')
     Traceback (most recent call last):
     ...
@@ -522,7 +522,7 @@ def station_list(station_set, include = None, exclude = None):
                  'RS310', 'RS406', 'RS407', 'RS409', 'RS503', 'RS508', 'RS509']
     netherlands = core + remote
     europe    = ['DE601', 'DE602', 'DE603', 'DE604', 'DE605', 'FR606', 'SE607',
-                   'UK608', 'DE609']
+                 'UK608', 'DE609', 'PL610', 'PL611', 'PL612']
     all_stations = netherlands + europe
 
     lookup_table = {'superterp': superterp,
