@@ -95,9 +95,10 @@ with format:
 
     <ANTENNA_SET> <BAND> <SUBBANDS> <CLOCK> <BIT_MODE> <DATA_PRODUCTS>
 
-    - ANTENNA_SET: one of LBA_INNER, LBA_OUTER, HBA_ZERO, HBA_ONE,
-                    HBA_DUAL, HBA_JOINED, HBA_ZERO_INNER,
-                    HBA_ONE_INNER, HBA_DUAL_INNER
+    - ANTENNA_SET: one of LBA_INNER, LBA_OUTER, LBA_SPARSE_ODD, 
+                   LBA_SPARSE_EVEN, HBA_ZERO, HBA_ONE,
+                   HBA_DUAL, HBA_JOINED, HBA_ZERO_INNER,
+                   HBA_ONE_INNER, HBA_DUAL_INNER
 
     - FREQUENCY_BAND: LBA_LOW, LBA_HIGH, HBA_LOW, HBA_MID, HBA_HIGH
 
@@ -269,9 +270,10 @@ def read_custom_observation_sequence(file_contents):
 
         <ANTENNA_SET>  <FREQ_BAND>  <SUBBANDS>  <CLOCK_MHZ>  <BITS>  <PRODUCTS>
 
-    - ANTENNA_SET: one of LBA_INNER, LBA_OUTER, HBA_ZERO, HBA_ONE,
-                    HBA_DUAL, HBA_JOINED, HBA_ZERO_INNER,
-                    HBA_ONE_INNER, HBA_DUAL_INNER
+    - ANTENNA_SET: one of LBA_INNER, LBA_OUTER, LBA_SPARSE_ODD, 
+                   LBA_SPARSE_EVEN, HBA_ZERO, HBA_ONE,
+                   HBA_DUAL, HBA_JOINED, HBA_ZERO_INNER,
+                   HBA_ONE_INNER, HBA_DUAL_INNER
 
     - FREQUENCY_BAND: LBA_LOW, LBA_HIGH, HBA_LOW, HBA_MID, HBA_HIGH
 
@@ -330,6 +332,7 @@ def read_custom_observation_sequence(file_contents):
                       if line.strip() != '']
 
     valid_antenna_sets = ['LBA_INNER', 'LBA_OUTER',
+                          'LBA_SPARSE_ODD', 'LBA_SPARSE_EVEN',
                           'HBA_ZERO', 'HBA_ONE', 'HBA_DUAL', 'HBA_JOINED',
                           'HBA_ZERO_INNER', 'HBA_ONE_INNER',
                           'HBA_DUAL_INNER']
@@ -430,34 +433,36 @@ def plan_observing_sequence(job_description):
          ('Preprocessing', 64, 2, 64, 10)],
         ['HBA_DUAL'      , 'HBA_LOW' ,
          ','.join(['%d' % sb for sb in range(77, 348, 15)]) , 200,  8, ['BM'],
-         ('Preprocessing', 64, 5, 64, 10)],
-        ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE'], None],
-        ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, ['FE'], None],
-        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['FE'], None],
-        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['IS_I'], None],
-        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['CS_I'], None],
-        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['CS_IQUV'], None],
-        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['CV'], None],
-        ['HBA_DUAL'      , 'HBA_LOW' , '12..499' , 200,  8, ['TR'], None],
-        ['LBA_INNER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC'], None],
-        ['LBA_OUTER'     , 'LBA_LOW' , '54..297' , 200, 16, ['XC'], None],
-        ['LBA_INNER'     , 'LBA_HIGH', '156..399', 200, 16, ['XC'], None],
-        ['LBA_OUTER'     , 'LBA_HIGH', '156..399', 200, 16, ['XC'], None],
-        ['HBA_ZERO'      , 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
-        ['HBA_ONE'       , 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
-        ['HBA_DUAL'      , 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
-        ['HBA_DUAL_INNER', 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
-        ['HBA_JOINED'    , 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
-        ['HBA_ZERO'      , 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
-        ['HBA_ONE'       , 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
-        ['HBA_DUAL'      , 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
-        ['HBA_DUAL_INNER', 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
-        ['HBA_JOINED'    , 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
-        ['HBA_ZERO'      , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None],
-        ['HBA_ONE'       , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None],
-        ['HBA_DUAL'      , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None],
-        ['HBA_DUAL_INNER', 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None],
-        ['HBA_JOINED'    , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None]]
+         ('Preprocessing' , 64, 5, 64, 10)],
+        ['LBA_INNER'      , 'LBA_HIGH', '156..399', 200, 16, ['FE'], None],
+        ['LBA_OUTER'      , 'LBA_HIGH', '156..399', 200, 16, ['FE'], None],
+        ['HBA_DUAL'       , 'HBA_LOW' , '77..320' , 200, 16, ['FE'], None],
+        ['HBA_DUAL'       , 'HBA_LOW' , '77..320' , 200, 16, ['IS_I'], None],
+        ['HBA_DUAL'       , 'HBA_LOW' , '77..320' , 200, 16, ['CS_I'], None],
+        ['HBA_DUAL'       , 'HBA_LOW' , '77..320' , 200, 16, ['CS_IQUV'], None],
+        ['HBA_DUAL'       , 'HBA_LOW' , '77..320' , 200, 16, ['CV'], None],
+        ['HBA_DUAL'       , 'HBA_LOW' , '12..499' , 200,  8, ['TR'], None],
+        ['LBA_INNER'      , 'LBA_LOW' , '54..297' , 200, 16, ['XC'], None],
+        ['LBA_OUTER'      , 'LBA_LOW' , '54..297' , 200, 16, ['XC'], None],
+        ['LBA_INNER'      , 'LBA_HIGH', '156..399', 200, 16, ['XC'], None],
+        ['LBA_OUTER'      , 'LBA_HIGH', '156..399', 200, 16, ['XC'], None],
+        ['LBA_SPARSE_ODD' , 'LBA_HIGH', '156..399', 200, 16, ['XC'], None],
+        ['LBA_SPARSE_EVEN', 'LBA_HIGH', '156..399', 200, 16, ['XC'], None],
+        ['HBA_ZERO'       , 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
+        ['HBA_ONE'        , 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
+        ['HBA_DUAL'       , 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
+        ['HBA_DUAL_INNER' , 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
+        ['HBA_JOINED'     , 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
+        ['HBA_ZERO'       , 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
+        ['HBA_ONE'        , 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
+        ['HBA_DUAL'       , 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
+        ['HBA_DUAL_INNER' , 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
+        ['HBA_JOINED'     , 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
+        ['HBA_ZERO'       , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None],
+        ['HBA_ONE'        , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None],
+        ['HBA_DUAL'       , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None],
+        ['HBA_DUAL_INNER' , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None],
+        ['HBA_JOINED'     , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None]]
     # pylint: enable=bad-whitespace
 
     if job_description.from_file is not None:
@@ -739,7 +744,7 @@ def main():
 
     sub_folder = Folder(
         name='%04d-%02d-%02d %02d:%02d' % folder_date[:-1],
-        description=('Validation observations %04d-%02d-%02d %02d:%02d' %
+8        description=('Validation observations %04d-%02d-%02d %02d:%02d' %
                      folder_date[:-1]),
         children=observations,
         grouping_parent=True)

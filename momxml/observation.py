@@ -13,7 +13,8 @@ class Observation(ObservationSpecificationBase):
                  stations, clock_mhz, beam_list, backend, name = None, bit_mode=16,
                  allow_tbb=True, allow_aartfaac=True, initial_status='opened'):
         """
-        *antenna_set*            : One of 'LBA_INNER', 'LBA_OUTER', 'HBA_ZERO', 'HBA_ONE',
+        *antenna_set*            : One of 'LBA_INNER', 'LBA_OUTER', 'LBA_SPARSE_ODD',
+                                   'LBA_SPARSE_EVEN', 'HBA_ZERO', 'HBA_ONE',
                                   'HBA_DUAL', or 'HBA_JOINED'
         *frequency_range*        : One of 'LBA_LOW' (10-90/70 MHz), 'LBA_HIGH' (30-90/70 MHz),
                                    'HBA_LOW' (110-190 MHz), 'HBA_MID' (170-230 MHz), or
@@ -63,6 +64,7 @@ class Observation(ObservationSpecificationBase):
 
     def validate(self):
         valid_antenna_sets = ['LBA_INNER', 'LBA_OUTER',
+                              'LBA_SPARSE_ODD', 'LBA_SPARSE_EVEN',
                               'HBA_ZERO', 'HBA_ONE',
                               'HBA_DUAL', 'HBA_JOINED',
                               'HBA_DUAL_INNER']
