@@ -744,7 +744,7 @@ def main():
 
     sub_folder = Folder(
         name='%04d-%02d-%02d %02d:%02d' % folder_date[:-1],
-8        description=('Validation observations %04d-%02d-%02d %02d:%02d' %
+        description=('Validation observations %04d-%02d-%02d %02d:%02d' %
                      folder_date[:-1]),
         children=observations,
         grouping_parent=True)
