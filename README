@@ -12,7 +12,7 @@ generate an XML file with observations for all desired observing
 modes, using the specified target source and a given duration per
 observation and interval between observations.
 
-The Genvalobs is based on the momxml library (included in this
+The Genvalobs is based on the lofarobsxml library (included in this
 package), which can be used to write your own python scripts to
 generate XML files that can be imported to LOFAR's MoM system.
 
