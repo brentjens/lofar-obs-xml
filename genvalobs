@@ -4,7 +4,7 @@
 r'''
 Genvalobs command line utility.
 
-Uses the momxml library to compose an XML file containing LOFAR test
+Uses the lofarobsxml library to compose an XML file containing LOFAR test
 observations that can be submitted to MoM.
 '''
 
@@ -14,17 +14,17 @@ from __future__ import print_function
 import sys, copy
 import ephem
 import argparse
-from momxml import Folder, SourceCatalogue, lofar_sidereal_time
-from momxml import Stokes, TiedArrayBeams, BackendProcessing, Beam, Observation
-from momxml import exclude_conflicting_eu_stations
-from momxml import exclude_conflicting_nl_stations
-from momxml import station_list, radec_from_lm, parse_subband_list
-from momxml import TargetSource, Angle
-from momxml import xml
-from momxml import SourceSpecificationError, InvalidStationSetError
-from momxml import NoSuitableSourceError
-from momxml import __version__
-from momxml.pipelines import NDPPP, AveragingPipeline
+from lofarobsxml import Folder, SourceCatalogue, lofar_sidereal_time
+from lofarobsxml import Stokes, TiedArrayBeams, BackendProcessing, Beam, Observation
+from lofarobsxml import exclude_conflicting_eu_stations
+from lofarobsxml import exclude_conflicting_nl_stations
+from lofarobsxml import station_list, radec_from_lm, parse_subband_list
+from lofarobsxml import TargetSource, Angle
+from lofarobsxml import xml
+from lofarobsxml import SourceSpecificationError, InvalidStationSetError
+from lofarobsxml import NoSuitableSourceError
+from lofarobsxml import __version__
+from lofarobsxml.pipelines import NDPPP, AveragingPipeline
 
 
 #
