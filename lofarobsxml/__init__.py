@@ -1,4 +1,4 @@
-__version__ = '1.9'
+__version__ = '2.0-devel'
 
 from lofarobsxml.angles    import signum, sign_char, int_from_sign_char, Angle
 
