@@ -21,7 +21,7 @@
 PYTHONPATH="`pwd`:$PYTHONPATH"
 NOSETESTS=`which nosetests`
 PYLINT=`which pylint`
-MODULE="momxml lofarobsxml genvalobs.py"
+MODULE="lofarobsxml genvalobs.py"
 
 if [[ ! -f "$NOSETESTS" ]] ; then
     NOSETESTS=`which nosetests2`

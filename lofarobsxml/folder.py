@@ -1,5 +1,5 @@
-from momxml.observationspecificationbase import ObservationSpecificationBase
-from momxml.utilities import lower_case
+from lofarobsxml.observationspecificationbase import ObservationSpecificationBase
+from lofarobsxml.utilities import lower_case
 
 
 class Folder(ObservationSpecificationBase):

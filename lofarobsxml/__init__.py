@@ -1,21 +1,21 @@
 __version__ = '1.9'
 
-from momxml.angles    import signum, sign_char, int_from_sign_char, Angle
+from lofarobsxml.angles    import signum, sign_char, int_from_sign_char, Angle
 
-from momxml.utilities import flatten_list, lofar_sidereal_time
-from momxml.utilities import station_list, validate_enumeration, next_date_with_lofar_lst
-from momxml.utilities import lofar_observer, next_sunrise, next_sunset
-from momxml.utilities import exclude_conflicting_eu_stations, exclude_conflicting_nl_stations
-from momxml.utilities import InvalidStationSetError
-from momxml.utilities import lm_from_radec, radec_from_lm, rotate_lm_CCW
-from momxml.utilities import parse_subband_list, lower_case
+from lofarobsxml.utilities import flatten_list, lofar_sidereal_time
+from lofarobsxml.utilities import station_list, validate_enumeration, next_date_with_lofar_lst
+from lofarobsxml.utilities import lofar_observer, next_sunrise, next_sunset
+from lofarobsxml.utilities import exclude_conflicting_eu_stations, exclude_conflicting_nl_stations
+from lofarobsxml.utilities import InvalidStationSetError
+from lofarobsxml.utilities import lm_from_radec, radec_from_lm, rotate_lm_CCW
+from lofarobsxml.utilities import parse_subband_list, lower_case
 
-from momxml.targetsource    import SourceSpecificationError, NoSimbadCoordinatesError
-from momxml.targetsource    import TargetSource, simbad
-from momxml.sourcecatalogue import SourceCatalogue, NoSuitableSourceError
-from momxml.folder          import Folder
-from momxml.beam            import Beam
-from momxml.backend         import Stokes, BackendProcessing, TiedArrayBeams
-from momxml.observation     import Observation, xml
+from lofarobsxml.targetsource    import SourceSpecificationError, NoSimbadCoordinatesError
+from lofarobsxml.targetsource    import TargetSource, simbad
+from lofarobsxml.sourcecatalogue import SourceCatalogue, NoSuitableSourceError
+from lofarobsxml.folder          import Folder
+from lofarobsxml.beam            import Beam
+from lofarobsxml.backend         import Stokes, BackendProcessing, TiedArrayBeams
+from lofarobsxml.observation     import Observation, xml
 
 import ephem

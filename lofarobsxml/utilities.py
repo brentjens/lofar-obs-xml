@@ -4,7 +4,7 @@ Various support functions that did not fit anywhere else.
 
 import ephem
 from numpy import pi, cos, sin, arcsin, sqrt, arctan2
-from momxml import Angle
+from lofarobsxml import Angle
 import sys
 
 class InvalidStationSetError(ValueError):
@@ -49,7 +49,7 @@ def with_auto_repr(cls):
     ...         self.b = b
     >>> aa = Elements(1, '3')
     >>> print(repr(aa)[0:-16])
-    <momxml.utilities.Elements object at
+    <lofarobsxml.utilities.Elements object at
     >>> Elements = with_auto_repr(Elements)
     >>> bb = Elements (1, 'v')
     >>> print(repr(bb))
@@ -509,7 +509,7 @@ def station_list(station_set, include = None, exclude = None):
     >>> station_list('wsrt')
     Traceback (most recent call last):
     ...
-    momxml.utilities.InvalidStationSetError: wsrt is not a valid station set.
+    lofarobsxml.utilities.InvalidStationSetError: wsrt is not a valid station set.
 
     '''
     superterp = ['CS002', 'CS003', 'CS004', 'CS005', 'CS006', 'CS007']

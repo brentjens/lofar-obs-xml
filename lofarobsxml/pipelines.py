@@ -5,9 +5,9 @@ on, this module will also support calibrator/target pipelines and
 imaging settings.
 '''
 
-from momxml.observationspecificationbase import ObservationSpecificationBase
-from momxml.utilities import AutoReprBaseClass, typecheck, lower_case, unique, indent
-from momxml.momformats import mom_duration, mom_timestamp
+from lofarobsxml.observationspecificationbase import ObservationSpecificationBase
+from lofarobsxml.utilities import AutoReprBaseClass, typecheck, lower_case, unique, indent
+from lofarobsxml.momformats import mom_duration, mom_timestamp
 import ephem
 
         
@@ -166,10 +166,10 @@ class AveragingPipeline(ObservationSpecificationBase):
 
     **Examples**
 
-    >>> from momxml             import TargetSource, Angle
-    >>> from momxml.backend     import BackendProcessing
-    >>> from momxml.observation import Observation
-    >>> from momxml.beam        import Beam
+    >>> from lofarobsxml             import TargetSource, Angle
+    >>> from lofarobsxml.backend     import BackendProcessing
+    >>> from lofarobsxml.observation import Observation
+    >>> from lofarobsxml.beam        import Beam
     >>> target = TargetSource(name      = 'Cyg A',
     ...                       ra_angle  = Angle(hms  = (19, 59, 28.3566)),
     ...                       dec_angle = Angle(sdms = ('+', 40, 44, 2.097)))
@@ -373,7 +373,7 @@ class AveragingPipeline(ObservationSpecificationBase):
         elif self.flagging_strategy in ['HBAdefault', 'LBAdefault']:
             args['flagging_strategy'] = self.flagging_strategy
         else:
-            raise ValueError('momxml.AverigingPipeline: unknown flagging strategy %r' %
+            raise ValueError('lofarobsxml.AverigingPipeline: unknown flagging strategy %r' %
                              self.flagging_strategy)
         args['used_data_products'] = indent(
             '\n'.join([

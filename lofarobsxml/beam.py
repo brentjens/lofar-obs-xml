@@ -1,6 +1,6 @@
-from momxml.observationspecificationbase import ObservationSpecificationBase
-from momxml.momformats import mom_duration
-from momxml.utilities import parse_subband_list, indent
+from lofarobsxml.observationspecificationbase import ObservationSpecificationBase
+from lofarobsxml.momformats import mom_duration
+from lofarobsxml.utilities import parse_subband_list, indent
 
 class Beam(ObservationSpecificationBase):
     r'''
@@ -29,8 +29,8 @@ class Beam(ObservationSpecificationBase):
 
     **Examples**
 
-    >>> from momxml import TargetSource, Angle
-    >>> from momxml.backend import BackendProcessing
+    >>> from lofarobsxml import TargetSource, Angle
+    >>> from lofarobsxml.backend import BackendProcessing
     >>> target = TargetSource(name      = 'Cyg A',
     ...                       ra_angle  = Angle(hms  = (19, 59, 28.3566)),
     ...                       dec_angle = Angle(sdms = ('+', 40, 44, 2.097)))

@@ -1,5 +1,5 @@
-from momxml import TargetSource, Angle, simbad
-from momxml import lofar_sidereal_time, lofar_observer
+from lofarobsxml import TargetSource, Angle, simbad
+from lofarobsxml import lofar_sidereal_time, lofar_observer
 import ephem
 
 

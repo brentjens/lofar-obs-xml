@@ -1,7 +1,7 @@
 import copy
-from momxml.utilities  import parse_subband_list
-from momxml.momformats import mom_antenna_name_from_mac_name as mom_antenna_name
-from momxml.momformats import mom_frequency_range
+from lofarobsxml.utilities  import parse_subband_list
+from lofarobsxml.momformats import mom_antenna_name_from_mac_name as mom_antenna_name
+from lofarobsxml.momformats import mom_frequency_range
 
 
 
@@ -190,7 +190,7 @@ class Beam(object):
     r'''
     **Examples**
 
-    >>> from momxml.angles import Angle
+    >>> from lofarobsxml.angles import Angle
     >>> beam = Beam(name = '3Cwhatever',
     ...             ra  = Angle(rad = 3.6),
     ...             dec = Angle(rad = 1.2),
@@ -350,7 +350,7 @@ def xml_generator_input_single_set(**kwargs):
 
     **Examples**
 
-    >>> from momxml.angles import Angle
+    >>> from lofarobsxml.angles import Angle
     >>> calibrator_beam = Beam('3C whatever',
     ...                        ra  = Angle(rad = 3.6),
     ...                        dec = Angle(rad = 1.2),

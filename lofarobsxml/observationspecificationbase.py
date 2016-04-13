@@ -3,7 +3,7 @@ A base class for classes that generate (part of) the xml needed to
 enter information into MoM.
 '''
 
-from momxml.utilities import indent
+from lofarobsxml.utilities import indent
 
 
 

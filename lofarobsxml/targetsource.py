@@ -2,7 +2,7 @@ r'''
 Specification of target sources to use in Observation Beams.
 '''
 
-from momxml.angles import Angle
+from lofarobsxml.angles import Angle
 import sys
 import urllib
 if sys.version_info[0] > 2:
@@ -96,20 +96,20 @@ class TargetSource(object):
         # ...              dec_angle = Angle(sdms = ('+', 40, 44, 2.099)) )
         # Traceback (most recent call last):
         # ...
-        # momxml.targetsource.SourceSpecificationError: Source name may not be a unicode string.
+        # lofarobsxml.targetsource.SourceSpecificationError: Source name may not be a unicode string.
         >>> TargetSource('Cyg A',
         ...              ra_angle = 3.0,
         ...              dec_angle = Angle(sdms = ('+', 40, 44, 2.099)) )
         Traceback (most recent call last):
         ...
-        momxml.targetsource.SourceSpecificationError: ra_angle must be a momxml.Angle, not 3.0
+        lofarobsxml.targetsource.SourceSpecificationError: ra_angle must be a lofarobsxml.Angle, not 3.0
 
         >>> TargetSource('Cyg A',
         ...              ra_angle = Angle(shms = ('+', 19, 59, 28.3565)),
         ...              dec_angle = -2)
         Traceback (most recent call last):
         ...
-        momxml.targetsource.SourceSpecificationError: dec_angle must be a momxml.Angle, not -2
+        lofarobsxml.targetsource.SourceSpecificationError: dec_angle must be a lofarobsxml.Angle, not -2
 
         '''
         # Named tuple was introduced in Python 2.7
@@ -124,11 +124,11 @@ class TargetSource(object):
                 (str(self.name),))
         if self.ra_angle.__class__.__name__ != 'Angle':
             raise SourceSpecificationError(
-                'ra_angle must be a momxml.Angle, not %r' % self.ra_angle)
+                'ra_angle must be a lofarobsxml.Angle, not %r' % self.ra_angle)
 
         if self.dec_angle.__class__.__name__ != 'Angle':
             raise SourceSpecificationError(
-                'dec_angle must be a momxml.Angle, not %r' % self.dec_angle)
+                'dec_angle must be a lofarobsxml.Angle, not %r' % self.dec_angle)
 
         return self
 
