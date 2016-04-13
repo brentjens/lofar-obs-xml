@@ -34,12 +34,12 @@ user@localhost:~/genvalobs/ $ sudo python2 setup.py install
 
 Usage
 -----
-
+Current LST: 2:38:49.89
 usage: genvalobs [-h] [-o FILENAME] [-m CORRELATOR_MODE] [-d SECONDS]
                  [-g SECONDS] [-s STATION_SET] [-i STATION_NAMES]
                  [-e STATION_NAMES] [--min-alt DEGREES] [--max-alt DEGREES]
                  [-c CLOCK_MHZ] [-w SECONDS] [-t DATE_STRING] [-p MOM_NAME]
-                 [-k STATIONS_TO_KEEP] [-f FILE_NAME] [-v]
+                 [-f FILE_NAME] [-v] [-a] [--max-subbands N]
                  [source]
 
 The (optional) source name must be enclosed in single or double
@@ -64,9 +64,10 @@ with format:
 
     <ANTENNA_SET> <BAND> <SUBBANDS> <CLOCK> <BIT_MODE> <DATA_PRODUCTS>
 
-    - ANTENNA_SET: one of LBA_INNER, LBA_OUTER, HBA_ZERO, HBA_ONE,
-                    HBA_DUAL, HBA_JOINED, HBA_ZERO_INNER,
-                    HBA_ONE_INNER, HBA_DUAL_INNER
+    - ANTENNA_SET: one of LBA_INNER, LBA_OUTER, LBA_SPARSE_ODD, 
+                   LBA_SPARSE_EVEN, HBA_ZERO, HBA_ONE,
+                   HBA_DUAL, HBA_JOINED, HBA_ZERO_INNER,
+                   HBA_ONE_INNER, HBA_DUAL_INNER
 
     - FREQUENCY_BAND: LBA_LOW, LBA_HIGH, HBA_LOW, HBA_MID, HBA_HIGH
 
@@ -79,24 +80,27 @@ with format:
     - BIT_MODE: either 4, 8, or 16
 
     - DATA_PRODUCTS: white-space separated list of products. Allowed:
-                     - XC (cross-correlation)
-                     - FE (fly's eye)
-                     - CS (coherent stokes)
-                     - IS (incoherent stokes)
-                     - TR (TAB rings)
+                     - XC      (cross-correlation)
+                     - FE      (fly's eye)
+                     - CS_I    (coherent stokes I)
+                     - CS_IQUV (coherent stokes IQUV)
+                     - IS_I    (incoherent stokes I)
+                     - IS_IQUV (incoherent stokes IQUV)
+                     - TR      (TAB rings)
 
     Empty lines are ignored, comments start with # end run until the
     end of the line.
 
     Example file:
 
-        # Antennaset    Band      Subbands   Clock  Bits   Products
+        # Antennaset    Band      Subbands   Clock  Bits   Products  Pipeline (avg freq; avg time; demix freq-window; demix time-window)
         LBA_OUTER       LBA_LOW   12..499    200     8     XC
-        HBA_DUAL        HBA_LOW   12..499    200     8     XC
+        HBA_DUAL        HBA_LOW   12..499    200     8     XC        Preprocessing 64 2 64 10
         LBA_INNER       LBA_HIGH  156..399   200    16     FE
-        HBA_DUAL        HBA_LOW   77..320    200    16     IS
-        HBA_DUAL        HBA_LOW   77..320    200    16     CS
-        HBA_DUAL_INNER  HBA_MID   66..309    160    16     XC IS
+        HBA_DUAL        HBA_LOW   77..320    200    16     IS_I
+        HBA_DUAL        HBA_LOW   77..320    200    16     CS_I
+        HBA_DUAL        HBA_LOW   77..320    200    16     CS_IQUV
+        HBA_DUAL_INNER  HBA_MID   66..309    160    16     XC IS_I
 
 Note that the custom sequence is subject to the same filtering by
 options -m, -c, etc. as the default observing sequence. The last entry
@@ -111,13 +115,14 @@ optional arguments:
   -h, --help            show this help message and exit
   -o FILENAME, --output FILENAME
                         Name of the output file [lofar-
-                        validation-20140701-101048.xml].
+                        validation-20160413-124249.xml].
   -m CORRELATOR_MODE, --mode CORRELATOR_MODE
                         Correlator modes to test. Choose one of XC
                         (crosscorrelation), FE (Fly's eye), IS (incoherent
                         stokes), or CS (coherent stokes). One can specify more
                         than one mode. If this argument is not spedified, all
-                        modes will be tested [XC,FE,CS,IS,TR].
+                        modes will be tested [XC, FE, CS_I, CS_IQUV, IS_I,
+                        IS_IQUV, TR].
   -d SECONDS, --duration SECONDS
                         Duration of individual observations in seconds [120].
   -g SECONDS, --gap SECONDS
@@ -149,15 +154,16 @@ optional arguments:
                         observation. Format: "yyyy/mm/dd hh:mm:ss.s"
   -p MOM_NAME, --project MOM_NAME
                         Name of the observations' MoM project
-                        ['2014LOFAROBS'].
-  -k STATIONS_TO_KEEP, --keep STATIONS_TO_KEEP
-                        In case of HBA_DUAL or HBA_ONE network conflicts, keep
-                        either "core", "eu" stations, or "all" of them.
-                        ['core'].
+                        ['2016LOFAROBS'].
   -f FILE_NAME, --from-file FILE_NAME
                         Read a custom observing sequence from FILE_NAME.
   -v, --version         Print version number and exit.
-
+  -a, --approved        Set initial status of observations and pipelines to
+                        'approved' instead of 'opened'.
+  --max-subbands N      Set the maximum allowed number of sub bands per
+                        observation. When minimal resources are required, use
+                        for example 10. If limited, it will take the first N
+                        sub bands.
 
 
 Brightest 3C sources
