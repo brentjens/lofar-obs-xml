@@ -229,9 +229,16 @@ required.''',
         help='''Set the maximum allowed number of sub bands per
 observation. When minimal resources are required, use for example
 10. If limited, it will take the first N sub bands.''',
-        type=int,
-        default=488)
+        type=int, default=488)
 
+    arg('--storage-cluster', metavar='CLUSTER_NAME',
+        help='''The cluster to which data are being stored and
+at which pipelines are being run.''',
+        type=str, default='CEP2')
+
+    arg('--storage-partition', metavar='PARTITION',
+        help='''The directory/partition to which data are being stored.''',
+        type=str, default='')
     
     arg('source', nargs='?',
         type=str,
@@ -247,6 +254,8 @@ own heuristics.''',
     if args.mode is None:
         args.mode = ['XC', 'FE', 'CS', 'CS_I', 'CS_IQUV', 'IS', 'IS_I', 'IS_IQUV', 'TR', 'BM']
     args.mode = [mode.upper() for mode in args.mode]
+    if args.storage_partition == '':
+        args.storage_partition = None
     return  args
 
 
@@ -634,7 +643,9 @@ def plan_observing_sequence(job_description):
         multibeam_subband_spec = ','.join([str(sb) for sb in sb_list[0:max(int(job_description.max_subbands/25.0 + 0.5), 1)]])
         beam_list=[Beam(
             target_source=target_source,
-            subband_spec=subband_spec)]
+            subband_spec=subband_spec,
+            storage_cluster=job_description.storage_cluster,
+            storage_partition=job_description.storage_partition)]
         if 'BM' in data_products:
             max_sb = sorted(parse_subband_list(subband_spec))[-1]
             max_freq_hz = clock_mhz*1e6*(max_sb/1024.0)
@@ -675,7 +686,10 @@ def plan_observing_sequence(job_description):
                                                 target_source.dec_angle.as_rad())
                         aux_field = TargetSource('Aux-%03d' % beam_id,
                                                  ra_angle=ra, dec_angle=dec)
-                        beam_list.append(Beam(aux_field, subband_spec=multibeam_subband_spec))
+                        beam_list.append(Beam(aux_field,
+                                              subband_spec=multibeam_subband_spec,
+                                              storage_partition=job_description.storage_partition,
+                                              storage_cluster=job_description.storage_cluster))
                         beam_id += 1
         obs = Observation(
             name=','.join(data_products)+' '+antenna_set,
@@ -718,7 +732,9 @@ def plan_observing_sequence(job_description):
                         input_data=[beam],
                         duration_s=duration_seconds*2,
                         start_date=ephem.Date(start_date+duration_seconds*ephem.second+5*ephem.minute).tuple(),
-                        initial_status=initial_status)
+                        initial_status=initial_status,
+                        processing_cluster=job_description.storage_cluster,
+                        processing_partition=job_description.storage_partition)
                     observations[-1].append_child(pl)
         start_date = ephem.Date(start_date
                                 + ephem.second*duration_seconds

@@ -37,17 +37,19 @@ class Beam(ObservationSpecificationBase):
 
     >>> bm = Beam(target, '77..324')
     >>> bm
-    Beam(parent           = NoneType,
-         children         = None,
-         duration_s       = None,
-         initial_status   = 'opened',
-         measurement_type = 'Target',
-         name             = 'Cyg A',
-         subband_spec     = '77..324',
-         target_source    = TargetSource(name      = 'Cyg A',
-                                         ra_angle  = Angle(shms = ('+', 19, 59, 28.3566)),
-                                         dec_angle = Angle(sdms = ('+', 40, 44, 2.097))),
-         tied_array_beams = None)
+    Beam(parent            = NoneType,
+         children          = None,
+         duration_s        = None,
+         initial_status    = 'opened',
+         measurement_type  = 'Target',
+         name              = 'Cyg A',
+         storage_cluster   = 'CEP2',
+         storage_partition = '/data',
+         subband_spec      = '77..324',
+         target_source     = TargetSource(name      = 'Cyg A',
+                                          ra_angle  = Angle(shms = ('+', 19, 59, 28.3566)),
+                                          dec_angle = Angle(sdms = ('+', 40, 44, 2.097))),
+         tied_array_beams  = None)
     >>> observation_stub = ObservationSpecificationBase('Observation')
     >>> observation_stub.backend = BackendProcessing()
     >>> observation_stub.clock_mhz = 200
@@ -83,6 +85,10 @@ class Beam(ObservationSpecificationBase):
           <name>Observation.0.Cyg_A.dps</name>
           <topology>Observation.0.Cyg_A.dps</topology>
           <status>no_data</status>
+          <storageCluster>
+            <name>CEP2</name>
+            <partition>/data</partition>
+          </storageCluster>
         </lofar:uvDataProduct>
       </item>
     </resultDataProducts>
@@ -92,7 +98,9 @@ class Beam(ObservationSpecificationBase):
     def __init__(self, target_source, subband_spec,
                  duration_s=None,
                  tied_array_beams=None,
-                 measurement_type='Target'):
+                 measurement_type='Target',
+                 storage_cluster='CEP2',
+                 storage_partition=None):
         super(Beam, self).__init__(target_source.name,
                                    parent = None, children = None)
         self.target_source    = target_source
@@ -100,6 +108,17 @@ class Beam(ObservationSpecificationBase):
         self.measurement_type = measurement_type
         self.duration_s       = duration_s
         self.tied_array_beams = tied_array_beams
+
+        self.storage_cluster = storage_cluster.upper()
+        self.storage_partition = storage_partition
+        if self.storage_partition is None:
+            if self.storage_cluster == 'CEP2':
+                self.storage_partition = '/data'
+            elif self.storage_cluster == 'CEP4':
+                self.storage_partition = '/data/projects'
+        if self.storage_partition is None:
+            raise ValueError('No storage partition specified for cluster %s' %
+                             self.storage_cluster)
 
         if type(subband_spec) == type(''):
             self.subband_spec     = subband_spec
@@ -149,9 +168,15 @@ class Beam(ObservationSpecificationBase):
       <name>%(label)s</name>
       <topology>%(label)s</topology>
       <status>no_data</status>
+      <storageCluster>
+        <name>%(storage_cluster)s</name>
+        <partition>%(storage_partition)s</partition>
+      </storageCluster>
     </lofar:uvDataProduct>
   </item>
-</resultDataProducts>''' % {'label': self.data_products_label()}
+</resultDataProducts>''' % {'label': self.data_products_label(),
+                            'storage_cluster': self.storage_cluster,
+                            'storage_partition': self.storage_partition}
         
         sub_bands     = parse_subband_list(self.subband_spec)
         bandwidth_mhz = len(sub_bands)*(self.parent.clock_mhz/1024.0)

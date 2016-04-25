@@ -185,39 +185,47 @@ class AveragingPipeline(ObservationSpecificationBase):
     >>> avg.add_input_data_product(obs.children[0])
     >>> obs.append_child(avg)
     >>> avg
-    AveragingPipeline(parent            = Observation('Main observation'),
-                      children          = None,
-                      default_template  = 'Preprocessing Pipeline',
-                      duration_s        = None,
-                      flagging_strategy = None,
-                      initial_status    = 'opened',
-                      input_data        = [Beam(parent           = Observation('Main observation'),
-                                               children         = None,
-                                               duration_s       = None,
-                                               initial_status   = 'opened',
-                                               measurement_type = 'Target',
-                                               name             = 'Cyg A',
-                                               subband_spec     = '77..324',
-                                               target_source    = TargetSource(name      = 'Cyg A',
-                                                                               ra_angle  = Angle(shms = ('+', 19, 59, 28.3566)),
-                                                                               dec_angle = Angle(sdms = ('+', 40, 44, 2.097))),
-                                               tied_array_beams = None)],
-                      name              = 'Avg Pipeline',
-                      ndppp             = NDPPP(avg_freq_step   = 64,
-                                                avg_time_step   = 1,
-                                                demix_always    = None,
-                                                demix_freq_step = 64,
-                                                demix_if_needed = None,
-                                                demix_time_step = 10,
-                                                ignore_target   = None),
-                      predecessor_label = None,
-                      start_date        = None)
+    AveragingPipeline(parent               = Observation('Main observation'),
+                      children             = None,
+                      default_template     = 'Preprocessing Pipeline',
+                      duration_s           = None,
+                      flagging_strategy    = None,
+                      initial_status       = 'opened',
+                      input_data           = [Beam(parent            = Observation('Main observation'),
+                                                  children          = None,
+                                                  duration_s        = None,
+                                                  initial_status    = 'opened',
+                                                  measurement_type  = 'Target',
+                                                  name              = 'Cyg A',
+                                                  storage_cluster   = 'CEP2',
+                                                  storage_partition = '/data',
+                                                  subband_spec      = '77..324',
+                                                  target_source     = TargetSource(name      = 'Cyg A',
+                                                                                   ra_angle  = Angle(shms = ('+', 19, 59, 28.3566)),
+                                                                                   dec_angle = Angle(sdms = ('+', 40, 44, 2.097))),
+                                                  tied_array_beams  = None)],
+                      name                 = 'Avg Pipeline',
+                      ndppp                = NDPPP(avg_freq_step   = 64,
+                                                   avg_time_step   = 1,
+                                                   demix_always    = None,
+                                                   demix_freq_step = 64,
+                                                   demix_if_needed = None,
+                                                   demix_time_step = 10,
+                                                   ignore_target   = None),
+                      predecessor_label    = None,
+                      processing_cluster   = 'CEP2',
+                      processing_partition = '/data',
+                      start_date           = None)
     >>> print(avg.xml('Project name'))
     <lofar:pipeline xsi:type="lofar:AveragingPipelineType">
       <topology>Main_observation.1.Avg_Pipeline</topology>
       <predecessor_topology>Main_observation</predecessor_topology>
       <name>Avg Pipeline</name>
       <description>Avg Pipeline: "Preprocessing Pipeline"</description>
+      <processingCluster>
+        <name>CEP2</name>
+        <partition>/data</partition>
+      </processingCluster>
       <currentStatus>
         <mom2:openedStatus/>
       </currentStatus>
@@ -262,7 +270,9 @@ class AveragingPipeline(ObservationSpecificationBase):
                  flagging_strategy = None,
                  parent   = None, children = None,
                  predecessor_label = None,
-                 initial_status='opened'):
+                 initial_status='opened',
+                 processing_cluster='CEP2',
+                 processing_partition=None):
         super(AveragingPipeline, self).__init__(name=name,
                                                 parent=parent,
                                                 children=children,
@@ -277,6 +287,16 @@ class AveragingPipeline(ObservationSpecificationBase):
         if input_data is not None:
             for item in input_data:
                 self.add_input_data_product(item)
+        self.processing_cluster = processing_cluster.upper()
+        self.processing_partition = processing_partition
+        if self.processing_partition is None:
+            if self.processing_cluster == 'CEP2':
+                self.processing_partition = '/data'
+            elif self.processing_cluster == 'CEP4':
+                self.processing_partition = '/data/projects'
+        if self.processing_partition is None:
+            raise ValueError('No processing partition specified for cluster %s' %
+                             self.processing_cluster)
         self.validate()
 
 
@@ -321,6 +341,10 @@ class AveragingPipeline(ObservationSpecificationBase):
   <predecessor_topology>%(predecessor)s</predecessor_topology>
   <name>%(name)s</name>
   <description>%(name)s: "%(default_template)s"</description>
+  <processingCluster>
+    <name>%(processing_cluster)s</name>
+    <partition>%(processing_partition)s</partition>
+  </processingCluster>
   <currentStatus>
     <mom2:%(initial_status)sStatus/>
   </currentStatus>
@@ -358,7 +382,9 @@ class AveragingPipeline(ObservationSpecificationBase):
             'flagging_strategy': self.flagging_strategy,
             'ndppp'       : indent(self.ndppp.xml(), 4),
             'used_data_products' : '',
-            'initial_status': self.initial_status
+            'initial_status': self.initial_status,
+            'processing_cluster': self.processing_cluster,
+            'processing_partition': self.processing_partition
         }
         if self.duration_s is not None:
             args['duration'] = mom_duration(seconds = self.duration_s)
