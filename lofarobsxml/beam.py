@@ -82,8 +82,8 @@ class Beam(ObservationSpecificationBase):
     <resultDataProducts>
       <item>
         <lofar:uvDataProduct>
-          <name>Observation.0.Cyg_A.dps</name>
-          <topology>Observation.0.Cyg_A.dps</topology>
+          <name>Observation.0.Cyg_A.uv.dps</name>
+          <topology>Observation.0.Cyg_A.uv.dps</topology>
           <status>no_data</status>
           <storageCluster>
             <name>CEP2</name>
@@ -137,9 +137,56 @@ class Beam(ObservationSpecificationBase):
         r'''
         Return the name of the data products produced by this beam.
         '''
-        return self.label()+'.dps'
+        return self.label()+'.uv.dps' # Quick and dirty fix as this is used in the pipelines.py
 
 
+    def xml_result_data_products(self, backend, storage_cluster, storage_partition):
+        r'''
+        Return the xml for the data products produced by this beam.
+        '''
+        # We don't need this? if not backend.need_beam_observation():
+        result = r'''
+<resultDataProducts>
+'''
+        if backend.correlated_data:
+            xc_topology = self.label() + '.uv.dps'
+            result += r'''  <item>
+    <lofar:uvDataProduct>
+      <name>%(label)s</name>
+      <topology>%(label)s</topology>
+      <status>no_data</status>
+      <storageCluster>
+        <name>%(storage_cluster)s</name>
+        <partition>%(storage_partition)s</partition>
+      </storageCluster>
+    </lofar:uvDataProduct>
+  </item>
+''' % {'label': xc_topology,
+         'storage_cluster': storage_cluster,
+         'storage_partition': storage_partition}
+
+        if backend.coherent_stokes_data or backend.incoherent_stokes_data:
+            bf_topology = self.label() + '.'
+            if backend.coherent_stokes_data:
+                bf_topology += 'cs'
+            if backend.incoherent_stokes_data:
+                bf_topology += 'is'
+            result += r'''  <item>
+    <lofar:bfDataProduct>
+      <name>%(label)s</name>
+      <topology>%(label)s</topology>
+      <status>no_data</status>
+      <storageCluster>
+        <name>%(storage_cluster)s</name>
+        <partition>%(storage_partition)s</partition>
+      </storageCluster>
+    </lofar:bfDataProduct>
+  </item>
+''' % {'label': bf_topology,
+         'storage_cluster': storage_cluster,
+         'storage_partition': storage_partition}
+        result += r'''</resultDataProducts>'''
+        return result
 
     def xml_prefix(self, project_name, current_date = None):
         backend    = self.parent.backend
@@ -159,24 +206,10 @@ class Beam(ObservationSpecificationBase):
                 self.tied_array_beams.xml(project_name),
                 amount = 4)
 
-        result_data_products = ''
-        if not backend.need_beam_observation():
-            result_data_products = '''
-<resultDataProducts>
-  <item>
-    <lofar:uvDataProduct>
-      <name>%(label)s</name>
-      <topology>%(label)s</topology>
-      <status>no_data</status>
-      <storageCluster>
-        <name>%(storage_cluster)s</name>
-        <partition>%(storage_partition)s</partition>
-      </storageCluster>
-    </lofar:uvDataProduct>
-  </item>
-</resultDataProducts>''' % {'label': self.data_products_label(),
-                            'storage_cluster': self.storage_cluster,
-                            'storage_partition': self.storage_partition}
+
+        result_data_products = self.xml_result_data_products(backend,
+                                                             self.storage_cluster,
+                                                             self.storage_partition)
         
         sub_bands     = parse_subband_list(self.subband_spec)
         bandwidth_mhz = len(sub_bands)*(self.parent.clock_mhz/1024.0)

@@ -247,8 +247,8 @@ class AveragingPipeline(ObservationSpecificationBase):
       </averagingPipelineAttributes>
       <usedDataProducts>
         <item>
-          <lofar:uvDataProduct topology="Main_observation.0.Cyg_A.dps">
-            <name>Main_observation.0.Cyg_A.dps</name>
+          <lofar:uvDataProduct topology="Main_observation.0.Cyg_A.uv.dps">
+            <name>Main_observation.0.Cyg_A.uv.dps</name>
           </lofar:uvDataProduct>
         </item>
       </usedDataProducts>
@@ -403,7 +403,7 @@ class AveragingPipeline(ObservationSpecificationBase):
                              self.flagging_strategy)
         args['used_data_products'] = indent(
             '\n'.join([
-                used_data_product_template % {'name' : sap.data_products_label()}
+                used_data_product_template % {'name' : sap.data_products_label()} #TODO this needs a proper fix as the topology for the observation has changed
                 for sap in self.input_data]),
             4)
         return template % args
