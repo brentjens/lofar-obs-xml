@@ -277,7 +277,7 @@ def read_custom_observation_sequence(file_contents):
     specification consists of newline-separated observationsm where
     each observation is specified in a white-space separated line with format:
 
-        <ANTENNA_SET>  <FREQ_BAND>  <SUBBANDS>  <CLOCK_MHZ>  <BITS>  <PRODUCTS>
+        <ANTENNA_SET>  <FREQ_BAND>  <SUBBANDS>  <CHANNELS> <CLOCK_MHZ>  <BITS>  <PRODUCTS>
 
     - ANTENNA_SET: one of LBA_INNER, LBA_OUTER, LBA_SPARSE_ODD, 
                    LBA_SPARSE_EVEN, HBA_ZERO, HBA_ONE,
@@ -290,6 +290,9 @@ def read_custom_observation_sequence(file_contents):
                     SPACES ALLOWED! Examples:
                       - 12..499
                       - 12..22,112..122,212..222
+    - CHANNELS: number of channels per sub band. Usually 64, sometimes 
+      16 or 256.
+
     - CLOCK_MHZ: either 200 or 160
 
     - BIT_MODE: either 4, 8, or 16
@@ -310,14 +313,14 @@ def read_custom_observation_sequence(file_contents):
 
     Example file:
 
-        # Antennaset    Band      Subbands   Clock  Bits   Products
-        LBA_OUTER       LBA_LOW   12..499    200     8     XC
-        HBA_DUAL        HBA_LOW   12..499    200     8     XC       Preprocessing 64 2 64 10
-        LBA_INNER       LBA_HIGH  156..399   200    16     FE
-        HBA_DUAL        HBA_LOW   77..320    200    16     IS_I
-        HBA_DUAL        HBA_LOW   77..320    200    16     CS_I
-        HBA_DUAL        HBA_LOW   77..320    200    16     CS_IQUV
-        HBA_DUAL_INNER  HBA_MID   66..309    160    16     XC IS_I
+        # Antennaset    Band      Subbands   Channels Clock  Bits   Products
+        LBA_OUTER       LBA_LOW   12..499    64       200     8     XC
+        HBA_DUAL        HBA_LOW   12..499    64       200     8     XC       Preprocessing 64 2 64 10
+        LBA_INNER       LBA_HIGH  156..399   64       200    16     FE
+        HBA_DUAL        HBA_LOW   77..320    64       200    16     IS_I
+        HBA_DUAL        HBA_LOW   77..320    64       200    16     CS_I
+        HBA_DUAL        HBA_LOW   77..320    64       200    16     CS_IQUV
+        HBA_DUAL_INNER  HBA_MID   66..309    64       160    16     XC IS_I
 
     Note that the last entry is using the 160 MHz clock. It will only be
     used in the observation sequence if the 160 MHz is selected using
@@ -348,6 +351,7 @@ def read_custom_observation_sequence(file_contents):
     valid_bands = ['LBA_LOW', 'LBA_HIGH',
                    'HBA_LOW', 'HBA_MID', 'HBA_HIGH']
     valid_clocks = [160, 200]
+    valid_channels = [1]+ [2**n for n in range(4,12)]
     valid_bits = [4, 8, 16]
     valid_products = ['XC', 'FE', 'IS', 'IS_I', 'IS_IQUV', 'CS', 'CS_I', 'CS_IQUV', 'CV', 'TR', 'BM']
     valid_pipelines = ['Preprocessing']
@@ -378,7 +382,7 @@ def read_custom_observation_sequence(file_contents):
         data_products = []
         pipeline = None
 
-        if len(fields) < 6: # or len(fields) > 9:
+        if len(fields) < 7: # or len(fields) > 9:
             raise ValueError('Line %r is malformed' % line)
 
         if fields[0].upper() not in valid_antenna_sets:
@@ -389,18 +393,22 @@ def read_custom_observation_sequence(file_contents):
             raise ValueError('Band %s not in %r' %
                              (fields[1], valid_bands))
 
-        if int(fields[3]) not in valid_clocks:
+        if int(fields[3]) not in valid_channels:
+            raise ValueError('Number of channels %s per subband not in %r' %
+                             (fields[3], valid_channels))
+
+        if int(fields[4]) not in valid_clocks:
             raise ValueError('Clock frequency %r not in %r' %
-                             (int(fields[3]), valid_clocks))
+                             (int(fields[4]), valid_clocks))
 
-        if int(fields[4]) not in valid_bits:
+        if int(fields[5]) not in valid_bits:
             raise ValueError('Bit mode %r not in %r' %
-                             (int(fields[4]), valid_bits))
+                             (int(fields[5]), valid_bits))
 
-        for offset, data_product in enumerate(fields[5:]):
+        for offset, data_product in enumerate(fields[6:]):
             if data_product.upper() not in valid_products:
                 if data_product in valid_pipelines:
-                    pipeline = parse_pipeline_spec(fields[5+offset:])
+                    pipeline = parse_pipeline_spec(fields[6+offset:])
                     break
                 else:
                     raise ValueError('Data product %r not in %r' %
@@ -415,6 +423,7 @@ def read_custom_observation_sequence(file_contents):
                 fields[2],
                 int(fields[3]),
                 int(fields[4]),
+                int(fields[5]),
                 data_products,
                 pipeline]
 
@@ -433,45 +442,45 @@ def plan_observing_sequence(job_description):
     #  cross correlation, incoherent stokes, coherent stokes, Fly's eye, 5x5 beam scans
     # pylint: disable=bad-whitespace
     full_schedule = [
-        ['LBA_OUTER'     , 'LBA_LOW' , '12..499' , 200,  8, ['XC'],
+        ['LBA_OUTER'     , 'LBA_LOW' , '12..499' , 64, 200,  8, ['XC'],
          ('Preprocessing', 8, 1, 64, 10, 'CygA CasA')],
-        ['HBA_DUAL'      , 'HBA_LOW' , '12..499' , 200,  8, ['XC'],
+        ['HBA_DUAL'      , 'HBA_LOW' , '12..499' , 64, 200,  8, ['XC'],
          ('Preprocessing', 16, 5, 64, 10)],
         ['LBA_OUTER'     , 'LBA_HIGH' ,
-         ','.join(['%d' % sb for sb in range(150, 331, 10)]), 200,  8, ['BM'],
+         ','.join(['%d' % sb for sb in range(150, 331, 10)]), 64, 200,  8, ['BM'],
          ('Preprocessing', 64, 2, 64, 10)],
         ['HBA_DUAL'      , 'HBA_LOW' ,
-         ','.join(['%d' % sb for sb in range(77, 348, 15)]) , 200,  8, ['BM'],
+         ','.join(['%d' % sb for sb in range(77, 348, 15)]) , 64, 200,  8, ['BM'],
          ('Preprocessing' , 64, 5, 64, 10)],
-        ['LBA_INNER'      , 'LBA_HIGH', '156..399', 200, 16, ['FE'], None],
-        ['LBA_OUTER'      , 'LBA_HIGH', '156..399', 200, 16, ['FE'], None],
-        ['HBA_DUAL'       , 'HBA_LOW' , '77..320' , 200, 16, ['FE'], None],
-        ['HBA_DUAL'       , 'HBA_LOW' , '77..320' , 200, 16, ['IS_I'], None],
-        ['HBA_DUAL'       , 'HBA_LOW' , '77..320' , 200, 16, ['CS_I'], None],
-        ['HBA_DUAL'       , 'HBA_LOW' , '77..320' , 200, 16, ['CS_IQUV'], None],
-        ['HBA_DUAL'       , 'HBA_LOW' , '77..320' , 200, 16, ['CV'], None],
-        ['HBA_DUAL'       , 'HBA_LOW' , '12..499' , 200,  8, ['TR'], None],
-        ['LBA_INNER'      , 'LBA_LOW' , '54..297' , 200, 16, ['XC'], None],
-        ['LBA_OUTER'      , 'LBA_LOW' , '54..297' , 200, 16, ['XC'], None],
-        ['LBA_INNER'      , 'LBA_HIGH', '156..399', 200, 16, ['XC'], None],
-        ['LBA_OUTER'      , 'LBA_HIGH', '156..399', 200, 16, ['XC'], None],
-        ['LBA_SPARSE_ODD' , 'LBA_HIGH', '156..399', 200, 16, ['XC'], None],
-        ['LBA_SPARSE_EVEN', 'LBA_HIGH', '156..399', 200, 16, ['XC'], None],
-        ['HBA_ZERO'       , 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
-        ['HBA_ONE'        , 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
-        ['HBA_DUAL'       , 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
-        ['HBA_DUAL_INNER' , 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
-        ['HBA_JOINED'     , 'HBA_LOW' , '77..320' , 200, 16, ['XC'], None],
-        ['HBA_ZERO'       , 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
-        ['HBA_ONE'        , 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
-        ['HBA_DUAL'       , 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
-        ['HBA_DUAL_INNER' , 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
-        ['HBA_JOINED'     , 'HBA_MID' , '66..309' , 160, 16, ['XC'], None],
-        ['HBA_ZERO'       , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None],
-        ['HBA_ONE'        , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None],
-        ['HBA_DUAL'       , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None],
-        ['HBA_DUAL_INNER' , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None],
-        ['HBA_JOINED'     , 'HBA_HIGH', '52..255' , 200, 16, ['XC'], None]]
+        ['LBA_INNER'      , 'LBA_HIGH', '156..399', 16, 200, 16, ['FE'], None],
+        ['LBA_OUTER'      , 'LBA_HIGH', '156..399', 16, 200, 16, ['FE'], None],
+        ['HBA_DUAL'       , 'HBA_LOW' , '77..320' , 16, 200, 16, ['FE'], None],
+        ['HBA_DUAL'       , 'HBA_LOW' , '77..320' , 16, 200, 16, ['IS_I'], None],
+        ['HBA_DUAL'       , 'HBA_LOW' , '77..320' , 16, 200, 16, ['CS_I'], None],
+        ['HBA_DUAL'       , 'HBA_LOW' , '77..320' , 16, 200, 16, ['CS_IQUV'], None],
+        ['HBA_DUAL'       , 'HBA_LOW' , '77..320' ,  1, 200, 16, ['CV'], None],
+        ['HBA_DUAL'       , 'HBA_LOW' , '12..499' , 16, 200,  8, ['TR'], None],
+        ['LBA_INNER'      , 'LBA_LOW' , '54..297' , 64, 200, 16, ['XC'], None],
+        ['LBA_OUTER'      , 'LBA_LOW' , '54..297' , 64, 200, 16, ['XC'], None],
+        ['LBA_INNER'      , 'LBA_HIGH', '156..399', 64, 200, 16, ['XC'], None],
+        ['LBA_OUTER'      , 'LBA_HIGH', '156..399', 64, 200, 16, ['XC'], None],
+        ['LBA_SPARSE_ODD' , 'LBA_HIGH', '156..399', 64, 200, 16, ['XC'], None],
+        ['LBA_SPARSE_EVEN', 'LBA_HIGH', '156..399', 64, 200, 16, ['XC'], None],
+        ['HBA_ZERO'       , 'HBA_LOW' , '77..320' , 64, 200, 16, ['XC'], None],
+        ['HBA_ONE'        , 'HBA_LOW' , '77..320' , 64, 200, 16, ['XC'], None],
+        ['HBA_DUAL'       , 'HBA_LOW' , '77..320' , 64, 200, 16, ['XC'], None],
+        ['HBA_DUAL_INNER' , 'HBA_LOW' , '77..320' , 64, 200, 16, ['XC'], None],
+        ['HBA_JOINED'     , 'HBA_LOW' , '77..320' , 64, 200, 16, ['XC'], None],
+        ['HBA_ZERO'       , 'HBA_MID' , '66..309' , 64, 160, 16, ['XC'], None],
+        ['HBA_ONE'        , 'HBA_MID' , '66..309' , 64, 160, 16, ['XC'], None],
+        ['HBA_DUAL'       , 'HBA_MID' , '66..309' , 64, 160, 16, ['XC'], None],
+        ['HBA_DUAL_INNER' , 'HBA_MID' , '66..309' , 64, 160, 16, ['XC'], None],
+        ['HBA_JOINED'     , 'HBA_MID' , '66..309' , 64, 160, 16, ['XC'], None],
+        ['HBA_ZERO'       , 'HBA_HIGH', '52..255' , 64, 200, 16, ['XC'], None],
+        ['HBA_ONE'        , 'HBA_HIGH', '52..255' , 64, 200, 16, ['XC'], None],
+        ['HBA_DUAL'       , 'HBA_HIGH', '52..255' , 64, 200, 16, ['XC'], None],
+        ['HBA_DUAL_INNER' , 'HBA_HIGH', '52..255' , 64, 200, 16, ['XC'], None],
+        ['HBA_JOINED'     , 'HBA_HIGH', '52..255' , 64, 200, 16, ['XC'], None]]
     # pylint: enable=bad-whitespace
 
     if job_description.from_file is not None:
@@ -491,7 +500,7 @@ def plan_observing_sequence(job_description):
     min_el_deg = job_description.min_alt
 
     schedule = [obs for obs in full_schedule
-                if obs[3] in job_description.clocks]
+                if obs[4] in job_description.clocks]
     now = ephem.Observer().date
     start_date = ephem.Date(now + ephem.second*job_description.wait)
     if job_description.start_date:
@@ -524,6 +533,7 @@ def plan_observing_sequence(job_description):
     for (antenna_set,
          frequency_range,
          subband_spec,
+         channels_per_subband,
          clock_mhz,
          bit_mode,
          data_products,
@@ -561,13 +571,11 @@ def plan_observing_sequence(job_description):
         if previous_clock != clock_mhz:
             start_date = ephem.Date(start_date + 2*ephem.minute)
 
-        channels_per_subband = 64
         coherent_stokes_data = None
         incoherent_stokes_data = None
         tied_array_beams = None
         duration_seconds = job_description.duration
         if 'TR' in data_products:
-            channels_per_subband = 16
             station_subset = set(station_list('superterp'))
             station_set = set(station_set).intersection(station_subset)
             coherent_stokes_data = Stokes('coherent',
@@ -578,7 +586,6 @@ def plan_observing_sequence(job_description):
                                               tab_ring_size=0.0042799)
             print('TAB ring test is experimental')
         if 'FE' in data_products:
-            channels_per_subband = 16
             coherent_stokes_data = Stokes('coherent',
                                           stokes_downsampling_steps=128)
             tied_array_beams = TiedArrayBeams(flyseye=True,
@@ -586,7 +593,6 @@ def plan_observing_sequence(job_description):
             if 'LBA' == antenna_set[0:3]:
                 duration_seconds = 600.0
         if 'CS' in data_products or 'CS_I' in data_products:
-            channels_per_subband = 16
             coherent_stokes_data = Stokes('coherent', polarizations='I',
                                           stokes_downsampling_steps=128)
             if tied_array_beams is None:
@@ -597,7 +603,6 @@ def plan_observing_sequence(job_description):
             core = set(station_list('core'))
             station_set = set(station_set).intersection(core)
         if 'CS_IQUV' in data_products:
-            channels_per_subband = 16
             coherent_stokes_data = Stokes('coherent', polarizations='IQUV',
                                           stokes_downsampling_steps=128)
             if tied_array_beams is None:
@@ -608,7 +613,6 @@ def plan_observing_sequence(job_description):
             core = set(station_list('core'))
             station_set = set(station_set).intersection(core)
         if 'CV' in data_products:
-            channels_per_subband = 1
             coherent_stokes_data = Stokes('coherent', polarizations='XXYY',
                                           number_collapsed_channels=1,
                                           stokes_downsampling_steps=1),
@@ -620,11 +624,9 @@ def plan_observing_sequence(job_description):
             core = set(station_list('core'))
             station_set = set(station_set).intersection(core)
         if 'IS' in data_products or 'IS_I' in data_products:
-            channels_per_subband = 16
             incoherent_stokes_data = Stokes('incoherent', polarizations='I',
                                             stokes_downsampling_steps=128)
         if 'IS_IQUV' in data_products:
-            channels_per_subband = 16
             incoherent_stokes_data = Stokes('incoherent', polarizations='IQUV',
                                             stokes_downsampling_steps=128)
 
