@@ -272,7 +272,9 @@ class AveragingPipeline(ObservationSpecificationBase):
                  predecessor_label = None,
                  initial_status='opened',
                  processing_cluster='CEP2',
-                 processing_partition=None):
+                 processing_partition=None,
+                 processing_nr_nodes = 24,  #This is a sensible default for CEP4 NDPPP pipelines, not for all pipelines
+                 processing_nr_cores = 20): #This is a sensible default for CEP4 NDPPP pipelines, not for all pipelines
         super(AveragingPipeline, self).__init__(name=name,
                                                 parent=parent,
                                                 children=children,
@@ -289,11 +291,13 @@ class AveragingPipeline(ObservationSpecificationBase):
                 self.add_input_data_product(item)
         self.processing_cluster = processing_cluster.upper()
         self.processing_partition = processing_partition
+        self.processing_nr_nodes  = processing_nr_nodes
+        self.processing_nr_cores  = processing_nr_cores
         if self.processing_partition is None:
             if self.processing_cluster == 'CEP2':
-                self.processing_partition = '/data'
+                self.processing_partition = 'cpu' #We also set this one to 'cpu' but it doesn't mean anything
             elif self.processing_cluster == 'CEP4':
-                self.processing_partition = '/data/projects'
+                self.processing_partition = 'cpu' #We also have 'gpu' but that's not used right now
         if self.processing_partition is None:
             raise ValueError('No processing partition specified for cluster %s' %
                              self.processing_cluster)
@@ -344,6 +348,8 @@ class AveragingPipeline(ObservationSpecificationBase):
   <processingCluster>
     <name>%(processing_cluster)s</name>
     <partition>%(processing_partition)s</partition>
+    <numberOfTasks>%(processing_nr_nodes)s</numberOfTasks>
+    <numberOfCoresPerTask>%(processing_nr_cores)s</numberOfCoresPerTask>
   </processingCluster>
   <currentStatus>
     <mom2:%(initial_status)sStatus/>
@@ -384,7 +390,9 @@ class AveragingPipeline(ObservationSpecificationBase):
             'used_data_products' : '',
             'initial_status': self.initial_status,
             'processing_cluster': self.processing_cluster,
-            'processing_partition': self.processing_partition
+            'processing_partition': self.processing_partition,
+            'processing_nr_nodes': self.processing_nr_nodes,
+            'processing_nr_cores': self.processing_nr_cores
         }
         if self.duration_s is not None:
             args['duration'] = mom_duration(seconds = self.duration_s)
