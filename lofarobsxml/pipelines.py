@@ -290,14 +290,17 @@ class AveragingPipeline(ObservationSpecificationBase):
             for item in input_data:
                 self.add_input_data_product(item)
         self.processing_cluster = processing_cluster.upper()
+        self.storage_cluster = self.processing_cluster
         self.processing_partition = processing_partition
         self.processing_nr_nodes  = processing_nr_nodes
         self.processing_nr_cores  = processing_nr_cores
         if self.processing_partition is None:
             if self.processing_cluster == 'CEP2':
                 self.processing_partition = 'cpu' #We also set this one to 'cpu' but it doesn't mean anything
+                self.storage_partition = "/data" #This path is now coded in multiple locations, can probably be refactored into the base class?
             elif self.processing_cluster == 'CEP4':
                 self.processing_partition = 'cpu' #We also have 'gpu' but that's not used right now
+                self.storage_partition = "/data/projects" #This path is now coded in multiple locations, can probably be refactored into the base class?
         if self.processing_partition is None:
             raise ValueError('No processing partition specified for cluster %s' %
                              self.processing_cluster)
@@ -366,9 +369,13 @@ class AveragingPipeline(ObservationSpecificationBase):
   <resultDataProducts>
     <item>
       <lofar:uvDataProduct>
-        <name>%(label)s.dps</name>
-        <topology>%(label)s.dps</topology>
+        <name>%(label)s</name>
+        <topology>%(label)s</topology>
         <status>no_data</status>
+        <storageCluster>
+          <name>%(storage_cluster)s</name>
+          <partition>%(storage_partition)s</partition>
+        </storageCluster>
       </lofar:uvDataProduct>
     </item>
   </resultDataProducts>
@@ -379,7 +386,7 @@ class AveragingPipeline(ObservationSpecificationBase):
   </lofar:uvDataProduct>
 </item>'''
         args = {
-            'label'       : self.label(),
+            'label'       : self.label() + '.uv.dps',
             'predecessor' : self.predecessor(),
             'name'        : self.name,
             'default_template' : self.default_template,
@@ -392,7 +399,9 @@ class AveragingPipeline(ObservationSpecificationBase):
             'processing_cluster': self.processing_cluster,
             'processing_partition': self.processing_partition,
             'processing_nr_nodes': self.processing_nr_nodes,
-            'processing_nr_cores': self.processing_nr_cores
+            'processing_nr_cores': self.processing_nr_cores,
+            'storage_cluster': self.storage_cluster,
+            'storage_partition': self.storage_partition
         }
         if self.duration_s is not None:
             args['duration'] = mom_duration(seconds = self.duration_s)
