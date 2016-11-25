@@ -20,27 +20,22 @@ target_duration_s = total_duration_s - 2*cal_duration_s - 2*61.0
 targets       = [momxml.simbad('NCP')]
 targets[0].name = 'NCP-%4d-%02d-%02d' % start_date.tuple()[0:3]
 
-targets.append(momxml.TargetSource('NCP-32A-%4d-%02d-%02d' % start_date.tuple()[0:3],
-                                   ra_angle  = momxml.Angle(hms=(9,30,0.0)),
-                                   dec_angle = momxml.Angle(deg=86.0)))
-targets.append(momxml.TargetSource('NCP-32B-%4d-%02d-%02d' % start_date.tuple()[0:3],
-                                   ra_angle  = momxml.Angle(hms=(14,0,0.0)),
-                                   dec_angle = momxml.Angle(deg=86.0)))
+targets.append(momxml.simbad('3C 220.3'))
 
 pre_cal      = source_catalogue.cal_source(start_date, 'HBA')
-post_cal     = source_catalogue.cal_source(end_date, 'HBA')
+post_cal     = source_catalogue.find_source('3C 196')
 #source_catalogue.cal_source(start_date+(target_duration_s+2*cal_duration_s)*ephem.second,
                #                            'HBA')
 
 station_set = 'all'
 if len(sys.argv) >= 3:
     station_set = sys.argv[2]
-antenna_set     = 'HBA_DUAL_INNER'
-band            = 'HBA_LOW'
+antenna_set     = 'LBA_OUTER'
+band            = 'LBA_HIGH'
 stations        = momxml.station_list(station_set, exclude = [])
-int_s           = 2.0
+int_s           = 1.0
 chan            = 64
-target_subbands = '91..252'
+target_subbands = '195..438'
 
 
 

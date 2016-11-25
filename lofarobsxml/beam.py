@@ -212,6 +212,8 @@ class Beam(ObservationSpecificationBase):
                                                              self.storage_partition)
         
         sub_bands     = parse_subband_list(self.subband_spec)
+        if len(sub_bands) == 0:
+            raise('Empty subband list %r' % self.subband_spec)
         bandwidth_mhz = len(sub_bands)*(self.parent.clock_mhz/1024.0)
         mean_sub_band = sum(sub_bands)/float(len(sub_bands))
         central_frequency_mhz = mean_sub_band*(self.parent.clock_mhz/1024.0)
