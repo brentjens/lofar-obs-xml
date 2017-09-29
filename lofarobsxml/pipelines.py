@@ -197,8 +197,8 @@ class AveragingPipeline(ObservationSpecificationBase):
                                                   initial_status    = 'opened',
                                                   measurement_type  = 'Target',
                                                   name              = 'Cyg A',
-                                                  storage_cluster   = 'CEP2',
-                                                  storage_partition = '/data',
+                                                  storage_cluster   = 'CEP4',
+                                                  storage_partition = '/data/projects',
                                                   subband_spec      = '77..324',
                                                   target_source     = TargetSource(name      = 'Cyg A',
                                                                                    ra_angle  = Angle(shms = ('+', 19, 59, 28.3566)),
@@ -213,18 +213,26 @@ class AveragingPipeline(ObservationSpecificationBase):
                                                    demix_time_step = 10,
                                                    ignore_target   = None),
                       predecessor_label    = None,
-                      processing_cluster   = 'CEP2',
-                      processing_partition = '/data',
-                      start_date           = None)
+                      processing_cluster   = 'CEP4',
+                      processing_nr_cores  = 20,
+                      processing_nr_nodes  = 24,
+                      processing_partition = 'cpu',
+                      start_date           = None,
+                      storage_cluster      = 'CEP4',
+                      storage_partition    = '/data/projects')
+
+
     >>> print(avg.xml('Project name'))
     <lofar:pipeline xsi:type="lofar:AveragingPipelineType">
-      <topology>Main_observation.1.Avg_Pipeline</topology>
+      <topology>Main_observation.1.Avg_Pipeline.uv.dps</topology>
       <predecessor_topology>Main_observation</predecessor_topology>
       <name>Avg Pipeline</name>
       <description>Avg Pipeline: "Preprocessing Pipeline"</description>
       <processingCluster>
-        <name>CEP2</name>
-        <partition>/data</partition>
+        <name>CEP4</name>
+        <partition>cpu</partition>
+        <numberOfTasks>24</numberOfTasks>
+        <numberOfCoresPerTask>20</numberOfCoresPerTask>
       </processingCluster>
       <currentStatus>
         <mom2:openedStatus/>
@@ -255,14 +263,17 @@ class AveragingPipeline(ObservationSpecificationBase):
       <resultDataProducts>
         <item>
           <lofar:uvDataProduct>
-            <name>Main_observation.1.Avg_Pipeline.dps</name>
-            <topology>Main_observation.1.Avg_Pipeline.dps</topology>
+            <name>Main_observation.1.Avg_Pipeline.uv.dps</name>
+            <topology>Main_observation.1.Avg_Pipeline.uv.dps</topology>
             <status>no_data</status>
+            <storageCluster>
+              <name>CEP4</name>
+              <partition>/data/projects</partition>
+            </storageCluster>
           </lofar:uvDataProduct>
         </item>
       </resultDataProducts>
     </lofar:pipeline>
-
 
     '''
     def __init__(self, name, ndppp, input_data = None,
@@ -271,7 +282,7 @@ class AveragingPipeline(ObservationSpecificationBase):
                  parent   = None, children = None,
                  predecessor_label = None,
                  initial_status='opened',
-                 processing_cluster='CEP2',
+                 processing_cluster='CEP4',
                  processing_partition=None,
                  processing_nr_nodes = 24,  #This is a sensible default for CEP4 NDPPP pipelines, not for all pipelines
                  processing_nr_cores = 20): #This is a sensible default for CEP4 NDPPP pipelines, not for all pipelines

@@ -234,7 +234,7 @@ observation. When minimal resources are required, use for example
     arg('--storage-cluster', metavar='CLUSTER_NAME',
         help='''The cluster to which data are being stored and
 at which pipelines are being run.''',
-        type=str, default='CEP2')
+        type=str, default='CEP4')
 
     arg('--storage-partition', metavar='PARTITION',
         help='''The directory/partition to which data are being stored.''',

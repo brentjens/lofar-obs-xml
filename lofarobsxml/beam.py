@@ -43,8 +43,8 @@ class Beam(ObservationSpecificationBase):
          initial_status    = 'opened',
          measurement_type  = 'Target',
          name              = 'Cyg A',
-         storage_cluster   = 'CEP2',
-         storage_partition = '/data',
+         storage_cluster   = 'CEP4',
+         storage_partition = '/data/projects',
          subband_spec      = '77..324',
          target_source     = TargetSource(name      = 'Cyg A',
                                           ra_angle  = Angle(shms = ('+', 19, 59, 28.3566)),
@@ -86,8 +86,8 @@ class Beam(ObservationSpecificationBase):
           <topology>Observation.0.Cyg_A.uv.dps</topology>
           <status>no_data</status>
           <storageCluster>
-            <name>CEP2</name>
-            <partition>/data</partition>
+            <name>CEP4</name>
+            <partition>/data/projects</partition>
           </storageCluster>
         </lofar:uvDataProduct>
       </item>
@@ -99,7 +99,7 @@ class Beam(ObservationSpecificationBase):
                  duration_s=None,
                  tied_array_beams=None,
                  measurement_type='Target',
-                 storage_cluster='CEP2',
+                 storage_cluster='CEP4',
                  storage_partition=None):
         super(Beam, self).__init__(target_source.name,
                                    parent = None, children = None)
