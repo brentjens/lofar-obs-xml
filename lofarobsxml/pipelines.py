@@ -157,6 +157,8 @@ class AveragingPipeline(ObservationSpecificationBase):
     r'''
     **Parameters**
     
+    processing_nr_tasks should be roughly nr of subbands divided by 3.
+
     flagging_strategy: 'LBAdefault', 'HBAdefault', or None
         NDPPP flagging strategy.
 
@@ -214,8 +216,8 @@ class AveragingPipeline(ObservationSpecificationBase):
                                                    ignore_target   = None),
                       predecessor_label    = None,
                       processing_cluster   = 'CEP4',
-                      processing_nr_cores  = 20,
-                      processing_nr_nodes  = 24,
+                      processing_nr_cores  = 2,
+                      processing_nr_tasks  = 163,
                       processing_partition = 'cpu',
                       start_date           = None,
                       storage_cluster      = 'CEP4',
@@ -231,8 +233,8 @@ class AveragingPipeline(ObservationSpecificationBase):
       <processingCluster>
         <name>CEP4</name>
         <partition>cpu</partition>
-        <numberOfTasks>24</numberOfTasks>
-        <numberOfCoresPerTask>20</numberOfCoresPerTask>
+        <numberOfTasks>163</numberOfTasks>
+        <numberOfCoresPerTask>2</numberOfCoresPerTask>
       </processingCluster>
       <currentStatus>
         <mom2:openedStatus/>
@@ -284,8 +286,8 @@ class AveragingPipeline(ObservationSpecificationBase):
                  initial_status='opened',
                  processing_cluster='CEP4',
                  processing_partition=None,
-                 processing_nr_nodes = 24,  #This is a sensible default for CEP4 NDPPP pipelines, not for all pipelines
-                 processing_nr_cores = 20): #This is a sensible default for CEP4 NDPPP pipelines, not for all pipelines
+                 processing_nr_tasks = 163,  #This is a sensible default for CEP4 NDPPP pipelines, not for all pipelines
+                 processing_nr_cores = 2): #This is a sensible default for CEP4 NDPPP pipelines, not for all pipelines
         super(AveragingPipeline, self).__init__(name=name,
                                                 parent=parent,
                                                 children=children,
@@ -303,7 +305,7 @@ class AveragingPipeline(ObservationSpecificationBase):
         self.processing_cluster = processing_cluster.upper()
         self.storage_cluster = self.processing_cluster
         self.processing_partition = processing_partition
-        self.processing_nr_nodes  = processing_nr_nodes
+        self.processing_nr_tasks  = processing_nr_tasks
         self.processing_nr_cores  = processing_nr_cores
         if self.processing_partition is None:
             if self.processing_cluster == 'CEP2':
@@ -362,7 +364,7 @@ class AveragingPipeline(ObservationSpecificationBase):
   <processingCluster>
     <name>%(processing_cluster)s</name>
     <partition>%(processing_partition)s</partition>
-    <numberOfTasks>%(processing_nr_nodes)s</numberOfTasks>
+    <numberOfTasks>%(processing_nr_tasks)s</numberOfTasks>
     <numberOfCoresPerTask>%(processing_nr_cores)s</numberOfCoresPerTask>
   </processingCluster>
   <currentStatus>
@@ -409,7 +411,7 @@ class AveragingPipeline(ObservationSpecificationBase):
             'initial_status': self.initial_status,
             'processing_cluster': self.processing_cluster,
             'processing_partition': self.processing_partition,
-            'processing_nr_nodes': self.processing_nr_nodes,
+            'processing_nr_tasks': self.processing_nr_tasks,
             'processing_nr_cores': self.processing_nr_cores,
             'storage_cluster': self.storage_cluster,
             'storage_partition': self.storage_partition
