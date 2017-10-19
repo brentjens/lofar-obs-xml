@@ -1,6 +1,9 @@
-from lofarobsxml import TargetSource, Angle, simbad
-from lofarobsxml import lofar_sidereal_time, lofar_observer
 import ephem
+
+from .angles import Angle
+from .utilities import lofar_sidereal_time, lofar_observer
+from .targetsource import TargetSource, simbad
+
 
 
 def target_source_from_row(row):

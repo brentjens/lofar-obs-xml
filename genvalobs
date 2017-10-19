@@ -11,15 +11,16 @@ observations that can be submitted to MoM.
 from __future__ import print_function
 
 
-import sys, copy
-import ephem
+import sys
+import copy
 import argparse
+
+import ephem
+
 from lofarobsxml import Folder, SourceCatalogue, lofar_sidereal_time
 from lofarobsxml import Stokes, TiedArrayBeams, BackendProcessing, Beam, Observation
-from lofarobsxml import exclude_conflicting_eu_stations
-from lofarobsxml import exclude_conflicting_nl_stations
 from lofarobsxml import station_list, radec_from_lm, parse_subband_list
-from lofarobsxml import TargetSource, Angle
+from lofarobsxml import TargetSource
 from lofarobsxml import xml
 from lofarobsxml import SourceSpecificationError, InvalidStationSetError
 from lofarobsxml import NoSuitableSourceError
@@ -151,7 +152,9 @@ sequence if the 160 MHz is selected using the -c / --clock option.
 
     arg('-m', '--mode', metavar='CORRELATOR_MODE',
         type=uppercase_string,
-        choices=['XC', 'FE', 'CS', 'CS_I', 'CS_IQUV', 'IS', 'IS_I', 'IS_IQUV', 'TR'], action='append',
+        choices=['XC', 'FE', 'CS', 'CS_I', 'CS_IQUV',
+                 'IS', 'IS_I', 'IS_IQUV', 'TR'],
+        action='append',
         help='''
 Correlator modes to test. Choose one of XC (crosscorrelation), FE
 (Fly\'s eye), IS (incoherent stokes), or CS (coherent stokes). One can
@@ -239,7 +242,7 @@ at which pipelines are being run.''',
     arg('--storage-partition', metavar='PARTITION',
         help='''The directory/partition to which data are being stored.''',
         type=str, default='')
-    
+
     arg('source', nargs='?',
         type=str,
         help='''
@@ -279,7 +282,7 @@ def read_custom_observation_sequence(file_contents):
 
         <ANTENNA_SET>  <FREQ_BAND>  <SUBBANDS>  <CHANNELS> <CLOCK_MHZ>  <BITS>  <PRODUCTS>
 
-    - ANTENNA_SET: one of LBA_INNER, LBA_OUTER, LBA_SPARSE_ODD, 
+    - ANTENNA_SET: one of LBA_INNER, LBA_OUTER, LBA_SPARSE_ODD,
                    LBA_SPARSE_EVEN, HBA_ZERO, HBA_ONE,
                    HBA_DUAL, HBA_JOINED, HBA_ZERO_INNER,
                    HBA_ONE_INNER, HBA_DUAL_INNER
@@ -351,9 +354,10 @@ def read_custom_observation_sequence(file_contents):
     valid_bands = ['LBA_LOW', 'LBA_HIGH',
                    'HBA_LOW', 'HBA_MID', 'HBA_HIGH']
     valid_clocks = [160, 200]
-    valid_channels = [1]+ [2**n for n in range(4,12)]
+    valid_channels = [1]+ [2**n for n in range(4, 12)]
     valid_bits = [4, 8, 16]
-    valid_products = ['XC', 'FE', 'IS', 'IS_I', 'IS_IQUV', 'CS', 'CS_I', 'CS_IQUV', 'CV', 'TR', 'BM']
+    valid_products = ['XC', 'FE', 'IS', 'IS_I', 'IS_IQUV',
+                      'CS', 'CS_I', 'CS_IQUV', 'CV', 'TR', 'BM']
     valid_pipelines = ['Preprocessing']
 
     pipeline = None
@@ -375,7 +379,7 @@ def read_custom_observation_sequence(file_contents):
         else:
             raise ValueError('Unknown pipeline %r' % words[0])
         return pipeline_def
-    
+
     def record_from_line(line):
         'Split a line (at its whitespace) into a list of fields'
         fields = line.split()
@@ -528,7 +532,7 @@ def plan_observing_sequence(job_description):
                             exclude=exclude,)
     initial_status = 'opened'
     if job_description.approved:
-        initial_status='approved'
+        initial_status = 'approved'
 
     observations = []
     previous_clock = 200
@@ -546,7 +550,7 @@ def plan_observing_sequence(job_description):
                          for data_product in data_products
                          if data_product in job_description.mode]
 
-        if len(data_products) == 0:
+        if not data_products:
             continue # No data products to write, no point to observe.
         if target_source is None:
             if (any([dprod in data_products
@@ -592,7 +596,7 @@ def plan_observing_sequence(job_description):
                                           stokes_downsampling_steps=128)
             tied_array_beams = TiedArrayBeams(flyseye=True,
                                               beams_ra_dec_rad=None)
-            if 'LBA' == antenna_set[0:3]:
+            if antenna_set[0:3] == 'LBA':
                 duration_seconds = 600.0
         if 'CS' in data_products or 'CS_I' in data_products:
             coherent_stokes_data = Stokes('coherent', polarizations='I',
@@ -645,7 +649,7 @@ def plan_observing_sequence(job_description):
         sb_list = sorted(parse_subband_list(subband_spec))
         subband_spec = ','.join([str(sb) for sb in sb_list[0:max(job_description.max_subbands, 1)]])
         multibeam_subband_spec = ','.join([str(sb) for sb in sb_list[0:max(int(job_description.max_subbands/25.0 + 0.5), 1)]])
-        beam_list=[Beam(
+        beam_list = [Beam(
             sap_id=0,
             target_source=target_source,
             subband_spec=subband_spec,
@@ -665,7 +669,7 @@ def plan_observing_sequence(job_description):
                 elif 'RS' in all_stations and 'INNER' not in antenna_set:
                     station_size_m = 8*5
                 else:
-                    station_size_m =6*5
+                    station_size_m = 6*5
             if 'LBA_OUTER' in antenna_set or \
                'LBA_SPARSE' in antenna_set or \
                'LBA_X' in antenna_set or \
@@ -720,7 +724,7 @@ def plan_observing_sequence(job_description):
                     demix_always = pipeline[5].split()
                 if len(pipeline) >= 7:
                     demix_if_needed = pipeline[6].split()
-                beams = [child for child in obs.children if type(child) is Beam]
+                beams = [child for child in obs.children if isinstance(child, Beam)]
                 for beam in beams:
                     if 'cyg' in beam.target_source.name.lower():
                         if demix_always is not None:
@@ -737,7 +741,9 @@ def plan_observing_sequence(job_description):
                                     demix_always, demix_if_needed),
                         input_data=[beam],
                         duration_s=duration_seconds*2,
-                        start_date=ephem.Date(start_date+duration_seconds*ephem.second+5*ephem.minute).tuple(),
+                        start_date=ephem.Date(start_date\
+                                              + duration_seconds*ephem.second\
+                                              + 5*ephem.minute).tuple(),
                         initial_status=initial_status,
                         processing_cluster=job_description.storage_cluster,
                         processing_partition=job_description.storage_partition,

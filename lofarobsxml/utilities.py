@@ -2,10 +2,11 @@ r'''
 Various support functions that did not fit anywhere else.
 '''
 
-import ephem
-from numpy import pi, cos, sin, arcsin, sqrt, arctan2
-from lofarobsxml import Angle
 import sys
+from numpy import pi, cos, sin, arcsin, sqrt, arctan2
+import ephem
+
+from .angles import Angle
 
 class InvalidStationSetError(ValueError):
     r'''
@@ -21,7 +22,7 @@ class AutoReprBaseClass(object):
     which the arguments are set in bthe constructor body.
     '''
     def __repr__(self):
-        name    = self.__class__.__name__
+        name = self.__class__.__name__
         as_dict = self.__dict__
         members = sorted(as_dict.keys())
         longest_member = sorted([len(s) for s in members])[-1]
@@ -31,7 +32,7 @@ class AutoReprBaseClass(object):
         indented_member_strings = [('\n'+ ' '*(longest_member+3)).join(
             member.split('\n'))
                                    for member in member_strings]
-        unadjusted =  ',\n'.join(indented_member_strings)
+        unadjusted = ',\n'.join(indented_member_strings)
         return name+'('+sep.join(unadjusted.split('\n'))+')'
 
 
@@ -65,7 +66,7 @@ def with_auto_repr(cls):
         '''
 
         def __repr__(self):
-            name    = cls.__name__
+            name = cls.__name__
             as_dict = self.__dict__
             members = sorted(as_dict.keys())
             longest_member = sorted([len(s) for s in members])[-1]
@@ -75,7 +76,7 @@ def with_auto_repr(cls):
             indented_member_strings = [('\n'+ ' '*(longest_member+3)).join(
                 member.split('\n'))
                                        for member in member_strings]
-            unadjusted =  ',\n'.join(indented_member_strings)
+            unadjusted = ',\n'.join(indented_member_strings)
             return name+'('+sep.join(unadjusted.split('\n'))+')'
 
     return AutoReprClass
@@ -83,7 +84,7 @@ def with_auto_repr(cls):
 
 
 
-def typecheck(variable, type_class, name = None):
+def typecheck(variable, type_class, name=None):
     r'''
     Raise TypeError if ``variable`` is not an instance of
     ``type_class``.
@@ -118,15 +119,16 @@ def typecheck(variable, type_class, name = None):
     template = 'type(%(var)r) not in %(types)r'
     if name is not None:
         template = 'type(%(name)s)(%(var)r) not in %(types)r'
-    if type(type_class) == list:
+    if isinstance(type_class, list):
         type_list = type_class
     else:
         type_list = [type_class]
-    if type(variable) not in type_list:
-            raise TypeError(template %
-                            {'name'  : name,
-                             'var'   : variable,
-                             'types' : [tp.__name__ for tp in type_list]})
+    if not any([isinstance(variable, type_desc)
+                for type_desc in type_list]):
+        raise TypeError(template %
+                        {'name'  : name,
+                         'var'   : variable,
+                         'types' : [tp.__name__ for tp in type_list]})
 
 
 
@@ -155,7 +157,7 @@ def indent(string, amount):
     '''
     lines = string.split('\n')
     if amount > 0:
-        lines = [line if '' == line else ' '*amount + line for line in lines]
+        lines = [line if line == '' else ' '*amount + line for line in lines]
     if amount < 0:
         lines = [line[-amount:] for line in lines]
     return '\n'.join(lines)
@@ -283,7 +285,7 @@ def parse_subband_list(parset_subband_list):
 
 
 
-def lofar_observer(date = None):
+def lofar_observer(date=None):
     r'''
     **Parameters**
 
@@ -300,9 +302,9 @@ def lofar_observer(date = None):
     <ephem.Observer date='2013/4/15 12:34:56' epoch='2000/1/1 12:00:00' lon='6:52:11.4' lat='52:54:54.4' elevation=49.343999999999994m horizon=0:00:00.0 temp=15.0C pressure=1010.0mBar>
 
     '''
-    lofar           = ephem.Observer()
-    lofar.long      = +6.869837540*pi/180
-    lofar.lat       = +52.915122495*pi/180
+    lofar = ephem.Observer()
+    lofar.long = +6.869837540*pi/180
+    lofar.lat = +52.915122495*pi/180
     lofar.elevation = +49.344
     if date is not None:
         lofar.date = date
@@ -320,20 +322,20 @@ def lofar_sidereal_time(date):
 
     >>> type(lofar_sidereal_time(ephem.Observer().date))
     <class 'ephem.Angle'>
-    >>> lofar           = ephem.Observer()
-    >>> lofar.long      = +6.869837540*pi/180
-    >>> lofar.lat       = +52.915122495*pi/180
+    >>> lofar = ephem.Observer()
+    >>> lofar.long = +6.869837540*pi/180
+    >>> lofar.lat = +52.915122495*pi/180
     >>> lofar.elevation = +49.344
-    >>> lofar.date      = ephem.Observer().date
+    >>> lofar.date = ephem.Observer().date
     >>> abs(lofar.sidereal_time() - lofar_sidereal_time(lofar.date))
     0.0
     '''
     # CS002 LBA in ITRF2005, epoch 2009.5
-    lofar           = lofar_observer(date)
+    lofar = lofar_observer(date)
     return lofar.sidereal_time()
 
 
-def next_date_with_lofar_lst(lst_rad, start_date = None):
+def next_date_with_lofar_lst(lst_rad, start_date=None):
     r'''
     '''
     if not start_date:
@@ -341,7 +343,7 @@ def next_date_with_lofar_lst(lst_rad, start_date = None):
     else:
         start_date = ephem.Date(start_date)
     lst = lst_rad
-    lst_at_start_rad  = float(lofar_sidereal_time(start_date))
+    lst_at_start_rad = float(lofar_sidereal_time(start_date))
     while lst < lst_at_start_rad:
         lst = lst + 2*pi
     delta_lst_rad = lst - lst_at_start_rad
@@ -349,7 +351,7 @@ def next_date_with_lofar_lst(lst_rad, start_date = None):
     return ephem.Date(start_date + ephem.hour*(delta_utc_rad*12/pi))
 
 
-def next_sunrise(date, observer = None):
+def next_sunrise(date, observer=None):
     r'''
     Return an ephem.Date instance with the next sunrise at LOFAR, or
     any other ephem.Observer, if provided.
@@ -380,7 +382,7 @@ def next_sunrise(date, observer = None):
 
 
 
-def next_sunset(date, observer = None):
+def next_sunset(date, observer=None):
     r'''
     Return an ephem.Date instance with the next sunset at LOFAR, or
     any other ephem.Observer, if provided.
@@ -432,7 +434,7 @@ def antenna_field_sort_key(name):
     '''
     station_number = int(name[2:5])*10
     if name[0:2].upper() != 'CS':
-        station_number *=10
+        station_number *= 10
     if 'HBA1' in name:
         station_number += 1
     return station_number
@@ -464,7 +466,7 @@ def sort_station_list(stations):
 
 
 
-def station_list(station_set, include = None, exclude = None):
+def station_list(station_set, include=None, exclude=None):
     r'''
     Provides a sorted list of station names, given a station set name,
     a list of stations to include, and a list of stations to
@@ -513,16 +515,16 @@ def station_list(station_set, include = None, exclude = None):
 
     '''
     superterp = ['CS002', 'CS003', 'CS004', 'CS005', 'CS006', 'CS007']
-    core      = ['CS001'] + superterp + ['CS011', 'CS013', 'CS017', 'CS021',
-                                         'CS024', 'CS026', 'CS028', 'CS030',
-                                         'CS031', 'CS032', 'CS101', 'CS103',
-                                         'CS201', 'CS301', 'CS302', 'CS401',
-                                         'CS501']
-    remote    = ['RS106', 'RS205', 'RS208', 'RS210', 'RS305', 'RS306', 'RS307',
-                 'RS310', 'RS406', 'RS407', 'RS409', 'RS503', 'RS508', 'RS509']
+    core = ['CS001'] + superterp + ['CS011', 'CS013', 'CS017', 'CS021',
+                                    'CS024', 'CS026', 'CS028', 'CS030',
+                                    'CS031', 'CS032', 'CS101', 'CS103',
+                                    'CS201', 'CS301', 'CS302', 'CS401',
+                                    'CS501']
+    remote = ['RS106', 'RS205', 'RS208', 'RS210', 'RS305', 'RS306', 'RS307',
+              'RS310', 'RS406', 'RS407', 'RS409', 'RS503', 'RS508', 'RS509']
     netherlands = core + remote
-    europe    = ['DE601', 'DE602', 'DE603', 'DE604', 'DE605', 'FR606', 'SE607',
-                 'UK608', 'DE609', 'PL610', 'PL611', 'PL612', 'IE613']
+    europe = ['DE601', 'DE602', 'DE603', 'DE604', 'DE605', 'FR606', 'SE607',
+              'UK608', 'DE609', 'PL610', 'PL611', 'PL612', 'IE613']
     all_stations = netherlands + europe
 
     lookup_table = {'superterp': superterp,
@@ -696,12 +698,12 @@ def validate_enumeration(name, value, allowed):
 
 
 def lm_from_radec(ra_angle, dec_angle, ra0_angle, dec0_angle):
-    cos_dec  = cos(float(dec_angle))
-    sin_dec  = sin(float(dec_angle))
+    cos_dec = cos(float(dec_angle))
+    sin_dec = sin(float(dec_angle))
     cos_dec0 = cos(float(dec0_angle))
     sin_dec0 = sin(float(dec0_angle))
-    sin_dra  = sin(float(ra_angle - ra0_angle))
-    cos_dra  = cos(float(ra_angle - ra0_angle))
+    sin_dra = sin(float(ra_angle - ra0_angle))
+    cos_dra = cos(float(ra_angle - ra0_angle))
 
     l_rad = cos_dec*sin_dra
     m_rad = sin_dec*cos_dec0 - cos_dec*sin_dec0*cos_dra
@@ -709,19 +711,19 @@ def lm_from_radec(ra_angle, dec_angle, ra0_angle, dec0_angle):
 
 
 def radec_from_lm(l_rad, m_rad, ra0_angle, dec0_angle):
-    n_rad  = sqrt(1.0 - l_rad*l_rad - m_rad*m_rad)
+    n_rad = sqrt(1.0 - l_rad*l_rad - m_rad*m_rad)
     cos_dec0 = cos(float(dec0_angle))
     sin_dec0 = sin(float(dec0_angle))
     ra_rad = float(ra0_angle) + arctan2(l_rad,
                                         cos_dec0*n_rad - m_rad*sin_dec0)
     dec_rad = arcsin(m_rad*cos_dec0 + sin_dec0*n_rad)
-    return (Angle(rad = ra_rad), Angle(rad = dec_rad))
+    return (Angle(rad=ra_rad), Angle(rad=dec_rad))
 
 
 def rotate_lm_CCW(l_rad, m_rad, ccw_angle):
     cs = cos(float(ccw_angle))
     ss = sin(float(ccw_angle))
 
-    l_new =  l_rad*cs + m_rad*ss
+    l_new = l_rad*cs + m_rad*ss
     m_new = -l_rad*ss + m_rad*cs
     return l_new, m_new
