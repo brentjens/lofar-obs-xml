@@ -20,11 +20,24 @@ target_duration_s = total_duration_s - 2*cal_duration_s - 2*61.0
 targets       = [momxml.simbad('NCP')]
 targets[0].name = 'NCP-%4d-%02d-%02d' % start_date.tuple()[0:3]
 
-targets.append(momxml.TargetSource('NCP-32A-%4d-%02d-%02d' % start_date.tuple()[0:3],
-                                   ra_angle  = momxml.Angle(hms=(9,30,0.0)),
+
+targets.append(momxml.TargetSource('NCP-13A-%4d-%02d-%02d' % start_date.tuple()[0:3],
+                                   ra_angle  = momxml.Angle(hms=(2,0,0.0)),
                                    dec_angle = momxml.Angle(deg=86.0)))
-targets.append(momxml.TargetSource('NCP-32B-%4d-%02d-%02d' % start_date.tuple()[0:3],
+targets.append(momxml.TargetSource('NCP-13B-%4d-%02d-%02d' % start_date.tuple()[0:3],
+                                   ra_angle  = momxml.Angle(hms=(6,0,0.0)),
+                                   dec_angle = momxml.Angle(deg=86.0)))
+targets.append(momxml.TargetSource('NCP-13C-%4d-%02d-%02d' % start_date.tuple()[0:3],
+                                   ra_angle  = momxml.Angle(hms=(10,0,0.0)),
+                                   dec_angle = momxml.Angle(deg=86.0)))
+targets.append(momxml.TargetSource('NCP-13D-%4d-%02d-%02d' % start_date.tuple()[0:3],
                                    ra_angle  = momxml.Angle(hms=(14,0,0.0)),
+                                   dec_angle = momxml.Angle(deg=86.0)))
+targets.append(momxml.TargetSource('NCP-13E-%4d-%02d-%02d' % start_date.tuple()[0:3],
+                                   ra_angle  = momxml.Angle(hms=(18,0,0.0)),
+                                   dec_angle = momxml.Angle(deg=86.0)))
+targets.append(momxml.TargetSource('NCP-13F-%4d-%02d-%02d' % start_date.tuple()[0:3],
+                                   ra_angle  = momxml.Angle(hms=(22,0,0.0)),
                                    dec_angle = momxml.Angle(deg=86.0)))
 
 pre_cal      = source_catalogue.cal_source(start_date, 'HBA')
@@ -40,7 +53,8 @@ band            = 'HBA_LOW'
 stations        = momxml.station_list(station_set, exclude = [])
 int_s           = 2.0
 chan            = 64
-target_subbands = '91..252'
+target_subbands = '71..144'
+aux_subbands    = '71..139'
 
 
 
@@ -56,7 +70,7 @@ observations = []
 current_date = start_date
 
 observations.append(momxml.Observation(
-    beam_list        = [momxml.Beam(pre_cal, target_subbands, storage_cluster='CEP4')],
+    beam_list        = [momxml.Beam(0, pre_cal, target_subbands, storage_cluster='CEP4')],
     antenna_set      = antenna_set,
     frequency_range  = band,
     start_date       = ephem.Date(current_date).tuple(),
@@ -70,8 +84,8 @@ observations.append(momxml.Observation(
 current_date += cal_duration_s*ephem.second + 61*ephem.second
 
 observations.append(momxml.Observation(
-    beam_list        = [momxml.Beam(field, target_subbands, storage_cluster='CEP4')
-                        for field in targets],
+    beam_list        = [momxml.Beam(sap_id, field, sb, storage_cluster='CEP4')
+                        for sap_id, (field, sb) in enumerate(zip(targets, [target_subbands]+([aux_subbands]*6)))],
     antenna_set      = antenna_set,
     frequency_range  = band,
     start_date       = ephem.Date(current_date).tuple(),
@@ -88,7 +102,7 @@ current_date += target_duration_s*ephem.second + 61*ephem.second
 
         
 observations.append(momxml.Observation(
-    beam_list        = [momxml.Beam(post_cal, target_subbands, storage_cluster='CEP4')],
+    beam_list        = [momxml.Beam(0, post_cal, target_subbands, storage_cluster='CEP4')],
     antenna_set      = antenna_set,
     frequency_range  = band,
     start_date       = ephem.Date(current_date).tuple(),

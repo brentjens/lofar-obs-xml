@@ -473,7 +473,7 @@ def station_list(station_set, include = None, exclude = None):
     **Parameters**
 
     station_set : string
-        One of 'superterp', 'core', 'remote', 'nl', 'all', or 'none', where
+        One of 'superterp', 'core', 'remote', 'nl', 'all', 'eu', or 'none', where
         'nl' is the concatenation of the 'core' and 'remote' sets, and
         all is 'nl' plus 'eu'.
 

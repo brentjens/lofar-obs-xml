@@ -176,7 +176,7 @@ class AveragingPipeline(ObservationSpecificationBase):
     ...                       ra_angle  = Angle(hms  = (19, 59, 28.3566)),
     ...                       dec_angle = Angle(sdms = ('+', 40, 44, 2.097)))
 
-    >>> bm = Beam(target, '77..324')
+    >>> bm = Beam(0, target, '77..324')
     >>> obs = Observation('HBA_DUAL_INNER', 'LBA_LOW', (2013, 10, 20, 18, 5, 0),
     ...                   duration_seconds = 600, name = 'Main observation',
     ...                   stations  = ['CS001', 'RS106', 'DE601'],
@@ -199,6 +199,7 @@ class AveragingPipeline(ObservationSpecificationBase):
                                                   initial_status    = 'opened',
                                                   measurement_type  = 'Target',
                                                   name              = 'Cyg A',
+                                                  sap_id            = 0,
                                                   storage_cluster   = 'CEP4',
                                                   storage_partition = '/data/projects',
                                                   subband_spec      = '77..324',

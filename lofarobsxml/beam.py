@@ -12,6 +12,9 @@ class Beam(ObservationSpecificationBase):
 
     **Parameters**
     
+    sap_id : int
+        SAP_ID of the beam.
+    
     target_source :  TargetSource
         Contains the name and direction in which to observe.
 
@@ -26,7 +29,6 @@ class Beam(ObservationSpecificationBase):
     measurement_type : 'Target' or 'Calibration'
         Gives some intent for the observation.
 
-
     **Examples**
 
     >>> from lofarobsxml import TargetSource, Angle
@@ -35,7 +37,7 @@ class Beam(ObservationSpecificationBase):
     ...                       ra_angle  = Angle(hms  = (19, 59, 28.3566)),
     ...                       dec_angle = Angle(sdms = ('+', 40, 44, 2.097)))
 
-    >>> bm = Beam(target, '77..324')
+    >>> bm = Beam(0, target, '77..324')
     >>> bm
     Beam(parent            = NoneType,
          children          = None,
@@ -43,6 +45,7 @@ class Beam(ObservationSpecificationBase):
          initial_status    = 'opened',
          measurement_type  = 'Target',
          name              = 'Cyg A',
+         sap_id            = 0,
          storage_cluster   = 'CEP4',
          storage_partition = '/data/projects',
          subband_spec      = '77..324',
@@ -82,8 +85,8 @@ class Beam(ObservationSpecificationBase):
     <resultDataProducts>
       <item>
         <lofar:uvDataProduct>
-          <name>Observation.0.Cyg_A.uv.dps</name>
-          <topology>Observation.0.Cyg_A.uv.dps</topology>
+          <name>Observation.0.Cyg_A.SAP000.uv.dps</name>
+          <topology>Observation.0.Cyg_A.SAP000.uv.dps</topology>
           <status>no_data</status>
           <storageCluster>
             <name>CEP4</name>
@@ -95,7 +98,9 @@ class Beam(ObservationSpecificationBase):
     </lofar:measurement>
     '''
 
-    def __init__(self, target_source, subband_spec,
+    def __init__(self,
+                 sap_id,
+                 target_source, subband_spec,
                  duration_s=None,
                  tied_array_beams=None,
                  measurement_type='Target',
@@ -103,6 +108,7 @@ class Beam(ObservationSpecificationBase):
                  storage_partition=None):
         super(Beam, self).__init__(target_source.name,
                                    parent = None, children = None)
+        self.sap_id           = sap_id
         self.target_source    = target_source
         self.subband_spec     = subband_spec
         self.measurement_type = measurement_type
@@ -149,7 +155,7 @@ class Beam(ObservationSpecificationBase):
 <resultDataProducts>
 '''
         if backend.correlated_data:
-            xc_topology = self.label() + '.uv.dps'
+            xc_topology = self.label() + '.SAP%03d.uv.dps' % self.sap_id
             result += r'''  <item>
     <lofar:uvDataProduct>
       <name>%(label)s</name>

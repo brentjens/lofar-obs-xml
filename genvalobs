@@ -646,6 +646,7 @@ def plan_observing_sequence(job_description):
         subband_spec = ','.join([str(sb) for sb in sb_list[0:max(job_description.max_subbands, 1)]])
         multibeam_subband_spec = ','.join([str(sb) for sb in sb_list[0:max(int(job_description.max_subbands/25.0 + 0.5), 1)]])
         beam_list=[Beam(
+            sap_id=0,
             target_source=target_source,
             subband_spec=subband_spec,
             storage_cluster=job_description.storage_cluster,
@@ -690,7 +691,8 @@ def plan_observing_sequence(job_description):
                                                 target_source.dec_angle.as_rad())
                         aux_field = TargetSource('Aux-%03d' % beam_id,
                                                  ra_angle=ra, dec_angle=dec)
-                        beam_list.append(Beam(aux_field,
+                        beam_list.append(Beam(sap_id=beam_id,
+                                              target_source=aux_field,
                                               subband_spec=multibeam_subband_spec,
                                               storage_partition=job_description.storage_partition,
                                               storage_cluster=job_description.storage_cluster))
