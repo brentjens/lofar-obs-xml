@@ -258,8 +258,8 @@ class AveragingPipeline(ObservationSpecificationBase):
       </averagingPipelineAttributes>
       <usedDataProducts>
         <item>
-          <lofar:uvDataProduct topology="Main_observation.0.Cyg_A.uv.dps">
-            <name>Main_observation.0.Cyg_A.uv.dps</name>
+          <lofar:uvDataProduct topology="Main_observation.0.Cyg_A.SAP000.uv.dps">
+            <name>Main_observation.0.Cyg_A.SAP000.uv.dps</name>
           </lofar:uvDataProduct>
         </item>
       </usedDataProducts>

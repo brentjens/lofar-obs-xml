@@ -143,7 +143,7 @@ class Beam(ObservationSpecificationBase):
         r'''
         Return the name of the data products produced by this beam.
         '''
-        return self.label()+'.uv.dps' # Quick and dirty fix as this is used in the pipelines.py
+        return self.label()+'.SAP%03d.uv.dps' % self.sap_id # Quick and dirty fix as this is used in the pipelines.py
 
 
     def xml_result_data_products(self, backend, storage_cluster, storage_partition):
