@@ -1,5 +1,5 @@
 from lofarobsxml.observationspecificationbase import ObservationSpecificationBase
-from lofarobsxml.momformats import mom_duration
+from lofarobsxml.momformats import mom_duration, check_mom_topology
 from lofarobsxml.utilities import parse_subband_list, indent
 
 class Beam(ObservationSpecificationBase):
@@ -156,6 +156,7 @@ class Beam(ObservationSpecificationBase):
 '''
         if backend.correlated_data:
             xc_topology = self.label() + '.SAP%03d.uv.dps' % self.sap_id
+            check_mom_topology(xc_topology)
             result += r'''  <item>
     <lofar:uvDataProduct>
       <name>%(label)s</name>
@@ -177,6 +178,7 @@ class Beam(ObservationSpecificationBase):
                 bf_topology += 'cs'
             if backend.incoherent_stokes_data:
                 bf_topology += 'is'
+            check_mom_topology(bc_topology)
             result += r'''  <item>
     <lofar:bfDataProduct>
       <name>%(label)s</name>

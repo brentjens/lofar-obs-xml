@@ -1,6 +1,6 @@
 from lofarobsxml.observationspecificationbase import ObservationSpecificationBase
 from lofarobsxml.momformats   import mom_duration, mom_timestamp, mom_frequency_range
-from lofarobsxml.momformats   import mom_antenna_name_from_mac_name
+from lofarobsxml.momformats   import mom_antenna_name_from_mac_name, check_mom_topology
 from lofarobsxml.targetsource import TargetSource
 from lofarobsxml.utilities    import validate_enumeration, indent
 from math import ceil
@@ -95,11 +95,13 @@ class Observation(ObservationSpecificationBase):
         rounded_start_date = start_date[:-1]+(int(round(start_date[-1])),)
         rounded_end_date   = end_date[:-1]+(int(round(end_date[-1])),)
         now = now.tuple()[:-1] + (int(round(now.tuple()[-1])),)
-
+        topology = self.label()
+        check_mom_topology(topology)
+        
         observation_str = '''<lofar:observation>
   <name>'''+obs_name+'''</name>
   <description>'''+obs_name+'''</description>
-  <topology>'''+self.label()+'''</topology>
+  <topology>'''+topology+'''</topology>
   <currentStatus>
     <mom2:'''+self.initial_status+'''Status/>
   </currentStatus>

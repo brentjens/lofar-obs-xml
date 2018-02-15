@@ -4,6 +4,7 @@ enter information into MoM.
 '''
 
 from lofarobsxml.utilities import indent
+from lofarobsxml.momformats import check_mom_topology
 
 
 
@@ -114,21 +115,30 @@ class ObservationSpecificationBase(object):
 
 
 
-    def label(self):
+    def label(self, max_name_length=13):
         r'''
         Returns an ascii label that reflects the full path of the
         current instance in the observation set specification.
         '''
+        string = str(self.name)[:max_name_length]
+        if self.name is None:
+            string = 'x'
 
-        string = str(self.name)
         if self.parent:
-            str_format = '%s.%d.%s'
-            string = str_format % (self.parent.label(),
+            if self.name is None:
+                name = ''
+                str_format = '%s.%d%s'
+            else:
+                name = str(self.name)[:max_name_length]
+                str_format = '%s.%d.%s'
+            string = str_format % (self.parent.label(max_name_length),
                                    self.parent.child_id(self),
-                                   str(self.name))
+                                   name)
         forbidden = '\'\";:?,\\<>$@#%^&*!()'
         string = ''.join([ch for ch in string if ch not in forbidden])
-        return string.replace(' ', '_')
+        result = string.replace(' ', '_')
+        check_mom_topology(result)
+        return result
 
 
 

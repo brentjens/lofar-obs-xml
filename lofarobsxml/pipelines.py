@@ -7,7 +7,7 @@ imaging settings.
 
 from lofarobsxml.observationspecificationbase import ObservationSpecificationBase
 from lofarobsxml.utilities import AutoReprBaseClass, typecheck, lower_case, unique, indent
-from lofarobsxml.momformats import mom_duration, mom_timestamp
+from lofarobsxml.momformats import mom_duration, mom_timestamp, check_mom_topology
 import ephem
 
         
@@ -227,8 +227,8 @@ class AveragingPipeline(ObservationSpecificationBase):
 
     >>> print(avg.xml('Project name'))
     <lofar:pipeline xsi:type="lofar:AveragingPipelineType">
-      <topology>Main_observation.1.Avg_Pipeline.uv.dps</topology>
-      <predecessor_topology>Main_observation</predecessor_topology>
+      <topology>Main_observat.1.Avg_Pipeline.uv.dps</topology>
+      <predecessor_topology>Main_observat</predecessor_topology>
       <name>Avg Pipeline</name>
       <description>Avg Pipeline: "Preprocessing Pipeline"</description>
       <processingCluster>
@@ -258,16 +258,16 @@ class AveragingPipeline(ObservationSpecificationBase):
       </averagingPipelineAttributes>
       <usedDataProducts>
         <item>
-          <lofar:uvDataProduct topology="Main_observation.0.Cyg_A.SAP000.uv.dps">
-            <name>Main_observation.0.Cyg_A.SAP000.uv.dps</name>
+          <lofar:uvDataProduct topology="Main_observat.0.Cyg_A.SAP000.uv.dps">
+            <name>Main_observat.0.Cyg_A.SAP000.uv.dps</name>
           </lofar:uvDataProduct>
         </item>
       </usedDataProducts>
       <resultDataProducts>
         <item>
           <lofar:uvDataProduct>
-            <name>Main_observation.1.Avg_Pipeline.uv.dps</name>
-            <topology>Main_observation.1.Avg_Pipeline.uv.dps</topology>
+            <name>Main_observat.1.Avg_Pipeline.uv.dps</name>
+            <topology>Main_observat.1.Avg_Pipeline.uv.dps</topology>
             <status>no_data</status>
             <storageCluster>
               <name>CEP4</name>
@@ -400,7 +400,7 @@ class AveragingPipeline(ObservationSpecificationBase):
   </lofar:uvDataProduct>
 </item>'''
         args = {
-            'label'       : self.label() + '.uv.dps',
+            'label'       : check_mom_topology(self.label() + '.uv.dps'),
             'predecessor' : self.predecessor(),
             'name'        : self.name,
             'default_template' : self.default_template,

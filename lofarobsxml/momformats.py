@@ -225,3 +225,9 @@ def mom_duration(hours = None, minutes = None, seconds = None):
     if seconds is not None:
         duration += '%02dS' % int(seconds)
     return duration
+
+
+def check_mom_topology(topology_str):
+    if len(topology_str) >= 90:
+        raise ValueError('Topology %r is more than 89 characters long' % topology_str)
+    return topology_str
