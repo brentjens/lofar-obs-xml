@@ -178,7 +178,7 @@ class Beam(ObservationSpecificationBase):
                 bf_topology += 'cs'
             if backend.incoherent_stokes_data:
                 bf_topology += 'is'
-            check_mom_topology(bc_topology)
+            check_mom_topology(bf_topology)
             result += r'''  <item>
     <lofar:bfDataProduct>
       <name>%(label)s</name>
