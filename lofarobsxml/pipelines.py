@@ -312,6 +312,7 @@ class AveragingPipeline(ObservationSpecificationBase):
             if self.processing_cluster == 'CEP2':
                 self.processing_partition = 'cpu' #We also set this one to 'cpu' but it doesn't mean anything
                 self.storage_partition = "/data" #This path is now coded in multiple locations, can probably be refactored into the base class?
+                raise ValueError('CEP2 has been decommissioned long ago. Please select another cluster.')
             elif self.processing_cluster == 'CEP4':
                 self.processing_partition = 'cpu' #We also have 'gpu' but that's not used right now
                 self.storage_partition = "/data/projects" #This path is now coded in multiple locations, can probably be refactored into the base class?

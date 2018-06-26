@@ -120,6 +120,7 @@ class Beam(ObservationSpecificationBase):
         if self.storage_partition is None:
             if self.storage_cluster == 'CEP2':
                 self.storage_partition = '/data'
+                raise ValueError('CEP2 has been decommissioned long ago. Please select another cluster.')
             elif self.storage_cluster == 'CEP4':
                 self.storage_partition = '/data/projects'
         if self.storage_partition is None:
